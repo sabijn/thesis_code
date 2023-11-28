@@ -4,7 +4,7 @@ from typing import *
 
 ConfigDict = Dict[str, Dict[str, Any]]
 
-ARG_TYPES = ["tokenizer", "model", "trainer", "data"]
+ARG_TYPES = ["tokenizer", "model", "trainer", "data", "activations"]
 
 
 def create_config_dict() -> ConfigDict:
@@ -37,15 +37,15 @@ def _create_arg_parser() -> ArgumentParser:
     parser = ArgumentParser()
 
     # MODEL
-    parser.add_argument("--model.model_type", required=True)
-    parser.add_argument("--model.is_mlm", action="store_true")
-    parser.add_argument("--model.num_hidden_layers", type=int, default=8)
-    parser.add_argument("--model.intermediate_size", type=int, default=256)
-    parser.add_argument("--model.hidden_size", type=int, default=256)
-    parser.add_argument("--model.num_attention_heads", type=int, default=8)
+    parser.add_argument("--model.model_type", required=True, choices=['deberta', 'gpt2'])
+    # parser.add_argument("--model.is_mlm", action="store_true")
+    # parser.add_argument("--model.num_hidden_layers", type=int, default=8)
+    # parser.add_argument("--model.intermediate_size", type=int, default=256)
+    # parser.add_argument("--model.hidden_size", type=int, default=256)
+    # parser.add_argument("--model.num_attention_heads", type=int, default=8)
 
     # TOKENIZER
-    parser.add_argument("--tokenizer.path", required=True)
+    # parser.add_argument("--tokenizer.path", required=True)
 
     # DATA
     parser.add_argument("--data.data_dir", required=True)
@@ -57,22 +57,29 @@ def _create_arg_parser() -> ArgumentParser:
     parser.add_argument("--data.dev_size", type=int)
     parser.add_argument("--data.test_size", type=int)
 
+    # EXTRACT ACTIVATIONS
+    parser.add_argument("--activations.output_dir", default='data',
+                        help='Directory where the activations are stored.')
+    parser.add_argument('--activations.dtype', default='float32', choices=["float16", "float32"], 
+                        help="Data type of the activations")
+
+
     # TRAINER
-    parser.add_argument("--trainer.output_dir", required=True)
-    parser.add_argument("--trainer.per_device_train_batch_size", type=int, default=64)
-    parser.add_argument("--trainer.per_device_eval_batch_size", type=int, default=64)
-    parser.add_argument("--trainer.evaluation_strategy", default="steps")
-    parser.add_argument("--trainer.eval_steps", type=int, default=100)
-    parser.add_argument("--trainer.logging_steps", type=int, default=100)
-    parser.add_argument("--trainer.save_steps", type=int, default=1000)
-    parser.add_argument("--trainer.gradient_accumulation_steps", type=int, default=8)
-    parser.add_argument("--trainer.max_grad_norm", type=int, default=0.5)
-    parser.add_argument("--trainer.num_train_epochs", type=int, default=1)
-    parser.add_argument("--trainer.weight_decay", type=float, default=0.1)
-    parser.add_argument("--trainer.lr_scheduler_type", default="cosine")
-    parser.add_argument("--trainer.learning_rate", type=float, default=5e-4)
-    parser.add_argument("--trainer.push_to_hub", action="store_true")
-    parser.add_argument("--trainer.report_to", default="none")
+    # parser.add_argument("--trainer.output_dir", required=True)
+    # parser.add_argument("--trainer.per_device_train_batch_size", type=int, default=64)
+    # parser.add_argument("--trainer.per_device_eval_batch_size", type=int, default=64)
+    # parser.add_argument("--trainer.evaluation_strategy", default="steps")
+    # parser.add_argument("--trainer.eval_steps", type=int, default=100)
+    # parser.add_argument("--trainer.logging_steps", type=int, default=100)
+    # parser.add_argument("--trainer.save_steps", type=int, default=1000)
+    # parser.add_argument("--trainer.gradient_accumulation_steps", type=int, default=8)
+    # parser.add_argument("--trainer.max_grad_norm", type=int, default=0.5)
+    # parser.add_argument("--trainer.num_train_epochs", type=int, default=1)
+    # parser.add_argument("--trainer.weight_decay", type=float, default=0.1)
+    # parser.add_argument("--trainer.lr_scheduler_type", default="cosine")
+    # parser.add_argument("--trainer.learning_rate", type=float, default=5e-4)
+    # parser.add_argument("--trainer.push_to_hub", action="store_true")
+    # parser.add_argument("--trainer.report_to", default="none")
 
     return parser
 
