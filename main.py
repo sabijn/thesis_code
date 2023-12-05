@@ -3,11 +3,11 @@ from pathlib import Path
 from argparser import create_config_dict
 from tokenizer import load_pretrained_tokenizer
 from extract_activations import extract_representations
-from data import load_data
 from pprint import pprint
 from data_probing import read_trees_from_file
 import torch
 import pickle
+from pathlib import Path
 
 
 def load_transformer_models(path : Path, device : str = 'cpu'):
@@ -60,7 +60,7 @@ if __name__ == "__main__":
         with open('data/activations.pickle', 'rb') as f:
             activations = pickle.load(f)
     else:
-        activations = extract_representations(model, tokenizer, config_dict['data']['data_dir'],
+        activations = extract_representations(model, tokenizer, config_dict['data']['data_dir'] / config_dict['data']['eval_file'],
                                               config_dict['model']['device'], config_dict['activations']['dtype'])
         with open('data/activations.pickle', 'wb') as f: 
             pickle.dump(activations, f)

@@ -136,7 +136,7 @@ def extract_sentence_representations(sentence, model, tokenizer, tokenization_co
     return final_hidden_states, detokenized
 
 
-def extract_representations(model, tokenizer, data_dir : str, device : str = "cpu", dtype : float = "float32", concat=True):
+def extract_representations(model, tokenizer, data_dir : str, device : str = "cpu", dtype : float = "float32", concat=False):
     print("Reading input corpus")
     def corpus_generator(input_corpus_path):
         with open(input_corpus_path, "r") as fp:
@@ -146,9 +146,8 @@ def extract_representations(model, tokenizer, data_dir : str, device : str = "cp
     
     tokenization_counts = {}
     print("Extracting representations from model")
-    if concat: 
-        return torch.vstack([extract_sentence_representations(sentence, model, tokenizer, tokenization_counts, device, dtype) 
-                            for sentence_idx, sentence in enumerate(corpus_generator(data_dir))])
-    else:
-        return [extract_sentence_representations(sentence, model, tokenizer, tokenization_counts, device, dtype) 
-                            for sentence_idx, sentence in enumerate(corpus_generator(data_dir))]
+
+    activations = []
+    for sentence_idx, sentence in enumerate(tqdm(corpus_generator(data_dir))):
+        embeds, words = extract_sentence_representations(sentence, model, tokenizer, tokenization_counts, device, dtype) 
+        activations.append((sentence_idx, embeds, words))

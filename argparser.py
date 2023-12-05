@@ -1,6 +1,7 @@
 from argparse import ArgumentParser
 from collections import defaultdict
 from typing import *
+from pathlib import Path
 
 ConfigDict = Dict[str, Dict[str, Any]]
 
@@ -48,11 +49,11 @@ def _create_arg_parser() -> ArgumentParser:
     # parser.add_argument("--tokenizer.path", required=True)
 
     # DATA
-    parser.add_argument("--data.data_dir", required=True)
-    parser.add_argument("--data.train_file", default="train.txt")
-    parser.add_argument("--data.dev_file", default="dev.txt")
-    parser.add_argument("--data.test_file", default="test.txt")
-    parser.add_argument("--data.eval_file", default="eval.txt")
+    parser.add_argument("--data.data_dir", type=Path, required=True)
+    parser.add_argument("--data.train_file", type=Path, default="train.txt")
+    parser.add_argument("--data.dev_file", type=Path, default="dev.txt")
+    parser.add_argument("--data.test_file", type=Path, default="test.txt")
+    parser.add_argument("--data.eval_file", type=Path, default="eval.txt")
     parser.add_argument("--data.train_size", type=int)
     parser.add_argument("--data.dev_size", type=int)
     parser.add_argument("--data.test_size", type=int)
