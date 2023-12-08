@@ -4,6 +4,9 @@ import sys
 import argparse
 import re
 import random
+import numpy as np
+import nltk
+from tqdm import tqdm
 
 punct_regex = re.compile(r"[^\w][^\w]?")
 
@@ -20,187 +23,126 @@ def specialConditionNPEmbed(tree, i, j, emb_depth=None):
         # print(xps_above_j - xps_above_i)
         return xps_above_j - xps_above_i == emb_depth
 
-def phrasePropertiesForAdjacentTokenPairsInPTB(k, sent, tree):
-    preproc_alignment, preproc_sent = preprocess(tree.leaves(), only_parentheses=True)
+def phrasePropertiesForAdjacentTokenPairsInPTB(k, tree):
+    """
+    Find LCA for Adjacent Token Pairs
+    """
     rel_toks = []
     lca_labels = []
     max_span_labels = []
     shared_levels = []
     unary_labels = []
     shared_only_root = []
-    if tree.label() == 'VROOT' and len(tree) == 1:
+    sent = tree.leaves()
+
+    if tree.label() == 'S_0' and len(tree) == 1:
         tree = tree[0]
 
-    for i_preproc in range(len(preproc_sent)-1):
-        i = preproc_alignment[i_preproc]
-        i_tok = preproc_sent[i_preproc]
+    # loop thourgh tokens
+    for i in range(len(sent) - 1):
+        i_tok = sent[i]
 
-        j_preproc = i_preproc + 1
-        j = preproc_alignment[j_preproc]
-        j_tok = preproc_sent[j_preproc]
+        j = i + 1
+        j_tok = sent[j]
+
         lowest_common_ancestor = tree.treeposition_spanning_leaves(i,j+1)
+
+        # If LCA is the root, append index of token pair to shared_only_root
         if len(lowest_common_ancestor) == 0:
             shared_only_root.append(len(shared_levels))
-        # else:
-        shared = len(lowest_common_ancestor)+1
+
+        # Depth in tree shared between i and j
+        shared = len(lowest_common_ancestor) + 1
         shared_levels.append(shared)
 
-        label = find_label(tree, lowest_common_ancestor).split('-')[0]
+        # Get label of LCA (otherwise tuple representation)
+        label = tree[lowest_common_ancestor].label()
 
         # check for unary leaves
         i_tok_address = tree.leaf_treeposition(i)
         unary_label = 'XX'
         above_pos = tree[i_tok_address[:-2]]
         if (len(above_pos) == 1):
-            unary_label = above_pos.label().split('-')[0]
-            # print('-----------')
-            # tree.pretty_print()
-            # print(tree.leaves()[i], i)
-            # print(label, lowest_common_ancestor, i_tok_address) 
+            unary_label = above_pos.label()
+        
+        unary_label = re.sub('[^A-Za-z]+', '', unary_label)
+        label = re.sub('[^A-Za-z]+', '', label)
 
         lca_labels.append(label)
-        rel_toks.append('_'.join([str(k), str(i_preproc), str(j_preproc)]))
+        rel_toks.append('_'.join([str(k), str(i), str(j)]))
         unary_labels.append(unary_label)
         max_span_labels.append('0')
 
+    # Calculate relative shared levels
     shared_levels_rel = []
-    for l,s in enumerate(shared_levels):
+    for l, s in enumerate(shared_levels):
         if l == 0:
+            # If first token, append shared level of token 0 & 1
             shared_levels_rel.append(str(s)) 
             last_s = s
         else:
             shared_levels_rel.append(str(s - last_s))
             last_s = s
+
+    # If ROOT is the only shared level, replace int with ROOT
     for r in shared_only_root:
         shared_levels_rel[r] = "ROOT"
-    # print(k, tree.leaves())
-    # print(shared_levels)
-    # print(shared_levels_rel)
-    # print()
-    return preproc_sent, rel_toks, lca_labels, shared_levels_rel, unary_labels
+
+    return rel_toks, lca_labels, shared_levels_rel, unary_labels
 
 
-def phrasePropertiesForTokenPairsInPTB(k, sent, tree_notr, specialCondition='', emb_depth=None):
-    # outfile_only_pos.write('### ' + str(k) + '\n')
-    leaves_notr = tree_notr.leaves()
-    sent_str = ' '.join(sent)
-    # set_str_cleaned = preprocess 
-    xps_in_sent = []
+# def phrasePropertiesForTokenPairsInPTB(k, sent, tree, specialCondition='', emb_depth=None): 
+#     rel_toks = []
+#     lca_labels = []
+#     max_span_labels = []
 
-    # outfile_only_pos.write(f"### {sent_str}\n")
-    # preproc_alignment preproc_sent -> leaves_notr
-    preproc_alignment, preproc_sent = preprocess(tree_notr.leaves(), only_parentheses=True)
-    # outfile_only_pos.write(f"### {' '.join(preproc_sent)}\n")
-        
-    rel_toks = []
-    lca_labels = []
-    max_span_labels = []
+#     for i in range(len(sent)):
+#         i_tok = sent[i]
 
-    for i_preproc in range(len(preproc_sent)):
-        # find out if alignment[i] has an index r in tree_tr
-        i = preproc_alignment[i_preproc]
+#         if punct_regex.match(i_tok):
+#             continue
+#         if not(specialCondition == 'NP_embed'):
+#             # find phrase above token i
 
-        i_tok = preproc_sent[i_preproc]
-        if punct_regex.match(i_tok):
-            continue
-        if not(specialCondition=='NP_embed'):
-            # find phrase above token i
+#             label, node = lowest_phrase_above_leaf_i(i, tree)
+#             label = label.split('-')[0]
 
-            label, node = lowest_phrase_above_leaf_i(i, tree_notr)
-            label=label.split('-')[0]
-            # outfile_only_pos.write('\t'.join([str(i_preproc), str(i_preproc), label]) + '\n') #, preproc_sent[i_preproc], preproc_sent[i_preproc]])+'\n')
+#             max_span_label = '1' if len(node.leaves()) == 1 else '0'
+#             max_span_labels.append(max_span_label)
 
-            max_span_label = '1' if len(node.leaves()) == 1 else '0'
-            max_span_labels.append(max_span_label)
+#             rel_toks.append('_'.join([str(k), str(i), str(i)]))
+#             lca_labels.append(label)
 
-            rel_toks.append('_'.join([str(k), str(i_preproc), str(i_preproc)]))
-            lca_labels.append(label)
-            # CONTINUE HERE: 
-            # Write method to find out if there is an index above leaves_tr[i_tr]
-            # if so, find the origin and find the lowest possible ancestors?
-            # coindex_treepos = find_trace_ix(tree_tr, i_tr)
-        for j_preproc in range(i+1,len(preproc_sent)):
-                # find out if alignment[j] has an index s in tree_tr
-            j = preproc_alignment[j_preproc]
+#         for j in range(i+1,len(sent)):
+#             j_tok = sent[j]
+#             if punct_regex.match(j_tok):
+#                 continue
+#                 # default case: no traces
+#             lowest_common_ancestor = tree_notr.treeposition_spanning_leaves(i,j+1)
+#             label = find_label(tree_notr, lowest_common_ancestor).split('-')[0]
+#                 # outfile_only_pos.write('\t'.join([str(i_preproc), str(j_preproc), label]) + '\n') # , preproc_sent[i_preproc], preproc_sent[j_preproc]])+'\n')
 
-            j_tok = preproc_sent[j_preproc]
-            if punct_regex.match(j_tok):
-                continue
-                # default case: no traces
-            lowest_common_ancestor = tree_notr.treeposition_spanning_leaves(i,j+1)
-            label = find_label(tree_notr, lowest_common_ancestor).split('-')[0]
-                # outfile_only_pos.write('\t'.join([str(i_preproc), str(j_preproc), label]) + '\n') # , preproc_sent[i_preproc], preproc_sent[j_preproc]])+'\n')
-
-            lca_node = find_node(tree_notr, lowest_common_ancestor)
-            max_span_label = '0'
-            if len(lca_node.leaves()) == 1 + j - i:
-                max_span_label = '1'
-            else:
-                i_tok_matches = lca_node.leaves()[0] == i_tok or (punct_regex.match(lca_node.leaves()[0]) and lca_node.leaves()[1] == i_tok)
-                j_tok_matches = lca_node.leaves()[-1] == j_tok or (punct_regex.match(lca_node.leaves()[-1]) and lca_node.leaves()[-2] == j_tok)
-                if i_tok_matches and j_tok_matches:
-                    max_span_label = '1'
+#             lca_node = find_node(tree_notr, lowest_common_ancestor)
+#             max_span_label = '0'
+#             if len(lca_node.leaves()) == 1 + j - i:
+#                 max_span_label = '1'
+#             else:
+#                 i_tok_matches = lca_node.leaves()[0] == i_tok or (punct_regex.match(lca_node.leaves()[0]) and lca_node.leaves()[1] == i_tok)
+#                 j_tok_matches = lca_node.leaves()[-1] == j_tok or (punct_regex.match(lca_node.leaves()[-1]) and lca_node.leaves()[-2] == j_tok)
+#                 if i_tok_matches and j_tok_matches:
+#                     max_span_label = '1'
             
             
-            if not(specialCondition=='NP_embed'):
-                lca_labels.append(label)
-                rel_toks.append('_'.join([str(k), str(i_preproc), str(j_preproc)]))
-                max_span_labels.append(max_span_label)
-            elif label=='NP' and specialConditionNPEmbed(tree_notr, i, j, emb_depth=emb_depth):
-                lca_labels.append(label)
-                rel_toks.append('_'.join([str(k), str(i_preproc), str(j_preproc)]))
-                max_span_labels.append(max_span_label)
+#             if not(specialCondition=='NP_embed'):
+#                 lca_labels.append(label)
+#                 rel_toks.append('_'.join([str(k), str(i), str(j_preproc)]))
+#                 max_span_labels.append(max_span_label)
+#             elif label=='NP' and specialConditionNPEmbed(tree_notr, i, j, emb_depth=emb_depth):
+#                 lca_labels.append(label)
+#                 rel_toks.append('_'.join([str(k), str(i), str(j_preproc)]))
+#                 max_span_labels.append(max_span_label)
 
-    return preproc_sent,rel_toks,lca_labels,max_span_labels
-
-def findAndSampleMostDeeplyEmbeddedNPsInPTB(k, sent, tree_notr):
-    # print(k)
-    preproc_alignment, preproc_sent = preprocess(tree_notr.leaves(), only_parentheses=True)
-    preproc_alignment_inv = {v:k for k,v in preproc_alignment.items()} # inv: from sent to preproc_sent
-    leaf_to_nps_above = {i:find_xps_above_i(i, tree_notr, np_regex) for i in range(len(tree_notr.leaves()))}
-    
-    max_depth = max([len(l) for l in leaf_to_nps_above.values()])
-    deepest_embedded_leaves = [i for i,v in leaf_to_nps_above.items() if len(v) == max_depth]
-    lca = ''
-    try_again = 0
-    while lca != 'NP' and try_again<10:
-        deep_token_i = random.choice(deepest_embedded_leaves)
-        deep_token = preproc_sent[preproc_alignment_inv[deep_token_i]]
-        while punct_regex.match(deep_token):
-            deep_token_i = random.choice(deepest_embedded_leaves)
-            deep_token = preproc_sent[preproc_alignment_inv[deep_token_i]]
-
-        highest_np_above_deep_token = leaf_to_nps_above[deep_token_i][0]
-        possible_high_token_is = []
-
-        for j in range(1,10):
-            if len(possible_high_token_is)==0:
-                possible_high_token_is = [i for i,nps in leaf_to_nps_above.items() if len(nps)==j and highest_np_above_deep_token in nps and i < deep_token_i]
-                possible_high_token_is_with_fitting_feats = []
-                for i in possible_high_token_is:
-                    high_token = preproc_sent[preproc_alignment_inv[i]]
-                    if not(punct_regex.match(high_token)):
-                        lowest_common_ancestor = tree_notr.treeposition_spanning_leaves(i,deep_token_i+1)
-                        lca_label = find_label(tree_notr, lowest_common_ancestor).split('-')[0]
-                        if lca_label=='NP':                    
-                            possible_high_token_is_with_fitting_feats.append(i)
-                possible_high_token_is = possible_high_token_is_with_fitting_feats
-
-        if len(possible_high_token_is) > 0:
-            high_token_i = random.choice(possible_high_token_is)
-            high_token = preproc_sent[preproc_alignment_inv[high_token_i]]
-
-            lowest_common_ancestor = tree_notr.treeposition_spanning_leaves(high_token_i,deep_token_i+1)
-            lca = find_label(tree_notr, lowest_common_ancestor).split('-')[0]
-            #  print(high_token_i, high_token, deep_token_i, deep_token)
-            # print(lca)
-            # fill return values
-            rel_toks= ['_'.join([str(k), str(preproc_alignment_inv[high_token_i]), str(preproc_alignment_inv[deep_token_i])])]
-            lca_labels = [lca]
-            return preproc_sent, rel_toks, lca_labels
-        else:
-            try_again = try_again + 1
-    return None, None, None
+#     return rel_toks,lca_labels,max_span_labels
 
 if __name__=='__main__':
     """
@@ -229,11 +171,23 @@ if __name__=='__main__':
     ###############
     # PREP
     ###############
+    # model=$1
+    # traincutoff=$2
+    # testcutoff=$3
+    # layersel="second"
+    # datadir="data/"
+    # modeldir=$datadir"/"$model"/"
+    # mkdir $datadir
+    # mkdir $modeldir
 
-    # print(sys.argv)
+    """
+    Call with: python extract_labels.py -data pcfg-lm/src/lm_training/corpora/eval_trees_10k.txt 
+    -text_toks data/train_text.txt -rel_toks data/train_rel_toks.txt -rel_labels data/train_rel_labels.txt 
+    -next -shared_levels data/train_shared_levels.txt -unary data/train_unaries.txt -cutoff 2 -max_sent_length 31
+    """
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('-ptb_notr')
+    parser.add_argument('-data')
     parser.add_argument('-text_toks') 
     parser.add_argument('-rel_toks')
     parser.add_argument('-rel_labels') 
@@ -241,32 +195,32 @@ if __name__=='__main__':
     parser.add_argument('-cutoff')
     parser.add_argument('-max_sent_length')
     parser.add_argument('-np_embed', action='store_true', default=False)
-    parser.add_argument('-next', action='store_true', default=False)
-    parser.add_argument('-shared_levels', default=None)
-    parser.add_argument('-unary', default=None)
+    parser.add_argument('-next', action='store_true', default=False) # run in experiments
+    parser.add_argument('-shared_levels', default=None) # run in experiments
+    parser.add_argument('-unary', default=None) # run in experiments
     parser.add_argument('-tree_out', default=None, help="optional file where all trees are printed that are processed (and not skipped)")
     parsedargs = parser.parse_args()
 
-    ignored_sents = []
-    ignore_list = []
+    ignored_sents = [] # added if not length: 3 < length < 31
+    ignore_list = [] # no idea but this is in the original code
 
-    cutoff = 2000000000 # never going to have such a big treebank
+    # Set thresholds
+    cutoff = np.inf
     if parsedargs.cutoff is not None:
         cutoff = int(parsedargs.cutoff)
-    max_sent_length = 200000000
+    max_sent_length = np.inf
     if parsedargs.max_sent_length is not None:
         max_sent_length = int(parsedargs.max_sent_length)
-    
-    if not('/' in parsedargs.ptb_notr):
-        ptb_notrace = load_ptb(parsedargs.ptb_notr, corpus_root=r"data/PennTreebank")
-    else:
-        corpus_root = '/'.join(parsedargs.ptb_notr.split('/')[:-1])
-        filename=parsedargs.ptb_notr.split('/')[-1:]
-        ptb_notrace = load_ptb(filename, corpus_root=corpus_root)
 
+    # Reading in input trees
+    with open(parsedargs.data) as f:
+        tree_corpus = [nltk.Tree.fromstring(l.strip()) for l in f]
+
+    # Open output files
     text_toks_file = open(parsedargs.text_toks, 'w')
     rel_toks_file = open(parsedargs.rel_toks, 'w')
     rel_labels_file = open(parsedargs.rel_labels, 'w')
+
     if parsedargs.max_span_const is not None:
         max_span_file = open(parsedargs.max_span_const, 'w')
     if parsedargs.shared_levels is not None:
@@ -276,62 +230,52 @@ if __name__=='__main__':
     if parsedargs.tree_out is not None:
         tree_out_file = open(parsedargs.tree_out, 'w') 
     binary = False
-    print(len(ptb_notrace.sents()))
+
     specialCond = 'NP_embed' if parsedargs.np_embed else False 
     if specialCond:
         emb_depth=int(parsedargs.np_embed)
     else:
         emb_depth=None
-
     
     ###############
     # Conversion 
     ###############
-    for k, (sent, tree_notr) in enumerate(zip(ptb_notrace.sents(), ptb_notrace.parsed_sents())):
+    for k, tree in enumerate(tqdm(tree_corpus)):
+
         if k - len(ignored_sents) > cutoff:
             continue
         # some sentences are not covered yet
-        if k in ignore_list or len(sent) > max_sent_length: #31:
+        if k in ignore_list or len(tree.leaves()) > max_sent_length: #31:
             ignored_sents.append(k)
             continue
 
-        if parsedargs.np_embed:
-            preproc_sent, rel_toks, lca_labels = findAndSampleMostDeeplyEmbeddedNPsInPTB(k-len(ignored_sents), sent, tree_notr)
-            if preproc_sent is None and rel_toks is None and lca_labels is None:
+        next = parsedargs.next
+        if next:
+            if len(tree.leaves()) < 3:
                 ignored_sents.append(k)
                 continue
-            assert len(rel_toks) == len(lca_labels)
-            rel_toks_file.write(' '.join(rel_toks) + '\n')
-            rel_labels_file.write(' '.join(lca_labels) + '\n')
-            text_toks_file.write(' '.join(preproc_sent) + '\n')      
-        else:
-            next = parsedargs.next
-            if next:
-                if len(tree_notr.leaves())<3:
-                    ignored_sents.append(k)
-                    continue
-                preproc_sent, rel_toks, lca_labels, shared_levels_rel, unary_labels = phrasePropertiesForAdjacentTokenPairsInPTB(k-len(ignored_sents), sent, tree_notr)
-            else:
-                preproc_sent, rel_toks, lca_labels, max_span_labels = phrasePropertiesForTokenPairsInPTB(k-len(ignored_sents), sent, tree_notr, specialCondition=specialCond, emb_depth=emb_depth)
-       
-                assert len(rel_toks) == len(lca_labels) == len(max_span_labels)
-            rel_toks_file.write(' '.join(rel_toks) + '\n')
-            rel_labels_file.write(' '.join(lca_labels) + '\n')
-            text_toks_file.write(' '.join(preproc_sent) + '\n')
-            if parsedargs.shared_levels is not None:
-                shared_levels_file.write(' '.join(shared_levels_rel) + '\n')
-            if parsedargs.unary is not None:
-                unary_file.write(' '.join(unary_labels) + '\n')
-            if parsedargs.max_span_const is not None:
-                max_span_file.write(' '.join(max_span_labels) + '\n')
-            if parsedargs.tree_out is not None:
-                if len(tree_notr) == 1 and tree_notr.label() == 'VROOT':
-                    tree_notr = tree_notr[0]
-                tree_out_file.write(str(tree_notr).replace('\n','').replace('  ', ' ').replace('  ', ' ').replace('  ', ' ').replace('  ', ' ').replace('  ', ' ')+'\n')
 
-        # outfile_only_pos.write('###\n')
-        if k % 100 == 0:# and outfile_only_pos.name != '<stdout>':
-            print(k, end="\r", flush=True)
+            rel_toks, lca_labels, shared_levels_rel, unary_labels = phrasePropertiesForAdjacentTokenPairsInPTB(k - len(ignored_sents), tree)
+            assert len(rel_toks) == len(lca_labels) == len(shared_levels_rel) == len(unary_labels)
+        # else:
+            # # not yet edited
+            # rel_toks, lca_labels, max_span_labels = phrasePropertiesForTokenPairsInPTB(k - len(ignored_sents), tree.leaves(), tree, specialCondition=specialCond, emb_depth=emb_depth)
+            # assert len(rel_toks) == len(lca_labels) == len(max_span_labels)
+
+        rel_toks_file.write(' '.join(rel_toks) + '\n')
+        rel_labels_file.write(' '.join(lca_labels) + '\n')
+        text_toks_file.write(' '.join(tree.leaves()) + '\n')
+
+        if parsedargs.shared_levels is not None:
+            shared_levels_file.write(' '.join(shared_levels_rel) + '\n')
+        if parsedargs.unary is not None:
+            unary_file.write(' '.join(unary_labels) + '\n')
+        if parsedargs.max_span_const is not None:
+            max_span_file.write(' '.join(max_span_labels) + '\n')
+        if parsedargs.tree_out is not None:
+            if len(tree_notr) == 1 and tree_notr.label() == 'VROOT':
+                tree_notr = tree_notr[0]
+            tree_out_file.write(str(tree_notr).replace('\n','').replace('  ', ' ').replace('  ', ' ').replace('  ', ' ').replace('  ', ' ').replace('  ', ' ')+'\n')
 
     text_toks_file.close()
     rel_toks_file.close()
@@ -344,4 +288,5 @@ if __name__=='__main__':
         unary_file.close()
     if parsedargs.tree_out is not None:
         tree_out_file.close()
+
     print('finished. ignored sentences: ', ignored_sents)

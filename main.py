@@ -8,6 +8,7 @@ from data_probing import read_trees_from_file
 import torch
 import pickle
 from pathlib import Path
+from tqdm import tqdm
 
 
 def load_transformer_models(path : Path, device : str = 'cpu'):
@@ -17,6 +18,9 @@ def load_transformer_models(path : Path, device : str = 'cpu'):
     return model, tokenizer
 
 if __name__ == "__main__":
+    """
+    Run script: python main.py --model.model_type deberta --data.data_dir corpora
+    """
     config_dict = create_config_dict()
     pprint(config_dict)
 

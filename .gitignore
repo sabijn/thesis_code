@@ -3,6 +3,9 @@ data/
 corpora/
 pcfg-lm/
 
+# personal files
+garbage.py
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

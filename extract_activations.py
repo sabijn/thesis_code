@@ -140,7 +140,7 @@ def extract_representations(model, tokenizer, data_dir : str, device : str = "cp
     print("Reading input corpus")
     def corpus_generator(input_corpus_path):
         with open(input_corpus_path, "r") as fp:
-            for line in fp:
+            for line in tqdm(fp):
                 yield line.strip()
             return
     
@@ -148,6 +148,8 @@ def extract_representations(model, tokenizer, data_dir : str, device : str = "cp
     print("Extracting representations from model")
 
     activations = []
-    for sentence_idx, sentence in enumerate(tqdm(corpus_generator(data_dir))):
+    for sentence_idx, sentence in enumerate(corpus_generator(data_dir)):
         embeds, words = extract_sentence_representations(sentence, model, tokenizer, tokenization_counts, device, dtype) 
         activations.append((sentence_idx, embeds, words))
+    
+    return activations
