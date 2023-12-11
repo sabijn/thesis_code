@@ -2,6 +2,7 @@
 data/
 corpora/
 pcfg-lm/
+models/
 
 # personal files
 garbage.py

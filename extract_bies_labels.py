@@ -6,6 +6,9 @@ import re
 import numpy as np
 import nltk
 from tqdm import tqdm
+from main import load_model
+import torch
+from pathlib import Path
 
 punct_regex = re.compile(r"[^\w][^\w]?")
 
@@ -60,7 +63,7 @@ def findBIESTag(i: int, tree : nltk.Tree, i_tok: str, with_phrase_label=False) -
             tag+='-'+phrase_label.split('-')[0]
     return tag
 
-def biesLabels(tree, with_phrase_labels=False):
+def biesLabels(tree, tokenizer, with_phrase_labels=False, skip_unkown_tokens=False):
     """
     Loop through through leaves in tree and assign BIES labels to each token
     Input:
@@ -77,6 +80,10 @@ def biesLabels(tree, with_phrase_labels=False):
         i_tok = sent[i]
 
         # find phrase above token i
+        if skip_unkown_tokens:
+            if i_tok not in tokenizer.vocab:
+                continue
+
         label = findBIESTag(i, tree, i_tok, with_phrase_label=with_phrase_labels)
 
         text_toks.append(i_tok)
@@ -124,6 +131,22 @@ if __name__=='__main__':
     ignored_sents = []
     ignore_list = []
 
+    if torch.cuda.is_available():
+        # For running on snellius
+        device = torch.device("cuda")
+        print('Running on GPU.')
+    # elif torch.backends.mps.is_available():
+    #     # For running on M1
+    #     device = torch.device("mps")
+    #     print('Running on M1 GPU.')
+    else:
+        # For running on laptop
+        device = torch.device("cpu")
+        print('Running on CPU.')
+    
+    model_path = Path('pcfg-lm/resources/checkpoints/deberta/')
+    model, tokenizer = load_model(model_path, device)
+
     # Probably used during development with a lower cutoff
     cutoff = np.inf
     if parsedargs.cutoff is not None:
@@ -132,7 +155,7 @@ if __name__=='__main__':
     if parsedargs.max_sent_length is not None:
         max_sent_length = int(parsedargs.max_sent_length)
     
-        # Reading in input trees
+    # Reading in input trees
     with open(parsedargs.data) as f:
         tree_corpus = [nltk.Tree.fromstring(l.strip()) for l in f]
 
@@ -155,7 +178,7 @@ if __name__=='__main__':
             continue
 
         with_phrase_labels = parsedargs.with_phrase_labels
-        preproc_sent, bies_labels = biesLabels(tree, with_phrase_labels=with_phrase_labels)
+        preproc_sent, bies_labels = biesLabels(tree, tokenizer, with_phrase_labels=with_phrase_labels, skip_unkown_tokens=True)
 
         assert len(preproc_sent) == len(bies_labels)
 

@@ -5,7 +5,7 @@ from pathlib import Path
 
 ConfigDict = Dict[str, Dict[str, Any]]
 
-ARG_TYPES = ["tokenizer", "model", "trainer", "data", "activations"]
+ARG_TYPES = ["tokenizer", "model", "trainer", "data", "activations", "experiments"]
 
 
 def create_config_dict() -> ConfigDict:
@@ -39,14 +39,6 @@ def _create_arg_parser() -> ArgumentParser:
 
     # MODEL
     parser.add_argument("--model.model_type", required=True, choices=['deberta', 'gpt2'])
-    # parser.add_argument("--model.is_mlm", action="store_true")
-    # parser.add_argument("--model.num_hidden_layers", type=int, default=8)
-    # parser.add_argument("--model.intermediate_size", type=int, default=256)
-    # parser.add_argument("--model.hidden_size", type=int, default=256)
-    # parser.add_argument("--model.num_attention_heads", type=int, default=8)
-
-    # TOKENIZER
-    # parser.add_argument("--tokenizer.path", required=True)
 
     # DATA
     parser.add_argument("--data.data_dir", type=Path, required=True)
@@ -64,6 +56,9 @@ def _create_arg_parser() -> ArgumentParser:
     parser.add_argument('--activations.dtype', default='float32', choices=["float16", "float32"], 
                         help="Data type of the activations")
 
+    # EXPERIMENTS
+    parser.add_argument("--experiments.type", default='chunking', choices=['chunking', 'lca', 'all'])
+    parser.add_argument("--experiments.checkpoint_path", default='models/')
 
     # TRAINER
     # parser.add_argument("--trainer.output_dir", required=True)
