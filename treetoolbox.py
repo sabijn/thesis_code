@@ -191,13 +191,18 @@ def lowest_phrase_above_leaf_i(i, tree, return_target_ga=False):
     ga_of_target = tree.treeposition_spanning_leaves(i,i+1)[:-2]
     node = find_node(tree, ga_of_target)
     label = node.label()
-    if not (label.split('-')[0].endswith('P') or label.split('-')[0] in ['S', 'SQ', 'SBAR', 'SBARQ', 'SINV', 'FRAG', 'NAC', 'NX', 'INTJ', 'LST' , 'X', 'RRC']):
-        if label in ['PRT','PRN']:
+    label = re.sub('[^A-Za-z]+', '', label)
+
+    if not (label.endswith('P') or label in ['S', 'ATSBAR', 'ATSQ', 'ATINTJ', 'ATS', 'SQ', 'SBAR', 'SBARQ', 'SINV', 
+                                             'FRAG', 'NAC', 'NX', 'INTJ', 'LST' , 'X', 'RRC', 'ATSINV', 'ATFRAG']):
+        if label in ['PRT','PRN', 'ATPRT', 'ATPRN']:
             ga_of_target = ga_of_target[:-1]
             node = find_node(tree, ga_of_target)
             label = node.label()
         else:
-            print('it does not work!!!', i, ga_of_target, label, ' '.join(tree.leaves()))
+            assert False, f'Unknown label with which the method wil fail: \
+                \n label: {label} \n sentence: {" ".join(tree.leaves())} \n word: {tree.leaves()[i]} \n tree: {tree}'
+
     if return_target_ga:
         return label, node, ga_of_target
     return label, node
