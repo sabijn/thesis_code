@@ -2,190 +2,79 @@
 import numpy as np
 import argparse
 import pickle
-
-def average_activation_dicts(i_act, j_act):
-    new_tok = str(i_act['token']) + '_' + str(j_act['token'])
-    new_layers = []
-    for i_layer, j_layer in zip(i_act['layers'], j_act['layers']):
-        assert i_layer['index'] == j_layer['index']
-        new_layer = {'index': i_layer['index']}
-        assert len(i_layer['values']) == len(j_layer['values'])
-        new_vals = []
-        for i_val, j_val in zip(i_layer['values'], j_layer['values']):
-            new_vals.append((i_val + j_val) / 2.)
-        new_layer['values'] = new_vals
-        new_layers.append(new_layer)
-    result = {'token': new_tok, 'layers': new_layers}
-    return result
-
-def extract_from_json(infilename, outfilename):
-    f = open('resources/Data_david/dev_sentences.json',)
-    json_lines = f.readlines()
-    f.close()
-    out_f = open('resources/Data_david/avg.json', 'w')
-
-    sent_activations = []
-    for line in json_lines:
-        sent_activations.append(json.loads(line))
-
-    print('done loading, now compute avgs...')
-    # averaged_activations = []
-    for k, sent_act in enumerate(sent_activations):
-        avg_act_sent = {'linex_index': sent_act['linex_index']}
-        avg_feats = []
-        max_j = len(sent_act['features'])
-        for i,tok_dict in enumerate(sent_act['features']):
-            for j in range(i,max_j):
-                i_act = sent_act['features'][i]
-                j_act = sent_act['features'][i]
-                avg_act = average_activation_dicts(i_act, j_act)
-                avg_feats.append(avg_act)
-    
-        avg_act_sent['features'] = avg_feats
-        # averaged_activations.append(avg_act_sent)
-
-        avg_json_str = json.dumps(avg_act_sent)
-        out_f.write(avg_json_str)
-        out_f.write('\n')
-        # print(k)
-        out_f.close()
-
-def signedabsmax(a): 
-    """a is a pair of (possibly negative floats
-    
-    Return the element from a that has the higher absolute value
-    """
-    abs_a = np.abs(a) 
-    if abs_a[0] > abs_a[1]: 
-        return a[0] 
-    else: 
-        return a[1]
+import torch
+from tqdm import tqdm
 
 def combine_activations_np(sentarray, mode='avg', round_to=-1):
-    res_sent_length = sum(range(sentarray.shape[1]+1))
     if mode in ['avg', 'max']:
-        combined_arr = np.empty((sentarray.shape[0], res_sent_length, sentarray.shape[2]))
+        combined_arr = torch.zeros((sentarray.shape[0] - 1, sentarray.shape[1]))
     if mode=='concat':
-        combined_arr = np.empty((sentarray.shape[0], res_sent_length, sentarray.shape[2]*2))
+        combined_arr = torch.zeros((sentarray.shape[0] - 1, sentarray.shape[1]*2))
 
 
-    # print(avg_arr.shape)
-    # print(sentarray.shape)
-    k = 0
-    for i in range(sentarray.shape[1]):
-        for j in range(i, sentarray.shape[1]):
-            i_repr = sentarray[:,i]
-            j_repr = sentarray[:,j]
-            if mode=='avg':
-                avg_i_j = np.mean([i_repr, j_repr], axis=0)
-                if round_to > -1:
-                    avg_i_j = np.round(avg_i_j, decimals=round_to)
-            
-                combined_arr[:,k] = avg_i_j
-            elif mode=='concat': 
-                concat_i_j = np.concatenate([i_repr, j_repr], axis=1).astype('float16')
-                if round_to > -1:
-                    concat_i_j = np.round(concat_i_j, decimals=round_to)
-                combined_arr[:, k] = concat_i_j
-            else:
-                stacked = np.stack([i_repr,j_repr])
-                combined_arr[:,k] = np.apply_along_axis(signedabsmax, 0, stacked)
-            k = k+1 
+    for i in range(sentarray.shape[0] - 1):
+        i_repr = sentarray[i,:][None,:]
+        j_repr = sentarray[i+1,:][None,:]
+
+        if mode == 'avg':
+            avg_i_j = torch.mean(torch.stack([i_repr, j_repr]), dim=0)
+
+            if round_to > -1:
+                avg_i_j = torch.round(avg_i_j, decimals=round_to)
+            combined_arr[i,:] = avg_i_j
+
+        elif mode == 'concat':
+            concat_i_j = torch.cat([i_repr, j_repr], dim=1)
+            if round_to > -1:
+                concat_i_j = torch.round(concat_i_j, decimals=round_to)
+            combined_arr[i,:] = concat_i_j
+
+        elif mode == 'max':
+            stacked = torch.stack([i_repr,j_repr])
+            combined_arr[i,:] = torch.max(torch.abs(stacked), dim=0)[0] # max returns a tuple (max, argmax)
+        else:
+            raise NotImplementedError 
+    
     return combined_arr 
-
-def combine_activations_sampled(sentarray, sent, mode='avg', round_to=-1):
-    sent_split = sent.split()
-    res_sent_length = len(sent_split)
-    if mode in ['avg', 'max','left', 'right']:
-        combined_arr = np.empty((sentarray.shape[0], res_sent_length, sentarray.shape[2]), dtype='float16')
-    if mode=='concat':
-        combined_arr = np.empty((sentarray.shape[0], res_sent_length, sentarray.shape[2]*2), dtype='float16')
-
-    k = 0
-    for tok in sent_split:
-        [_, i, j] = tok.split('_')
-        i_repr = sentarray[:,int(i)]
-        j_repr = sentarray[:,int(j)]
-        if mode=='avg':
-            avg_i_j = np.mean([i_repr, j_repr], axis=0)
-            if round_to > -1:
-                avg_i_j = np.round(avg_i_j, decimals=round_to)
-            
-            combined_arr[:,k] = avg_i_j
-        elif mode=='concat': 
-            concat_i_j = np.concatenate([i_repr, j_repr], axis=1)
-            if round_to > -1:
-                concat_i_j = np.round(concat_i_j, decimals=round_to)
-            combined_arr[:, k] = concat_i_j
-        elif mode=='left':
-            combined_arr[:,k] = i_repr
-        elif mode=='right':
-            combined_arr[:,k] = j_repr        
-        else: # signed abs max
-            stacked = np.stack([i_repr,j_repr])
-            combined_arr[:,k] = np.apply_along_axis(signedabsmax, 0, stacked)
-        k = k + 1
-    return combined_arr
-
 
 def extract_from_pickle(infilename, outfilename, reltoksfilename, mode='avg', round_to=-1):
     # load pickle
     with open(infilename, 'rb') as f:
         sent_activations = pickle.load(f)
-    print(sent_activations[0])
-    exit()
 
-    f_in = h5py.File(infilename, 'r')
-    f_out = h5py.File(outfilename, 'w')
-    rel_toks_f = open(reltoksfilename, 'r')
-    rel_toks_sents = rel_toks_f.readlines()
-    rel_toks_f.close()
-    sents_to_ix = dict()
+    with open(reltoksfilename, 'r') as f:
+        rel_toks_sents = f.readlines()
+    
+    rel_toks_sents = [x.strip().split() for x in rel_toks_sents]
 
-    for k, (ix, dataset) in enumerate(f_in.items()):
-        if ix == 'sentence_to_index':
-            continue
-        else:
-            # sentence, create new numpy ndarray with averaged reprs
-            avg_data = combine_activations_np(dataset, mode=mode, round_to=round_to)
-            f_out.create_dataset(ix, data=avg_data)
-            sents_to_ix[rel_toks_sents[k].strip()] = str(k)
-            print(k, end="\r", flush=True)
-            k = k + 1
+    output_dict = {}
+    for (layer, activations) in tqdm(sent_activations.items()):
+        output_dict[layer] = []
+        for i, sent_act in enumerate(tqdm(activations, leave=False)): 
+            output_act = combine_activations_np(sent_act, mode=mode, round_to=round_to)
+            output_dict[layer].append(output_act)
+            assert len(rel_toks_sents[i]) == output_act.shape[0], f"Length of sentence {len(rel_toks_sents[i])} ({i}) does not match length of activations {output_act.shape[0]}"
 
+    # save pickle
+    with open(outfilename, 'wb') as f:
+        pickle.dump(output_dict, f)
 
-    sentence_index_dataset = f_out.create_dataset("sentence_to_index", (1,), dtype=h5py.special_dtype(vlen=str))
-    sentence_index_dataset[0] = json.dumps(sents_to_ix)
-    f_in.close()
-    f_out.close()
+def concatenate_layers(infilename, outfilename):
+    """
+    Concatenates the activations from layers 3, 6 and 8
+    """
+    # read pickle file
+    with open(infilename, 'rb') as f:
+        sent_activations = pickle.load(f)
 
-def extract_from_hdf5_sampled(infilename, outfilename, reltoksfilename, mode='avg', round_to=-1):
-    f_in = h5py.File(infilename, 'r')
-    f_out = h5py.File(outfilename, 'w')
-    rel_toks_f = open(reltoksfilename, 'r')
-    rel_toks_sents = [line.strip() for line in rel_toks_f]
-    rel_toks_f.close()
-    sents_to_ix = dict()
-
-    for sent in rel_toks_sents:
-        k = sent.split('_')[0]
-        # sentence, create new numpy ndarray with averaged reprs
-        # try:
-        out_data = combine_activations_sampled(f_in[str(k)], sent, mode=mode, round_to=round_to)
-        # except:
-        #    print('sth went wrong, try again')
-        #    out_data = combine_activations_sampled(f_in[k], sent, mode=mode, round_to=round_to)
-        f_out.create_dataset(str(k), data=out_data)
-        sents_to_ix[sent.strip()] = str(k)
-        print(k, end="\r", flush=True)
-        
-    sentence_index_dataset = f_out.create_dataset("sentence_to_index", (1,), dtype=h5py.special_dtype(vlen=str))
-    sentence_index_dataset[0] = json.dumps(sents_to_ix)
-    f_in.close()
-    f_out.close()    
-
-
-
+    output = {}
+    output[0] = []
+    for l3, l6, l8 in zip(sent_activations[3], sent_activations[6], sent_activations[8]):
+        output[0].append(torch.cat([l3, l6, l8], dim=1))
+    
+    # save pickle file
+    with open(outfilename, 'wb') as f:
+        pickle.dump(output, f)
 
 if __name__=='__main__':
     """
@@ -198,30 +87,26 @@ if __name__=='__main__':
     -m <avg or concat or max or left or right> optional: specify if the activations should be averaged or concatenated or if the max should be taken (using absolute values). Default is average. Only works for hdf5, not json
     -round <int> optional: round activation values to so many decimals (default: do not round at all). Only works for hdf5, not json
     -sampled: use this option if representations should only be combined for a sampled portion of the data. Only works for hdf5, not json
+    -concatenate_layers: use this option if you want to concatenate the layers 3 6 and 9. Made for activations_combined_concat.pickle
 
     usage: 
-    python3 average_activations.py -i <infile> -o <outfile> -format <json or hdf5> -rel_toks <rel_toks.txt file> -sampled
-
+    ...
+    
     
     """
     parser = argparse.ArgumentParser()
-    parser.add_argument('-input_file')
-    parser.add_argument('-output_file')
-    parser.add_argument('-format', default='pickle')
-    parser.add_argument('-rel_toks', required=True)
-    parser.add_argument('-mode', default='avg', choices=['avg', 'concat', 'max', 'left', 'right'],
+    parser.add_argument('--input_file')
+    parser.add_argument('--output_file')
+    parser.add_argument('--format', default='pickle')
+    parser.add_argument('--rel_toks', required=True)
+    parser.add_argument('--mode', default='avg', choices=['avg', 'concat', 'max', 'left', 'right'],
                         help='avg: average, concat: concatenate, max: take max, left: only use left token, right: only use right token')
-    parser.add_argument('-round_to', default=-1, type=int)
-    parser.add_argument('-sampled', action='store_true')
+    parser.add_argument('--round_to', default=-1, type=int)
+    parser.add_argument('--concatenate_layers', action=argparse.BooleanOptionalAction,
+                        help='Use this function if you want to concatenate the layers 3 6 and 9')
     parsedargs = parser.parse_args()
-
-    extract_from_pickle(parsedargs.input_file, parsedargs.output_file, parsedargs.rel_toks, mode=parsedargs.mode, round_to=parsedargs.round_to)
-
-    # if parsedargs.format == 'json':
-    #     extract_from_json(parsedargs.input_file, parsedargs.output_file)
-    # else:
-    #     if parsedargs.sampled:
-    #         extract_from_hdf5_sampled(parsedargs.input_file, parsedargs.output_file, parsedargs.rel_toks, mode=parsedargs.mode, round_to=parsedargs.round_to)
-    #     else:
-    #         extract_from_hdf5(parsedargs.input_file, parsedargs.output_file, parsedargs.rel_toks, mode=parsedargs.mode, round_to=parsedargs.round_to)
-
+    
+    if parsedargs.concatenate_layers:
+        concatenate_layers(parsedargs.input_file, parsedargs.output_file)
+    else:
+        extract_from_pickle(parsedargs.input_file, parsedargs.output_file, parsedargs.rel_toks, mode=parsedargs.mode, round_to=parsedargs.round_to)

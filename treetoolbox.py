@@ -191,7 +191,11 @@ def lowest_phrase_above_leaf_i(i, tree, return_target_ga=False):
     ga_of_target = tree.treeposition_spanning_leaves(i,i+1)[:-2]
     node = find_node(tree, ga_of_target)
     label = node.label()
+    # print(label)
     label = re.sub('[^A-Za-z]+', '', label)
+    if label == 'PP':
+        # print subtree of this label
+        print(node)
 
     if not (label.endswith('P') or label in ['S', 'ATSBAR', 'ATSQ', 'ATINTJ', 'ATS', 'SQ', 'SBAR', 'SBARQ', 'SINV', 
                                              'FRAG', 'NAC', 'NX', 'INTJ', 'LST' , 'X', 'RRC', 'ATSINV', 'ATFRAG']):

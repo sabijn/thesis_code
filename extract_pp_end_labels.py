@@ -12,62 +12,30 @@ from pathlib import Path
 
 punct_regex = re.compile(r"[^\w][^\w]?")
 
-def findBIESTag(i: int, tree : nltk.Tree, i_tok: str, with_phrase_label=False) -> str:
-    """
-    Find BIES tag for token i in tree. If multiple tags, than the one
-    with the lowest phrase label is chosen.
-    Input:
-        i: index of token
-        tree: nltk.Tree
-        i_tok: token at index i
-    Output:
-        tag: BIES tag for token i
-    """
-    # Check if token is punctuation
-    if punct_regex.match(i_tok):
-        return 'PCT'
-    
-    phrase_label, phrase_node, ga_of_phrase_node = lowest_phrase_above_leaf_i(i, tree, return_target_ga=True)
-    # print(phrase_label)
-    # print(phrase_node)
+def find_node(tree, address):
+    """return subtree at address"""
 
-    ga_of_leaf = tree.treeposition_spanning_leaves(i,i+1)
-    ga_phrase_to_leaf = ga_of_leaf[len(ga_of_phrase_node):]
+    subtree = tree
+    for i in address:
+        subtree = subtree[i]
+    return subtree
 
-    is_beginning = ga_phrase_to_leaf[0] == 0 and (len(set(ga_phrase_to_leaf))==1)
-    is_end = True
-    node = phrase_node
+def find_pp(i, tree, sent, labels: dict):
+    ga_of_target = tree.treeposition_spanning_leaves(i,i+1)[:-2]
+    node = find_node(tree, ga_of_target)
+    label = node.label()
 
-    for k in ga_phrase_to_leaf:
-        if len(node) - 1 > k:
-            is_end=False
-            break
-        else:
-            # print(node[k])
-            node = node[k]
+    label = re.sub('[^A-Za-z]+', '', label)
+    if label == 'PP':
+        try:
+            ending_index = sent.index(node.leaves()[-1])
+            labels[ending_index] = 1
+        except:
+            return labels
 
-    # Assign shortest BIES tag   
-    if is_beginning and is_end:
-        # Single-token phrase
-        tag = 'S'
-    elif is_beginning:
-        # Beginning of phrase
-        tag = 'B'
-    elif is_end:
-        # End of phrase
-        tag = 'E'
-    else:
-        # Inside phrase
-        tag = 'I'
+    return labels
 
-    if with_phrase_label:
-        if phrase_label.startswith('NP') and len(phrase_label.split('-')) > 1:
-            tag+='-'+'-'.join(phrase_label.split('-')[:2])
-        else:
-            tag+='-'+phrase_label.split('-')[0]
-    return tag
-
-def biesLabels(tree, tokenizer, with_phrase_labels=False, skip_unkown_tokens=False):
+def biesLabels(tree, tokenizer, with_phrase_labels=False, skip_unkown_tokens=True):
     """
     Loop through through leaves in tree and assign BIES labels to each token
     Input:
@@ -78,22 +46,22 @@ def biesLabels(tree, tokenizer, with_phrase_labels=False, skip_unkown_tokens=Fal
     """
     sent = tree.leaves()
     text_toks = []
-    bies_labels = []
-
+    
     for i in range(len(sent)):
         i_tok = sent[i]
-
         # find phrase above token i
         if skip_unkown_tokens:
             if i_tok not in tokenizer.vocab:
                 continue
-        print('-------------', i_tok, '-------------')
-        label = findBIESTag(i, tree, i_tok, with_phrase_label=with_phrase_labels)
-
         text_toks.append(i_tok)
-        bies_labels.append(label)
 
-    return text_toks, bies_labels
+    pp_labels = np.zeros(len(text_toks))
+    for i in range(len(text_toks)):
+        i_tok = text_toks[i]
+        
+        pp_labels = find_pp(i, tree, text_toks, pp_labels)
+
+    return text_toks, pp_labels
 
 if __name__=='__main__':
     """
@@ -119,7 +87,7 @@ if __name__=='__main__':
     ###############
 
     """
-    Call with: python extract_bies_labels.py -data pcfg-lm/src/lm_training/corpora/eval_trees_10k.txt -text_toks data/train_text_bies.txt -bies_labels data/train_pp_labels.txt -max_sent_length 31
+    Call with: python extract_pp_end_labels.py -data pcfg-lm/src/lm_training/corpora/eval_trees_10k.txt -text_toks data/train_text_bies.txt -bies_labels data/train_pp_labels.txt -max_sent_length 31
     """
 
     parser = argparse.ArgumentParser()
@@ -182,9 +150,10 @@ if __name__=='__main__':
 
         with_phrase_labels = parsedargs.with_phrase_labels
         preproc_sent, bies_labels = biesLabels(tree, tokenizer, with_phrase_labels=with_phrase_labels, skip_unkown_tokens=True)
-        tree.pretty_print()
-        exit()
-        assert len(preproc_sent) == len(bies_labels)
+        # tree.pretty_print()
+        # print(bies_labels)
+
+        assert len(preproc_sent) == bies_labels.shape[0], f'Number of tokens ({len(preproc_sent)}) and number of labels ({bies_labels.shape[0]}) do not match.'
 
         # Do not store the same sentence twice!
         if str(preproc_sent) in output_sents:
@@ -192,21 +161,16 @@ if __name__=='__main__':
             continue
         output_sents.add(str(preproc_sent))
 
-        for l in bies_labels:
-            if l not in label_counts:
-                label_counts[l] = 0
-            label_counts[l] = label_counts[l] + 1
-
-        bies_labels_file.write(' '.join(bies_labels) + '\n')
+        bies_labels_file.write(np.array2string(bies_labels) + '\n')
         text_toks_file.write(' '.join(preproc_sent) + '\n')
 
     text_toks_file.close()
     bies_labels_file.close()
 
-    print('Finished. ignored sentences: ', ignored_sents)
-    print('Label distribution: ')
-    label_counts = dict(sorted(label_counts.items(), key=lambda item: item[1], reverse=True))
-    total = sum(label_counts.values())
-    print(label_counts)
-    for l,c in label_counts.items():
-        print(l,'\t', c, '\t', str(float(c/total)))
+    # print('Finished. ignored sentences: ', ignored_sents)
+    # print('Label distribution: ')
+    # label_counts = dict(sorted(label_counts.items(), key=lambda item: item[1], reverse=True))
+    # total = sum(label_counts.values())
+    # print(label_counts)
+    # for l,c in label_counts.items():
+    #     print(l,'\t', c, '\t', str(float(c/total)))

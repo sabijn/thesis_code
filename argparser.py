@@ -1,4 +1,5 @@
 from argparse import ArgumentParser
+import argparse
 from collections import defaultdict
 from typing import *
 from pathlib import Path
@@ -55,27 +56,20 @@ def _create_arg_parser() -> ArgumentParser:
                         help='Directory where the activations are stored.')
     parser.add_argument('--activations.dtype', default='float32', choices=["float16", "float32"], 
                         help="Data type of the activations")
+    parser.add_argument('--activations.mode', default='', choices=['', 'avg', 'max', 'concat'],
+                        help="How the activations are combined. Use in combination with LCA experiments.") 
 
     # EXPERIMENTS
-    parser.add_argument("--experiments.type", default='chunking', choices=['chunking', 'lca', 'all'])
+    parser.add_argument("--experiments.type", default='chunking', choices=['chunking', 'lca', 'lca_tree', 'shared_levels', 'unary'])
     parser.add_argument("--experiments.checkpoint_path", default='models/')
+    parser.add_argument("--experiments.control_task", action=argparse.BooleanOptionalAction)
 
     # TRAINER
-    # parser.add_argument("--trainer.output_dir", required=True)
-    # parser.add_argument("--trainer.per_device_train_batch_size", type=int, default=64)
-    # parser.add_argument("--trainer.per_device_eval_batch_size", type=int, default=64)
-    # parser.add_argument("--trainer.evaluation_strategy", default="steps")
-    # parser.add_argument("--trainer.eval_steps", type=int, default=100)
-    # parser.add_argument("--trainer.logging_steps", type=int, default=100)
-    # parser.add_argument("--trainer.save_steps", type=int, default=1000)
-    # parser.add_argument("--trainer.gradient_accumulation_steps", type=int, default=8)
-    # parser.add_argument("--trainer.max_grad_norm", type=int, default=0.5)
-    # parser.add_argument("--trainer.num_train_epochs", type=int, default=1)
-    # parser.add_argument("--trainer.weight_decay", type=float, default=0.1)
-    # parser.add_argument("--trainer.lr_scheduler_type", default="cosine")
-    # parser.add_argument("--trainer.learning_rate", type=float, default=5e-4)
-    # parser.add_argument("--trainer.push_to_hub", action="store_true")
-    # parser.add_argument("--trainer.report_to", default="none")
+    parser.add_argument("--trainer.batch_size", type=int, default=128)
+    parser.add_argument("--trainer.num_workers", type=int, default=8)
+    parser.add_argument("--trainer.epochs", type=int, default=10)
+    parser.add_argument("--trainer.lr", type=float, default=1e-3)
+    parser.add_argument("--trainer.device", type=str, default=None)
 
     return parser
 

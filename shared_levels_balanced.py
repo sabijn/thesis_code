@@ -98,8 +98,8 @@ def phrasePropertiesForAdjacentTokenPairsInPTB(k, tree, tokenizer, skip_unkown_t
             last_s = s
 
     # If ROOT is the only shared level, replace int with ROOT
-    for r in shared_only_root:
-        shared_levels_rel[r] = "ROOT"
+    # for r in shared_only_root:
+    #     shared_levels_rel[r] = "ROOT"
 
     return rel_toks, lca_labels, shared_levels_rel, unary_labels
 
@@ -127,35 +127,19 @@ if __name__=='__main__':
     -unary is used together with next. It indicates the output file with labels of unary leaf chains above a token.
     """
 
-    ###############
-    # PREP
-    ###############
-    # model=$1
-    # traincutoff=$2
-    # testcutoff=$3
-    # layersel="second"
-    # datadir="data/"
-    # modeldir=$datadir"/"$model"/"
-    # mkdir $datadir
-    # mkdir $modeldir
-
     """
     Call with: python extract_lca_labels.py -data pcfg-lm/src/lm_training/corpora/eval_trees_10k.txt -text_toks data/train_text.txt -rel_toks data/train_rel_toks.txt -rel_labels data/train_rel_labels.txt -next -shared_levels data/train_shared_levels.txt -unary data/train_unaries.txt -max_sent_length 31
     """
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('-data')
-    parser.add_argument('-text_toks') 
+    parser.add_argument('-data', default='pcfg-lm/src/lm_training/corpora/eval_trees_10k.txt')
     parser.add_argument('-rel_toks')
     parser.add_argument('-rel_labels') 
-    parser.add_argument('-max_span_const')
     parser.add_argument('-cutoff')
     parser.add_argument('-max_sent_length')
-    parser.add_argument('-np_embed', action='store_true', default=False)
-    parser.add_argument('-next', action='store_true', default=False) # run in experiments
-    parser.add_argument('-shared_levels', default=None) # run in experiments
+    parser.add_argument('-next', action='store_true', default=True) # run in experiments
+    parser.add_argument('-shared_levels', default='data/train_shared_balanced.txt') # run in experiments
     parser.add_argument('-unary', default=None) # run in experiments
-    parser.add_argument('-tree_out', default=None, help="optional file where all trees are printed that are processed (and not skipped)")
     parsedargs = parser.parse_args()
 
     ignored_sents = [] # added if not length: 3 < length < 31
@@ -190,25 +174,9 @@ if __name__=='__main__':
         tree_corpus = [nltk.Tree.fromstring(l.strip()) for l in f]
 
     # Open output files
-    text_toks_file = open(parsedargs.text_toks, 'w')
-    rel_toks_file = open(parsedargs.rel_toks, 'w')
-    rel_labels_file = open(parsedargs.rel_labels, 'w')
+    shared_levels_file = open(parsedargs.shared_levels, 'w')
 
-    if parsedargs.max_span_const is not None:
-        max_span_file = open(parsedargs.max_span_const, 'w')
-    if parsedargs.shared_levels is not None:
-        shared_levels_file = open(parsedargs.shared_levels, 'w')
-    if parsedargs.unary is not None:
-        unary_file = open(parsedargs.unary, 'w')
-    if parsedargs.tree_out is not None:
-        tree_out_file = open(parsedargs.tree_out, 'w') 
     binary = False
-
-    specialCond = 'NP_embed' if parsedargs.np_embed else False 
-    if specialCond:
-        emb_depth=int(parsedargs.np_embed)
-    else:
-        emb_depth=None
     
     ###############
     # Conversion 
@@ -231,31 +199,7 @@ if __name__=='__main__':
             rel_toks, lca_labels, shared_levels_rel, unary_labels = phrasePropertiesForAdjacentTokenPairsInPTB(k - len(ignored_sents), tree, tokenizer)
             assert len(rel_toks) == len(lca_labels) == len(shared_levels_rel) == len(unary_labels)
 
-        rel_toks_file.write(' '.join(rel_toks) + '\n')
-        rel_labels_file.write(' '.join(lca_labels) + '\n')
-        text_toks_file.write(' '.join(tree.leaves()) + '\n')
+        shared_levels_file.write(' '.join(shared_levels_rel) + '\n')
 
-        if parsedargs.shared_levels is not None:
-            shared_levels_file.write(' '.join(shared_levels_rel) + '\n')
-        if parsedargs.unary is not None:
-            unary_file.write(' '.join(unary_labels) + '\n')
-        if parsedargs.max_span_const is not None:
-            max_span_file.write(' '.join(max_span_labels) + '\n')
-        if parsedargs.tree_out is not None:
-            if len(tree_notr) == 1 and tree_notr.label() == 'VROOT':
-                tree_notr = tree_notr[0]
-            tree_out_file.write(str(tree_notr).replace('\n','').replace('  ', ' ').replace('  ', ' ').replace('  ', ' ').replace('  ', ' ').replace('  ', ' ')+'\n')
-
-    text_toks_file.close()
-    rel_toks_file.close()
-    rel_labels_file.close()
-    if parsedargs.max_span_const is not None:
-        max_span_file.close()
-    if parsedargs.shared_levels is not None:
-        shared_levels_file.close()
-    if parsedargs.unary is not None:
-        unary_file.close()
-    if parsedargs.tree_out is not None:
-        tree_out_file.close()
-
+    shared_levels_file.close()
     print('finished. ignored sentences: ', ignored_sents)

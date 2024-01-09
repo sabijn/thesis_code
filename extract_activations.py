@@ -1,6 +1,7 @@
 """
 Representations Extractor for ``transformers`` toolkit models.
 Based on: https://github.com/davidarps/NeuroX/blob/4124a6996c1af948df3f470ca201ba7830e1c3d0/neurox/data/extraction/transformers_extractor.py 
+DEPRECATED: Use create_activations.py instead
 """
 
 import argparse

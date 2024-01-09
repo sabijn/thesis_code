@@ -38,3 +38,22 @@ For non-terminal nodes, converting to a label:
 lowest_common_ancestor = tree.treeposition_spanning_leaves(i,j+1)
 tree[lowest_common_ancestor].label()
 ```
+
+## Explanation per directory
+
+### data
+- activations_notconcat.pickle: sentence activations in the form of a dictionary with as key a layer and as value a list containing sentence representations per word. These sentence representations are torch tensors of the shape (amount of words in sentence, embedding dim)
+- activations.pickle: sentence activations in the form of a dictionary with as key a layer and as value a torch tensor with stacked sentence representations. Only use if you need sentence representations instead of individual word representations
+- activations_combined_avg.pickle: activations for LCA prediction. Word pair activations are averaged.
+- activations_combined_concat.pickle: activations for LCA prediction. Word pair activations are concatenated with dim=1
+- activations_combined_max.pickle: activations for LCA prediction. Word pair activations are based on the max representation of the word pair.
+- activations_notconcat.pickle: activations per word pair concatenated over layers 3, 6 and 8. The structure is a dictionary with one key (0) with as value a list with representations per sentence (tensor with the shape of the amount of word pairs). Dictionary structure to keep the code in main.py modular.
+- train_bies_labels.txt : labels for chunking task
+- train_rel_labels.txt : tuple tree representation of LCA's
+- train_rel_toks.txt : label of LCA's
+- train_shared_levels.txt : relative depth of LCA's
+- train_text_bies.txt : train sentences
+- train_text.txt : train sentences. Equal to train_text_bies
+- train_unaries.txt : labels of single consistuent phrases. 
+- combined_predictions.txt : contains per word a tuple containing LCA_SHARED_UNARY
+- sentences_postags.pickle : list of lists containing tuples (word, postag)
