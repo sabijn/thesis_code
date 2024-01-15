@@ -6,9 +6,11 @@ import re
 import numpy as np
 import nltk
 from tqdm import tqdm
-from main import load_model
+from utils import load_model
 import torch
 from pathlib import Path
+
+
 
 punct_regex = re.compile(r"[^\w][^\w]?")
 
@@ -24,12 +26,10 @@ def findBIESTag(i: int, tree : nltk.Tree, i_tok: str, with_phrase_label=False) -
         tag: BIES tag for token i
     """
     # Check if token is punctuation
-    if punct_regex.match(i_tok):
+    if punct_regex.match(i_tok) and '<apostrophe>' not in i_tok:
         return 'PCT'
     
     phrase_label, phrase_node, ga_of_phrase_node = lowest_phrase_above_leaf_i(i, tree, return_target_ga=True)
-    # print(phrase_label)
-    # print(phrase_node)
 
     ga_of_leaf = tree.treeposition_spanning_leaves(i,i+1)
     ga_phrase_to_leaf = ga_of_leaf[len(ga_of_phrase_node):]
@@ -43,7 +43,6 @@ def findBIESTag(i: int, tree : nltk.Tree, i_tok: str, with_phrase_label=False) -
             is_end=False
             break
         else:
-            # print(node[k])
             node = node[k]
 
     # Assign shortest BIES tag   
@@ -87,7 +86,6 @@ def biesLabels(tree, tokenizer, with_phrase_labels=False, skip_unkown_tokens=Fal
         if skip_unkown_tokens:
             if i_tok not in tokenizer.vocab:
                 continue
-        print('-------------', i_tok, '-------------')
         label = findBIESTag(i, tree, i_tok, with_phrase_label=with_phrase_labels)
 
         text_toks.append(i_tok)
@@ -119,7 +117,7 @@ if __name__=='__main__':
     ###############
 
     """
-    Call with: python extract_bies_labels.py -data pcfg-lm/src/lm_training/corpora/eval_trees_10k.txt -text_toks data/train_text_bies.txt -bies_labels data/train_pp_labels.txt -max_sent_length 31
+    Call with: python extract_bies_labels.py -data /Users/sperdijk/Documents/Master/"Jaar 3"/Thesis/thesis_code/pcfg-lm/src/lm_training/corpora/eval_trees_10k.txt -text_toks /Users/sperdijk/Documents/Master/"Jaar 3"/Thesis/thesis_code/data/train_text_bies.txt -bies_labels /Users/sperdijk/Documents/Master/"Jaar 3"/Thesis/thesis_code/data/train_bies_labels.txt -max_sent_length 31
     """
 
     parser = argparse.ArgumentParser()
@@ -147,7 +145,8 @@ if __name__=='__main__':
         device = torch.device("cpu")
         print('Running on CPU.')
     
-    model_path = Path('pcfg-lm/resources/checkpoints/deberta/')
+    model_path = Path('/Users/sperdijk/Documents/Master/Jaar 3/Thesis/thesis_code/pcfg-lm/resources/checkpoints/deberta/')
+
     model, tokenizer = load_model(model_path, device)
 
     # Probably used during development with a lower cutoff
@@ -182,8 +181,7 @@ if __name__=='__main__':
 
         with_phrase_labels = parsedargs.with_phrase_labels
         preproc_sent, bies_labels = biesLabels(tree, tokenizer, with_phrase_labels=with_phrase_labels, skip_unkown_tokens=True)
-        tree.pretty_print()
-        exit()
+
         assert len(preproc_sent) == len(bies_labels)
 
         # Do not store the same sentence twice!

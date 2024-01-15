@@ -245,10 +245,10 @@ if __name__ == "__main__":
             # For running on snellius
             device = torch.device("cuda")
             print('Running on GPU.')
-        elif torch.backends.mps.is_available():
-            # For running on M1
-            device = torch.device("mps")
-            print('Running on M1 GPU.')
+        # elif torch.backends.mps.is_available():
+        #     # For running on M1
+        #     device = torch.device("mps")
+        #     print('Running on M1 GPU.')
         else:
             # For running on laptop
             device = torch.device("cpu")
@@ -265,7 +265,7 @@ if __name__ == "__main__":
     match config_dict['experiments']['type']:
         case 'chunking':
             print('Loading chuncking labels')
-            label_path = 'data/train_pp_labels.txt'
+            label_path = 'data/train_bies_labels.txt'
             labels, label_vocab = create_labels(label_path, device, skip_unk_tokens=True)
  
             if config_dict['experiments']['control_task']:
@@ -273,8 +273,8 @@ if __name__ == "__main__":
                 results_file = open('results_chuncking_control.txt', 'w')
                 base_name = 'chuncking/best_chuncking_control_layer'
             else:
-                results_file = open('results_pp_per_class.txt', 'w')
-                base_name = 'chuncking/best_pp_per_class_chuncking_layer'
+                results_file = open('results_bies_per_class.txt', 'w')
+                base_name = 'chuncking/best_bies_per_class_chuncking_layer'
             
             # check if activations are already generated, if not, generate them
             print('Loading activations for chuncking...')
