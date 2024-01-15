@@ -2,7 +2,7 @@ from pathlib import Path
 from collections import Counter
 import matplotlib.pyplot as plt
 
-home_path = Path("/Users/sperdijk/Documents/Master/Jaar 3/Thesis/thesis_code")
+home_path = Path("/Users/sperdijk/Documents/Master/Jaar_3/Thesis/thesis_code")
 
 # read in train_shared_levels.txt
 shared_levels = []

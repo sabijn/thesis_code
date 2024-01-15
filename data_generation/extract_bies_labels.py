@@ -117,7 +117,7 @@ if __name__=='__main__':
     ###############
 
     """
-    Call with: python extract_bies_labels.py -data /Users/sperdijk/Documents/Master/"Jaar 3"/Thesis/thesis_code/pcfg-lm/src/lm_training/corpora/eval_trees_10k.txt -text_toks /Users/sperdijk/Documents/Master/"Jaar 3"/Thesis/thesis_code/data/train_text_bies.txt -bies_labels /Users/sperdijk/Documents/Master/"Jaar 3"/Thesis/thesis_code/data/train_bies_labels.txt -max_sent_length 31
+    Call with: python extract_bies_labels.py -data /Users/sperdijk/Documents/Master/"Jaar_3"/Thesis/thesis_code/pcfg-lm/src/lm_training/corpora/eval_trees_10k.txt -text_toks /Users/sperdijk/Documents/Master/"Jaar_3"/Thesis/thesis_code/data/train_text_bies.txt -bies_labels /Users/sperdijk/Documents/Master/"Jaar_3"/Thesis/thesis_code/data/train_bies_labels.txt -max_sent_length 31
     """
 
     parser = argparse.ArgumentParser()
@@ -145,7 +145,7 @@ if __name__=='__main__':
         device = torch.device("cpu")
         print('Running on CPU.')
     
-    model_path = Path('/Users/sperdijk/Documents/Master/Jaar 3/Thesis/thesis_code/pcfg-lm/resources/checkpoints/deberta/')
+    model_path = Path('/Users/sperdijk/Documents/Master/Jaar_3/Thesis/thesis_code/pcfg-lm/resources/checkpoints/deberta/')
 
     model, tokenizer = load_model(model_path, device)
 

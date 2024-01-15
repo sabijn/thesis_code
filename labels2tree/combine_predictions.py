@@ -20,7 +20,7 @@ def get_postag_trees(tree):
     return postags
 
 if __name__ == '__main__':
-    home_path = Path("/Users/sperdijk/Documents/Master/Jaar 3/Thesis/thesis_code")
+    home_path = Path("/Users/sperdijk/Documents/Master/Jaar_3/Thesis/thesis_code")
     labels = []
 
     with open(home_path / Path('data/train_rel_labels.txt')) as f:

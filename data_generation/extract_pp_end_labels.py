@@ -1,4 +1,4 @@
-from treetoolbox import lowest_phrase_above_leaf_i
+from data_generation.treetoolbox import lowest_phrase_above_leaf_i
 # during test: from data_prep.treetoolbox
 import sys
 import argparse

@@ -39,6 +39,21 @@ lowest_common_ancestor = tree.treeposition_spanning_leaves(i,j+1)
 tree[lowest_common_ancestor].label()
 ```
 
+## Conda
+Listing environment variables per environment
+```shell
+conda env config vars list -n myenv
+```
+Setting environment variables
+```shell
+conda env config vars set MY_VAR=something OTHER_THING=ohhhhya
+```
+
+Deleting environment variables 
+```shell
+conda env config vars unset MY_VAR
+```
+
 ## Explanation per directory
 
 ### data

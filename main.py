@@ -229,7 +229,7 @@ if __name__ == "__main__":
     config_dict = create_config_dict()
     pprint(config_dict)
 
-    home_dir = Path("/Users/sperdijk/Documents/Master/Jaar 3/Thesis/thesis_code/")
+    home_dir = Path("/Users/sperdijk/Documents/Master/Jaar_3/Thesis/thesis_code/")
     if home_dir.exists():
         print("Home directory exists!")
     else:
