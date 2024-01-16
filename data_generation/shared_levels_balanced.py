@@ -1,4 +1,4 @@
-from data_generation.treetoolbox import find_node, load_ptb, np_regex, vp_regex, tr_leaf_regex, find_end_indices, find_xps_above_i, address_is_xp, find_label, find_tracing_alignment, find_trace_ix, preprocess, lowest_phrase_above_leaf_i
+from treetoolbox import find_node, load_ptb, np_regex, vp_regex, tr_leaf_regex, find_end_indices, find_xps_above_i, address_is_xp, find_label, find_tracing_alignment, find_trace_ix, preprocess, lowest_phrase_above_leaf_i
 # during test: from data_prep.treetoolbox
 import sys
 import argparse
@@ -7,9 +7,10 @@ import random
 import numpy as np
 import nltk
 from tqdm import tqdm
-from main import load_model
+from utils import load_model
 from pathlib import Path
 import torch
+import os
 
 punct_regex = re.compile(r"[^\w][^\w]?")
 
@@ -68,40 +69,33 @@ def phrasePropertiesForAdjacentTokenPairsInPTB(k, tree, tokenizer, skip_unkown_t
         shared = len(lowest_common_ancestor) + 1
         shared_levels.append(shared)
 
-        # Get label of LCA (otherwise tuple representation)
-        label = tree[lowest_common_ancestor].label()
-
-        # check for unary leaves
-        i_tok_address = tree.leaf_treeposition(i)
-        unary_label = 'XX'
-        above_pos = tree[i_tok_address[:-2]]
-        if (len(above_pos) == 1):
-            unary_label = above_pos.label()
-        
-        unary_label = re.sub('[^A-Za-z]+', '', unary_label)
-        label = re.sub('[^A-Za-z]+', '', label)
-
-        lca_labels.append(label)
-        rel_toks.append('_'.join([str(k), str(i), str(j)]))
-        unary_labels.append(unary_label)
-        max_span_labels.append('0')
-
     # Calculate relative shared levels
     shared_levels_rel = []
     for l, s in enumerate(shared_levels):
         if l == 0:
             # If first token, append shared level of token 0 & 1
+            if s < -4:
+                s = -4
+
+            elif s > 4:
+                s = 4
+                
             shared_levels_rel.append(str(s)) 
             last_s = s
         else:
-            shared_levels_rel.append(str(s - last_s))
+            rel = s - last_s
+            if rel < -4:
+                rel = -4
+            elif rel > 4:
+                rel = 4
+
+            shared_levels_rel.append(str(rel))
             last_s = s
 
-    # If ROOT is the only shared level, replace int with ROOT
-    # for r in shared_only_root:
-    #     shared_levels_rel[r] = "ROOT"
+    return shared_levels_rel
 
-    return rel_toks, lca_labels, shared_levels_rel, unary_labels
+def sample_data():
+    pass
 
 if __name__=='__main__':
     """
@@ -132,13 +126,13 @@ if __name__=='__main__':
     """
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('-data', default='pcfg-lm/src/lm_training/corpora/eval_trees_10k.txt')
+    parser.add_argument('-data', default=Path('pcfg-lm/src/lm_training/corpora/eval_trees_10k.txt'))
     parser.add_argument('-rel_toks')
     parser.add_argument('-rel_labels') 
     parser.add_argument('-cutoff')
     parser.add_argument('-max_sent_length')
     parser.add_argument('-next', action='store_true', default=True) # run in experiments
-    parser.add_argument('-shared_levels', default='data/train_shared_balanced.txt') # run in experiments
+    parser.add_argument('-shared_levels', default=Path('data/train_shared_balanced.txt')) # run in experiments
     parser.add_argument('-unary', default=None) # run in experiments
     parsedargs = parser.parse_args()
 
@@ -158,7 +152,8 @@ if __name__=='__main__':
         device = torch.device("cpu")
         print('Running on CPU.')
 
-    model_path = Path('pcfg-lm/resources/checkpoints/deberta/')
+    home_path = Path(os.environ['CURRENT_WDIR'])
+    model_path = home_path / Path('pcfg-lm/resources/checkpoints/deberta/')
     _, tokenizer = load_model(model_path, device)
 
     # Set thresholds
@@ -170,11 +165,11 @@ if __name__=='__main__':
         max_sent_length = int(parsedargs.max_sent_length)
 
     # Reading in input trees
-    with open(parsedargs.data) as f:
+    with open(home_path / parsedargs.data) as f:
         tree_corpus = [nltk.Tree.fromstring(l.strip()) for l in f]
 
     # Open output files
-    shared_levels_file = open(parsedargs.shared_levels, 'w')
+    shared_levels_file = open(home_path / parsedargs.shared_levels, 'w')
 
     binary = False
     
@@ -196,8 +191,7 @@ if __name__=='__main__':
                 ignored_sents.append(k)
                 continue
 
-            rel_toks, lca_labels, shared_levels_rel, unary_labels = phrasePropertiesForAdjacentTokenPairsInPTB(k - len(ignored_sents), tree, tokenizer)
-            assert len(rel_toks) == len(lca_labels) == len(shared_levels_rel) == len(unary_labels)
+            shared_levels_rel = phrasePropertiesForAdjacentTokenPairsInPTB(k - len(ignored_sents), tree, tokenizer)
 
         shared_levels_file.write(' '.join(shared_levels_rel) + '\n')
 

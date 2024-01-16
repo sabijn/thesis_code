@@ -20,7 +20,16 @@ import torchmetrics
 from torchmetrics.functional import accuracy
 import os
 import json
+import logging
+import sys
+import random
 # from pytorch_lightning import Callback
+
+logging.basicConfig(stream=sys.stdout,
+    level=logging.INFO,
+    format='%(name)s - %(levelname)s - %(message)s')
+
+logger = logging.getLogger(__name__)
 
 class MyModule(nn.Module):
     def __init__(self, num_inp=768, num_units=18):
@@ -222,6 +231,30 @@ def create_train_dev_test_split(activations, bies_labels, train_size=0.8, dev_si
 
     return X_train, y_train, X_dev, y_dev, X_test, y_test
 
+def sample_data(labels, vocab):
+    # sample data to obtain balanced classes
+    # get indices of each class
+    class_idx = {}
+
+    for i, label in enumerate(labels):
+        label = int(label)
+
+        if label not in class_idx:
+            class_idx[label] = [i]
+        else:
+            class_idx[label].append(i)
+    
+    for (label, count) in class_idx.items():
+        if len(count) > 10000:
+            indices = np.random.choice(count, 10000, replace=False)
+            # split list based on indices
+            class_idx[label] = indices
+    
+    all_indices = [idx for c in class_idx.values() for idx in c]
+    sampled_labels = [labels[idx] for idx in all_indices]
+ 
+    return sampled_labels, all_indices
+
 if __name__ == "__main__":
     """
     Run script: python main.py --model.model_type deberta --data.data_dir corpora
@@ -231,7 +264,7 @@ if __name__ == "__main__":
 
     home_dir = Path("/Users/sperdijk/Documents/Master/Jaar_3/Thesis/thesis_code/")
     if home_dir.exists():
-        print("Home directory exists!")
+        logger.debug("Home directory exists!")
     else:
         exit("Home directory does not exist!")
 
@@ -244,20 +277,20 @@ if __name__ == "__main__":
         if torch.cuda.is_available():
             # For running on snellius
             device = torch.device("cuda")
-            print('Running on GPU.')
+            logger.info('Running on GPU.')
         # elif torch.backends.mps.is_available():
         #     # For running on M1
         #     device = torch.device("mps")
-        #     print('Running on M1 GPU.')
+        #     logger.info('Running on M1 GPU.')
         else:
             # For running on laptop
             device = torch.device("cpu")
-            print('Running on CPU.')
+            logger.info('Running on CPU.')
     else:
         device = torch.device(config_dict['trainer']['device'])
 
     # Load model
-    print('Loading model...')
+    logger.info('Loading model...')
     OGmodel, tokenizer = load_model(model_path, device)
     OGmodel.eval()
 
@@ -267,13 +300,17 @@ if __name__ == "__main__":
             print('Loading chuncking labels')
             label_path = 'data/train_bies_labels.txt'
             labels, label_vocab = create_labels(label_path, device, skip_unk_tokens=True)
- 
+
             if config_dict['experiments']['control_task']:
                 labels = create_control_task_labels(labels, device, label_vocab)
-                results_file = open('results_chuncking_control.txt', 'w')
+                results_file = open('results/chuncking/results_control.txt', 'w')
+                test_results_file = f"results/chuncking/test_results_control.pickle"
+                val_results_file = f"results/chuncking/val_results_control.pickle"
                 base_name = 'chuncking/best_chuncking_control_layer'
             else:
-                results_file = open('results_bies_per_class.txt', 'w')
+                results_file = open('results/chuncking/results_default.txt', 'w')
+                test_results_file = f"results/chuncking/test_results_default.pickle"
+                val_results_file = f"results/chuncking/val_results_default.pickle"
                 base_name = 'chuncking/best_bies_per_class_chuncking_layer'
             
             # check if activations are already generated, if not, generate them
@@ -292,10 +329,14 @@ if __name__ == "__main__":
 
             if config_dict['experiments']['control_task']:
                 labels = create_control_task_labels(labels, device, label_vocab)
-                results_file = open(f"results/results_lca_{config_dict['activations']['mode']}_control.txt", 'w')
+                results_file = open(f"results/lca/results_{config_dict['activations']['mode']}_control.txt", 'w')
+                test_results_file = f"results/lca/test_results_{config_dict['activations']['mode']}_control.pickle"
+                val_results_file = f"results/lca/val_results_{config_dict['activations']['mode']}_control.pickle"
                 base_name = f"lca/best_lca_{config_dict['activations']['mode']}_control_layer"
             else:
-                results_file = open(f"results/results_lca_{config_dict['activations']['mode']}.txt", 'w')
+                results_file = open(f"results/lca/results_{config_dict['activations']['mode']}.txt", 'w')
+                test_results_file = f"results/lca/test_results_{config_dict['activations']['mode']}.pickle"
+                val_results_file = f"results/lca/val_results_{config_dict['activations']['mode']}.pickle"
                 base_name = f"lca/best_lca_{config_dict['activations']['mode']}_layer"
 
             # load activations
@@ -319,11 +360,15 @@ if __name__ == "__main__":
 
             if config_dict['experiments']['control_task']:
                 labels = create_control_task_labels(labels, device, label_vocab)
-                results_file = open(f"results/results_lca_tree_control.txt", 'w')
-                base_name = f"lca/best_lca_tree_control"
+                results_file = open(f"results/tree/results_control.txt", 'w')
+                test_results_file = f"results/tree/test_results_control.pickle"
+                val_results_file = f"results/tree/val_results_control.pickle"
+                base_name = f"tree/best_lca_tree_control"
             else:
-                results_file = open(f"results/results_lca_tree.txt", 'w')
-                base_name = f"lca/best_lca_tree"
+                results_file = open(f"results/tree/results_default.txt", 'w')
+                test_results_file = f"results/tree/test_results_default.pickle"
+                val_results_file = f"results/tree/val_results_default.pickle"
+                base_name = f"tree/best_lca_tree"
             
             # load activations
             print('Loading activations for LCA...')
@@ -340,26 +385,39 @@ if __name__ == "__main__":
                 f"Length of labels ({len(labels)}) does not match length of activations ({len(activations[0])})"
         
         case 'shared_levels':
-            print('Loading shared levels labels for tree task')
-            label_path = 'data/train_shared_levels.txt'
+            logging.info('Loading shared levels labels for tree task')
+            label_path = 'data/train_shared_balanced.txt'
             labels, label_vocab = create_labels(label_path, device, skip_unk_tokens=True)
+            if config_dict['data']['sampling']:
+                logging.debug('Sampling data...')
+                labels, sampled_idx = sample_data(labels, label_vocab)
+                results_file = open(f"results/shared_levels/results_sampled.txt", 'w')
+                test_results_file = f"results/shared_levels/test_results_sampled.pickle"
+                val_results_file = f"results/shared_levels/val_results_sampled.pickle"
+                base_name = f'shared_levels/best_shared_levels_sampled'
 
-            if config_dict['experiments']['control_task']:
+            elif config_dict['experiments']['control_task']:
+                logging.debug('Generating control task labels')
                 labels = create_control_task_labels(labels, device, label_vocab)
-                results_file = open(f"results/results_shared_levels_control.txt", 'w')
-                base_name = f"lca/best_shared_levels_control"
+                results_file = open(f"results/shared_levels/results_control.txt", 'w')
+                test_results_file = f"results/shared_levels/test_results_control.pickle"
+                val_results_file = f"results/shared_levels/val_results_control.pickle"
+                base_name = f"shared_levels/best_shared_levels_control"
             else:
-                results_file = open(f"results/results_shared_levels.txt", 'w')
-                base_name = f"lca/best_shared_levels"
+                logging.debug('Running with default labels')
+                results_file = open(f"results/shared_levels/results_default.txt", 'w')
+                test_results_file = f"results/shared_levels/test_results_default.pickle"
+                val_results_file = f"results/shared_levels/val_results_default.pickle"
+                base_name = f"shared_levels/best_shared_levels"
             
             # load activations
-            print('Loading activations for shared levels...')
+            logging.info('Loading activations for shared levels...')
             if Path(f"data/activations_concat_layers.pickle").exists():
                 with open(f"data/activations_concat_layers.pickle", 'rb') as f:
                     activations = pickle.load(f)
 
                 for layer_idx, layer_states in activations.items():
-                    activations[layer_idx] = torch.concat(layer_states)
+                    activations[layer_idx] = torch.index_select(torch.concat(layer_states), 0, torch.LongTensor(sampled_idx))
             else:
                 raise ValueError("Activations not found, please check your spelling or run create_activations.py first.")
 
@@ -367,20 +425,24 @@ if __name__ == "__main__":
                 f"Length of labels ({len(labels)}) does not match length of activations ({len(activations[0])})"
 
         case 'unary':
-            print('Loading shared levels labels for tree task')
+            logging.info('Loading shared levels labels for tree task')
             label_path = 'data/train_unaries.txt'
             labels, label_vocab = create_labels(label_path, device, skip_unk_tokens=True)
 
             if config_dict['experiments']['control_task']:
                 labels = create_control_task_labels(labels, device, label_vocab)
-                results_file = open(f"results/results_unaries_control.txt", 'w')
-                base_name = f"lca/best_unaries_control"
+                results_file = open(f"results/unary/results_control.txt", 'w')
+                test_results_file = f"results/unary/test_results_control.pickle"
+                val_results_file = f"results/unary/val_results_control.pickle"
+                base_name = f"unary/best_unaries_control"
             else:
-                results_file = open(f"results/results_unaries.txt", 'w')
-                base_name = f"lca/best_unaries"
+                results_file = open(f"results/unary/results_default.txt", 'w')
+                test_results_file = f"results/unary/test_results_default.pickle"
+                val_results_file = f"results/unary/val_results_default.pickle"
+                base_name = f"unary/best_unaries"
             
             # load activations
-            print('Loading activations for unaries...')
+            logging.info('Loading activations for unaries...')
             if Path(f"data/activations_concat_layers.pickle").exists():
                 with open(f"data/activations_concat_layers.pickle", 'rb') as f:
                     activations = pickle.load(f)
@@ -396,13 +458,13 @@ if __name__ == "__main__":
     val_final = []
     test_final = []
     for layer_idx, states in tqdm(activations.items()):
-        print(f"Training layer {layer_idx}...")
+        logging.info(f"Training layer {layer_idx}...")
         save_name = f"{base_name}_{layer_idx}"
 
         with torch.no_grad():
             states = OGmodel.cls.predictions.transform(states.to(device))
 
-        print("Loading data...")
+        logging.info("Loading data...")
         X_train, y_train, X_dev, y_dev, X_test, y_test = create_train_dev_test_split(states, labels)
 
         assert len(labels) == states.shape[0], \
@@ -434,7 +496,7 @@ if __name__ == "__main__":
                                     num_workers=config_dict['trainer']['num_workers'])
                                     # multiprocessing_context='fork' if torch.backends.mps.is_available() else None)
 
-        print("Started training...")
+        logging.info("Started training...")
         trainer = pl.Trainer(default_root_dir=os.path.join(config_dict['experiments']['checkpoint_path'], save_name),                          
                                 accelerator='mps' if device == 'mps' else 'cpu', 
                                 devices=1,                                            
@@ -458,8 +520,8 @@ if __name__ == "__main__":
         results_file.write(f'Layer {layer_idx} \n {result}\n')
 
     # write val_final and test_final to seperate pickle files
-    with open('val_final.pickle', 'wb') as f:
+    with open(val_results_file, 'wb') as f:
         pickle.dump(val_final, f)
-    with open('test_final.pickle', 'wb') as f:
+    with open(test_results_file, 'wb') as f:
         pickle.dump(test_final, f)
     print(label_vocab)

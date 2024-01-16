@@ -1,8 +1,9 @@
 from pathlib import Path
 from collections import Counter
 import matplotlib.pyplot as plt
+import os
 
-home_path = Path("/Users/sperdijk/Documents/Master/Jaar_3/Thesis/thesis_code")
+home_path = os.environ['CURRENT_WDIR']
 
 # read in train_shared_levels.txt
 shared_levels = []
@@ -22,5 +23,5 @@ plt.xticks(rotation=45)
 plt.xlabel('Shared levels')
 plt.ylabel('Frequency')
 plt.title('Distribution of shared levels')
-plt.savefig(home_path / Path('results/distribution_shared_levels.png'))
+plt.savefig(home_path / Path('results/distribution_shared_levels_balanced.png'))
 
