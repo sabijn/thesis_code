@@ -1,6 +1,7 @@
 from transformers import AutoModelForMaskedLM
 from pathlib import Path
 from argparser import create_config_dict
+from data import ExperimentManager
 from tokenizer import *
 from pprint import pprint
 import torch
@@ -15,15 +16,12 @@ import torch.optim as optim
 from pytorch_lightning.callbacks import ModelCheckpoint
 
 import torchmetrics
-# from torchmetrics.wrappers import ClasswiseWrapper
-# from torchmetrics.classification import MulticlassAccuracy
 from torchmetrics.functional import accuracy
 import os
 import json
 import logging
 import sys
 import random
-# from pytorch_lightning import Callback
 
 logging.basicConfig(stream=sys.stdout,
     level=logging.INFO,
@@ -175,85 +173,6 @@ def load_model(checkpoint, device):
     tokenizer = create_tf_tokenizer_from_vocab(vocab)
 
     return model, tokenizer
-    
-def create_labels(file, device, skip_unk_tokens=False):
-    labels = []
-    # open file with bies labels
-    with open(file, 'r') as f:
-        for line in f:
-            labels.extend(line.strip().split())
-    
-    vocab = {
-        l: idx
-        for idx, l in enumerate(set(labels))
-    }
-    
-    tokenized_labels = [
-        vocab[l]
-        for l in labels
-    ]
-    
-    tokenized_labels = torch.tensor(tokenized_labels).to(device)
-
-    return tokenized_labels, vocab
-
-def create_control_task_labels(labels, device, vocab):
-    """
-    Randomly assign BIES labels to tokens based on distribution of labels in the training set.
-    """
-    # randomly assign bies labels based on distribution of labels in the training set
-    p = []
-
-    for uv in set(labels.tolist()):
-        p.append(labels.tolist().count(uv))
-
-    control_labels = np.random.choice(list(set(labels.tolist())), len(labels), p=[elem/sum(p) for elem in p])
-    tokenized_control_labels = torch.tensor(control_labels).to(device)
-
-    return tokenized_control_labels
-
-def create_train_dev_test_split(activations, bies_labels, train_size=0.8, dev_size=0.9):
-    total_size = len(activations)
-    train_idx, dev_idx, test_idx = int(total_size * train_size), int(total_size * dev_size), total_size
-    
-    train_ids = range(0, train_idx)
-    dev_ids = range(train_idx, dev_idx)
-    test_ids = range(dev_idx, test_idx)
-
-    X_train = activations[train_ids]
-    y_train = bies_labels[train_ids]
-
-    X_dev = activations[dev_ids]
-    y_dev = bies_labels[dev_ids]
-
-    X_test = activations[test_ids]
-    y_test = bies_labels[test_ids]
-
-    return X_train, y_train, X_dev, y_dev, X_test, y_test
-
-def sample_data(labels, vocab):
-    # sample data to obtain balanced classes
-    # get indices of each class
-    class_idx = {}
-
-    for i, label in enumerate(labels):
-        label = int(label)
-
-        if label not in class_idx:
-            class_idx[label] = [i]
-        else:
-            class_idx[label].append(i)
-    
-    for (label, count) in class_idx.items():
-        if len(count) > 10000:
-            indices = np.random.choice(count, 10000, replace=False)
-            # split list based on indices
-            class_idx[label] = indices
-    
-    all_indices = [idx for c in class_idx.values() for idx in c]
-    sampled_labels = [labels[idx] for idx in all_indices]
- 
-    return sampled_labels, all_indices
 
 if __name__ == "__main__":
     """
@@ -262,7 +181,7 @@ if __name__ == "__main__":
     config_dict = create_config_dict()
     pprint(config_dict)
 
-    home_dir = Path("/Users/sperdijk/Documents/Master/Jaar_3/Thesis/thesis_code/")
+    home_dir = Path(os.environ['CURRENT_WDIR'])
     if home_dir.exists():
         logger.debug("Home directory exists!")
     else:
@@ -294,183 +213,23 @@ if __name__ == "__main__":
     OGmodel, tokenizer = load_model(model_path, device)
     OGmodel.eval()
 
-    # Load labels
-    match config_dict['experiments']['type']:
-        case 'chunking':
-            print('Loading chuncking labels')
-            label_path = 'data/train_bies_labels.txt'
-            labels, label_vocab = create_labels(label_path, device, skip_unk_tokens=True)
-
-            if config_dict['experiments']['control_task']:
-                labels = create_control_task_labels(labels, device, label_vocab)
-                results_file = open('results/chuncking/results_control.txt', 'w')
-                test_results_file = f"results/chuncking/test_results_control.pickle"
-                val_results_file = f"results/chuncking/val_results_control.pickle"
-                base_name = 'chuncking/best_chuncking_control_layer'
-            else:
-                results_file = open('results/chuncking/results_default.txt', 'w')
-                test_results_file = f"results/chuncking/test_results_default.pickle"
-                val_results_file = f"results/chuncking/val_results_default.pickle"
-                base_name = 'chuncking/best_bies_per_class_chuncking_layer'
-            
-            # check if activations are already generated, if not, generate them
-            print('Loading activations for chuncking...')
-            if Path('data/activations.pickle').exists():
-                with open('data/activations.pickle', 'rb') as f:
-                    activations = pickle.load(f)
-            else:
-                raise ValueError("Activations not found, please run create_activations.py first.")
-
-        case 'lca':
-            # contains labels for LCA task
-            print('Loading LCA labels')
-            label_path = 'data/train_rel_labels.txt'
-            labels, label_vocab = create_labels(label_path, device, skip_unk_tokens=True)
-
-            if config_dict['experiments']['control_task']:
-                labels = create_control_task_labels(labels, device, label_vocab)
-                results_file = open(f"results/lca/results_{config_dict['activations']['mode']}_control.txt", 'w')
-                test_results_file = f"results/lca/test_results_{config_dict['activations']['mode']}_control.pickle"
-                val_results_file = f"results/lca/val_results_{config_dict['activations']['mode']}_control.pickle"
-                base_name = f"lca/best_lca_{config_dict['activations']['mode']}_control_layer"
-            else:
-                results_file = open(f"results/lca/results_{config_dict['activations']['mode']}.txt", 'w')
-                test_results_file = f"results/lca/test_results_{config_dict['activations']['mode']}.pickle"
-                val_results_file = f"results/lca/val_results_{config_dict['activations']['mode']}.pickle"
-                base_name = f"lca/best_lca_{config_dict['activations']['mode']}_layer"
-
-            # load activations
-            print('Loading activations for LCA...')
-            if Path(f"data/activations_combined_{config_dict['activations']['mode']}.pickle").exists():
-                with open(f"data/activations_combined_{config_dict['activations']['mode']}.pickle", 'rb') as f:
-                    activations = pickle.load(f)
-
-                    for layer_idx, layer_states in activations.items():
-                        activations[layer_idx] = torch.concat(layer_states)
-            else:
-                raise ValueError("Activations not found, please check your spelling or run create_activations.py first.")
-
-            assert len(labels) == len(activations[0]), \
-                f"Length of labels ({len(labels)}) does not match length of activations ({len(activations[0])})"
-
-        case 'lca_tree':
-            print('Loading LCA labels for tree task')
-            label_path = 'data/train_rel_labels.txt'
-            labels, label_vocab = create_labels(label_path, device, skip_unk_tokens=True)
-
-            if config_dict['experiments']['control_task']:
-                labels = create_control_task_labels(labels, device, label_vocab)
-                results_file = open(f"results/tree/results_control.txt", 'w')
-                test_results_file = f"results/tree/test_results_control.pickle"
-                val_results_file = f"results/tree/val_results_control.pickle"
-                base_name = f"tree/best_lca_tree_control"
-            else:
-                results_file = open(f"results/tree/results_default.txt", 'w')
-                test_results_file = f"results/tree/test_results_default.pickle"
-                val_results_file = f"results/tree/val_results_default.pickle"
-                base_name = f"tree/best_lca_tree"
-            
-            # load activations
-            print('Loading activations for LCA...')
-            if Path(f"data/activations_concat_layers.pickle").exists():
-                with open(f"data/activations_concat_layers.pickle", 'rb') as f:
-                    activations = pickle.load(f)
-
-                for layer_idx, layer_states in activations.items():
-                    activations[layer_idx] = torch.concat(layer_states)
-            else:
-                raise ValueError("Activations not found, please check your spelling or run create_activations.py first.")
-
-            assert len(labels) == len(activations[0]), \
-                f"Length of labels ({len(labels)}) does not match length of activations ({len(activations[0])})"
-        
-        case 'shared_levels':
-            logging.info('Loading shared levels labels for tree task')
-            label_path = 'data/train_shared_balanced.txt'
-            labels, label_vocab = create_labels(label_path, device, skip_unk_tokens=True)
-            if config_dict['data']['sampling']:
-                logging.debug('Sampling data...')
-                labels, sampled_idx = sample_data(labels, label_vocab)
-                results_file = open(f"results/shared_levels/results_sampled.txt", 'w')
-                test_results_file = f"results/shared_levels/test_results_sampled.pickle"
-                val_results_file = f"results/shared_levels/val_results_sampled.pickle"
-                base_name = f'shared_levels/best_shared_levels_sampled'
-
-            elif config_dict['experiments']['control_task']:
-                logging.debug('Generating control task labels')
-                labels = create_control_task_labels(labels, device, label_vocab)
-                results_file = open(f"results/shared_levels/results_control.txt", 'w')
-                test_results_file = f"results/shared_levels/test_results_control.pickle"
-                val_results_file = f"results/shared_levels/val_results_control.pickle"
-                base_name = f"shared_levels/best_shared_levels_control"
-            else:
-                logging.debug('Running with default labels')
-                results_file = open(f"results/shared_levels/results_default.txt", 'w')
-                test_results_file = f"results/shared_levels/test_results_default.pickle"
-                val_results_file = f"results/shared_levels/val_results_default.pickle"
-                base_name = f"shared_levels/best_shared_levels"
-            
-            # load activations
-            logging.info('Loading activations for shared levels...')
-            if Path(f"data/activations_concat_layers.pickle").exists():
-                with open(f"data/activations_concat_layers.pickle", 'rb') as f:
-                    activations = pickle.load(f)
-
-                for layer_idx, layer_states in activations.items():
-                    activations[layer_idx] = torch.index_select(torch.concat(layer_states), 0, torch.LongTensor(sampled_idx))
-            else:
-                raise ValueError("Activations not found, please check your spelling or run create_activations.py first.")
-
-            assert len(labels) == len(activations[0]), \
-                f"Length of labels ({len(labels)}) does not match length of activations ({len(activations[0])})"
-
-        case 'unary':
-            logging.info('Loading shared levels labels for tree task')
-            label_path = 'data/train_unaries.txt'
-            labels, label_vocab = create_labels(label_path, device, skip_unk_tokens=True)
-
-            if config_dict['experiments']['control_task']:
-                labels = create_control_task_labels(labels, device, label_vocab)
-                results_file = open(f"results/unary/results_control.txt", 'w')
-                test_results_file = f"results/unary/test_results_control.pickle"
-                val_results_file = f"results/unary/val_results_control.pickle"
-                base_name = f"unary/best_unaries_control"
-            else:
-                results_file = open(f"results/unary/results_default.txt", 'w')
-                test_results_file = f"results/unary/test_results_default.pickle"
-                val_results_file = f"results/unary/val_results_default.pickle"
-                base_name = f"unary/best_unaries"
-            
-            # load activations
-            logging.info('Loading activations for unaries...')
-            if Path(f"data/activations_concat_layers.pickle").exists():
-                with open(f"data/activations_concat_layers.pickle", 'rb') as f:
-                    activations = pickle.load(f)
-
-                for layer_idx, layer_states in activations.items():
-                    activations[layer_idx] = torch.concat(layer_states)
-            else:
-                raise ValueError("Activations not found, please check your spelling or run create_activations.py first.")
-
-            assert len(labels) == len(activations[0]), \
-                f"Length of labels ({len(labels)}) does not match length of activations ({len(activations[0])})"
+    # Initiate experiments
+    CurrentExperiment = ExperimentManager(config_dict)
 
     val_final = []
     test_final = []
-    for layer_idx, states in tqdm(activations.items()):
+
+    for layer_idx, states in tqdm(CurrentExperiment.activations.items()):
         logging.info(f"Training layer {layer_idx}...")
-        save_name = f"{base_name}_{layer_idx}"
+        save_name = f"{CurrentExperiment.base_name}_{layer_idx}"
 
-        with torch.no_grad():
-            states = OGmodel.cls.predictions.transform(states.to(device))
+        # with torch.no_grad():
+        #     states = OGmodel.cls.predictions.transform(states.to(device))
 
-        logging.info("Loading data...")
-        X_train, y_train, X_dev, y_dev, X_test, y_test = create_train_dev_test_split(states, labels)
-
-        assert len(labels) == states.shape[0], \
-                f"Length of labels ({len(labels)}) does not match length of activations ({states.shape[0]})"
+        logging.info("Splitting data in train, dev and test sets.")
+        X_train, y_train, X_dev, y_dev, X_test, y_test = CurrentExperiment.create_train_dev_test_split(layer_idx)
             
-        ninp, nout = X_train.shape[-1], len(label_vocab)
+        ninp, nout = X_train.shape[-1], len(CurrentExperiment.label_vocab)
 
         trainset = torch.utils.data.TensorDataset(X_train, y_train)
         train_loader = torch.utils.data.DataLoader(dataset=trainset,
@@ -504,7 +263,7 @@ if __name__ == "__main__":
                                 callbacks=[ModelCheckpoint(save_weights_only=True, mode="max", monitor="val_acc")])
 
         pl.seed_everything(42)
-        model = DiagModule(model_hparams={"num_inp":X_train.shape[-1], "num_units":len(label_vocab)}, optimizer_hparams={"lr": config_dict['trainer']['lr']})
+        model = DiagModule(model_hparams={"num_inp":X_train.shape[-1], "num_units":len(CurrentExperiment.label_vocab)}, optimizer_hparams={"lr": config_dict['trainer']['lr']})
         trainer.fit(model, train_loader, dev_loader)
 
         model = DiagModule.load_from_checkpoint(trainer.checkpoint_callback.best_model_path) # Load best checkpoint after training
@@ -517,11 +276,13 @@ if __name__ == "__main__":
         test_final.append(test_result)
 
         result = {"test": test_result, "val": val_result}
-        results_file.write(f'Layer {layer_idx} \n {result}\n')
+        CurrentExperiment.results_file.write(f'Layer {layer_idx} \n {result}\n')
+
+    CurrentExperiment.results_file.close()
 
     # write val_final and test_final to seperate pickle files
-    with open(val_results_file, 'wb') as f:
+    with open(CurrentExperiment.val_results_file, 'wb') as f:
         pickle.dump(val_final, f)
-    with open(test_results_file, 'wb') as f:
+    with open(CurrentExperiment.test_results_file, 'wb') as f:
         pickle.dump(test_final, f)
-    print(label_vocab)
+    print("Label vocab", CurrentExperiment.label_vocab)

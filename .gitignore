@@ -3,6 +3,7 @@ data/
 corpora/
 pcfg-lm/
 models/
+results/
 
 # personal files
 garbage.py

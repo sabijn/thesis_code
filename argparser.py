@@ -3,6 +3,9 @@ import argparse
 from collections import defaultdict
 from typing import *
 from pathlib import Path
+import logging 
+
+logger = logging.getLogger(__name__)
 
 ConfigDict = Dict[str, Dict[str, Any]]
 
@@ -51,6 +54,7 @@ def _create_arg_parser() -> ArgumentParser:
     parser.add_argument("--data.dev_size", type=int)
     parser.add_argument("--data.test_size", type=int)
     parser.add_argument("--data.sampling", action=argparse.BooleanOptionalAction)
+    parser.add_argument("--data.sampling_size", type=int, default=10000)
 
     # EXTRACT ACTIVATIONS
     parser.add_argument("--activations.output_dir", default='data',
@@ -61,7 +65,7 @@ def _create_arg_parser() -> ArgumentParser:
                         help="How the activations are combined. Use in combination with LCA experiments.") 
 
     # EXPERIMENTS
-    parser.add_argument("--experiments.type", default='chunking', choices=['chunking', 'lca', 'lca_tree', 'shared_levels', 'unary'])
+    parser.add_argument("--experiments.type", default='chunking', choices=['chunking', 'lca', 'lca_tree', 'shared_levels', 'unary', 'ii'])
     parser.add_argument("--experiments.checkpoint_path", default='models/')
     parser.add_argument("--experiments.control_task", action=argparse.BooleanOptionalAction)
 

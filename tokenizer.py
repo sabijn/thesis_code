@@ -2,6 +2,9 @@ import json
 
 from transformers import PreTrainedTokenizer, BertTokenizer
 from collections import Counter
+import logging 
+
+logger = logging.getLogger(__name__)
 
 
 def create_tokenizer(
