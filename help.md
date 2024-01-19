@@ -54,6 +54,15 @@ Deleting environment variables
 conda env config vars unset MY_VAR
 ```
 
+## GIT
+Remove files from version control but leaves the local copy
+```shell
+git rm -r -f --cached DirectoryName
+```
+-r: recursively  
+-f: force, if you have doubts, just do it
+--cached: leave the local copies!  
+
 ## Explanation per directory
 
 ### data
