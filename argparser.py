@@ -54,7 +54,7 @@ def _create_arg_parser() -> ArgumentParser:
     parser.add_argument("--data.dev_size", type=int)
     parser.add_argument("--data.test_size", type=int)
     parser.add_argument("--data.sampling", action=argparse.BooleanOptionalAction)
-    parser.add_argument("--data.sampling_size", type=int, default=10000)
+    parser.add_argument("--data.sampling_size", type=int, default=0)
 
     # EXTRACT ACTIVATIONS
     parser.add_argument("--activations.output_dir", default='data',

@@ -113,9 +113,9 @@ class ExperimentManager():
             self.val_results_file = f'results/{self.name}/val_results_control{self.config_dict["experiments"]["control_task"]}.pickle'
             self.base_name = f'{self.name}/best_model_control_{self.name}'
         else:
-            self.results_file = open(f'results/{self.name}/results_default.txt', 'w')
-            self.test_results_file = f'results/{self.name}/test_results_default.pickle'
-            self.val_results_file = f'results/{self.name}/val_results_default.pickle'
+            self.results_file = open(f'results/{self.name}/results_default_{self.config_dict["data"]["sampling_size"]}.txt', 'w')
+            self.test_results_file = f'results/{self.name}/test_results_default_{self.config_dict["data"]["sampling_size"]}.pickle'
+            self.val_results_file = f'results/{self.name}/val_results_default_{self.config_dict["data"]["sampling_size"]}.pickle'
             self.base_name = f'{self.name}/best_model_default_{self.name}'
     
     def _sample_data(self, labels):

@@ -5,8 +5,10 @@ pcfg-lm/
 models/
 results/
 
+
 # personal files
 garbage.py
+archive.py
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

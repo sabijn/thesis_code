@@ -16,7 +16,6 @@ import torch.optim as optim
 from pytorch_lightning.callbacks import ModelCheckpoint
 
 import torchmetrics
-from torchmetrics.functional import accuracy
 import os
 import json
 import logging
@@ -37,59 +36,6 @@ class MyModule(nn.Module):
 
     def forward(self, X, **kwargs):
         return self.dense0(X)
-                        
-# class DiagModule(pl.LightningModule):
-#     def __init__(self, model_hparams, optimizer_hparams):
-#         """
-#         Inputs:
-#             model_hparams - Hyperparameters for the model, as dictionary.
-#             optimizer_name - Name of the optimizer to use. Currently supported: Adam, SGD
-#             optimizer_hparams - Hyperparameters for the optimizer, as dictionary. This includes learning rate, weight decay, etc.
-#         """
-#         super().__init__()
-#         # Exports the hyperparameters to a YAML file, and create "self.hparams" namespace
-#         self.save_hyperparameters()
-#         # Create model
-#         self.model = MyModule(model_hparams['num_inp'], model_hparams['num_units'])
-#         # Create loss module
-#         self.loss_module = nn.CrossEntropyLoss()
-
-#     def forward(self, x):
-#         # Forward function that is run when visualizing the graph
-#         return self.model(x)
-
-#     def configure_optimizers(self):
-#         optimizer = optim.SGD(self.parameters(), **self.hparams.optimizer_hparams)
-#         return [optimizer]
-
-#     def training_step(self, batch, batch_idx):
-#         # "batch" is the output of the training data loader.
-#         x, targets = batch
-#         preds = self.model(x)
-#         loss = self.loss_module(preds, targets)
-#         acc = (preds.argmax(dim=-1) == targets).float().mean()
-
-#         # Logs the accuracy per epoch to tensorboard (weighted average over batches)
-#         self.log('train_acc', acc, on_step=False, on_epoch=True)
-#         self.log('train_loss', loss)
-
-#         return loss  # Return tensor to call ".backward" on
-
-#     def validation_step(self, batch, batch_idx):
-#         x, targets = batch
-#         preds = self.model(x).argmax(dim=-1)
-#         acc = (targets == preds).float().mean()
-#         # By default logs it per epoch (weighted average over batches)
-
-#         self.log('val_acc', acc)
-#         # log classwise accuracy
-    
-    # def test_step(self, batch, batch_idx):
-    #     x, targets = batch
-    #     preds = self.model(x).argmax(dim=-1)
-    #     acc = (targets == preds).float().mean()
-    #     # By default logs it per epoch (weighted average over batches), and returns it afterwards
-    #     self.log('test_acc', acc)
 
 class DiagModule(pl.LightningModule):
     def __init__(self, model_hparams, optimizer_hparams):
@@ -100,8 +46,12 @@ class DiagModule(pl.LightningModule):
         self.model = MyModule(model_hparams['num_inp'], model_hparams['num_units'])
         # Create loss module
         self.loss_module = nn.CrossEntropyLoss()
+
         # Initialize dictionary to store classwise accuracy
         self.classwise_acc = {}
+        # Initialize confusion matrix
+        self.confmat = torchmetrics.ConfusionMatrix(model_hparams['num_units'])
+        self.final_confusion_matrix = None 
     
     def forward(self, x):
         # Forward function that is run when visualizing the graph
@@ -131,13 +81,15 @@ class DiagModule(pl.LightningModule):
         acc = (targets == preds).float().mean()
         self.log('val_acc', acc)
         # Calculate classwise accuracy
-        class_acc = torchmetrics.functional.accuracy(preds, targets, task='multiclass', num_classes=self.hparams.model_hparams['num_units'], average=None)
-        # Convert tensor to numpy array
-        class_acc = class_acc.cpu().numpy()
+        class_acc = torchmetrics.functional.accuracy(preds, targets, task='multiclass', num_classes=self.hparams.model_hparams['num_units'], average=None).cpu().numpy()
 
         # Update classwise accuracy in the log dictionary
         for i, acc in enumerate(class_acc):
             self.classwise_acc[f'class_{i}'] = acc
+        
+        # Calculate confusion matrix
+        self.confmat(preds, targets)
+        
 
     def test_step(self, batch, batch_idx):
         x, targets = batch
@@ -147,23 +99,71 @@ class DiagModule(pl.LightningModule):
         self.log('test_acc', acc)
 
         # Calculate classwise accuracy
-        class_acc = torchmetrics.functional.accuracy(preds, targets, task='multiclass', num_classes=self.hparams.model_hparams['num_units'], average=None)
-        # Convert tensor to numpy array
-        class_acc = class_acc.cpu().numpy()
+        class_acc = torchmetrics.functional.accuracy(preds, targets, task='multiclass', num_classes=self.hparams.model_hparams['num_units'], average=None).cpu().numpy()
 
         # Update classwise accuracy in the log dictionary
         for i, acc in enumerate(class_acc):
             self.classwise_acc[f'class_{i}'] = acc
+        
+        # Calculate confusion matrix
+        self.confmat(preds, targets)
 
     def on_validation_epoch_end(self):
         # Log classwise accuracy at the end of each epoch
         self.log_dict(self.classwise_acc, on_epoch=True, prog_bar=True)
         self.classwise_acc = {}
 
+        # Compute and log confusion matrix
+        conf_matrix = self.confmat.compute()
+        # self.logger.experiment.add_image("Confusion Matrix", plot_confusion_matrix(conf_matrix), self.current_epoch)
+        self.final_confusion_matrix = self.confmat.compute().cpu().numpy()
+        self.confmat.reset()
+
     def on_test_epoch_end(self):
         # Log classwise accuracy at the end of testing
         self.log_dict(self.classwise_acc, on_epoch=True, prog_bar=True)
         self.classwise_acc = {}
+
+        # Compute and log confusion matrix
+        conf_matrix = self.confmat.compute()
+        # self.logger.experiment.add_image("Confusion Matrix", plot_confusion_matrix(conf_matrix), self.current_epoch)
+        self.final_confusion_matrix = self.confmat.compute().cpu().numpy()
+        self.confmat.reset()
+
+# Helper function to plot confusion matrix
+def plot_confusion_matrix(cm):
+    fig, ax = plt.subplots()
+    im = ax.imshow(cm, interpolation='nearest', cmap=plt.cm.Blues)
+    ax.figure.colorbar(im, ax=ax)
+
+    # We want to show all ticks...
+    ax.set(xticks=np.arange(cm.shape[1]),
+           yticks=np.arange(cm.shape[0]),
+           # ... and label them with the respective list entries
+           xticklabels=range(cm.shape[1]), yticklabels=range(cm.shape[0]),
+           title='Confusion Matrix',
+           ylabel='True label',
+           xlabel='Predicted label')
+
+    # Rotate the tick labels and set their alignment.
+    plt.setp(ax.get_xticklabels(), rotation=45, ha="right", rotation_mode="anchor")
+
+    # Loop over data dimensions and create text annotations.
+    fmt = 'd'
+    thresh = cm.max() / 2.
+    for i in range(cm.shape[0]):
+        for j in range(cm.shape[1]):
+            ax.text(j, i, format(cm[i, j], fmt),
+                    ha="center", va="center",
+                    color="white" if cm[i, j] > thresh else "black")
+    fig.tight_layout()
+
+    # Convert the plot to a PIL Image
+    buf = io.BytesIO()
+    plt.savefig(buf, format='png')
+    buf.seek(0)
+    image = Image.open(buf)
+    return image
 
 def load_model(checkpoint, device):
     model = AutoModelForMaskedLM.from_pretrained(checkpoint).to(device)
@@ -277,6 +277,7 @@ if __name__ == "__main__":
 
         result = {"test": test_result, "val": val_result}
         CurrentExperiment.results_file.write(f'Layer {layer_idx} \n {result}\n')
+
 
     CurrentExperiment.results_file.close()
 
