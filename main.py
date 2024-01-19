@@ -20,7 +20,6 @@ import os
 import json
 import logging
 import sys
-import random
 
 logging.basicConfig(stream=sys.stdout,
     level=logging.INFO,
@@ -38,7 +37,7 @@ class MyModule(nn.Module):
         return self.dense0(X)
 
 class DiagModule(pl.LightningModule):
-    def __init__(self, model_hparams, optimizer_hparams):
+    def __init__(self, model_hparams):
         super().__init__()
         # Exports the hyperparameters to a YAML file, and create "self.hparams" namespace
         self.save_hyperparameters()
@@ -50,7 +49,7 @@ class DiagModule(pl.LightningModule):
         # Initialize dictionary to store classwise accuracy
         self.classwise_acc = {}
         # Initialize confusion matrix
-        self.confmat = torchmetrics.ConfusionMatrix(model_hparams['num_units'])
+        self.confmat = torchmetrics.ConfusionMatrix(task="multiclass", num_classes=model_hparams['num_units'], normalize="true")
         self.final_confusion_matrix = None 
     
     def forward(self, x):
@@ -122,6 +121,7 @@ class DiagModule(pl.LightningModule):
     def on_test_epoch_end(self):
         # Log classwise accuracy at the end of testing
         self.log_dict(self.classwise_acc, on_epoch=True, prog_bar=True)
+
         self.classwise_acc = {}
 
         # Compute and log confusion matrix
@@ -129,41 +129,6 @@ class DiagModule(pl.LightningModule):
         # self.logger.experiment.add_image("Confusion Matrix", plot_confusion_matrix(conf_matrix), self.current_epoch)
         self.final_confusion_matrix = self.confmat.compute().cpu().numpy()
         self.confmat.reset()
-
-# Helper function to plot confusion matrix
-def plot_confusion_matrix(cm):
-    fig, ax = plt.subplots()
-    im = ax.imshow(cm, interpolation='nearest', cmap=plt.cm.Blues)
-    ax.figure.colorbar(im, ax=ax)
-
-    # We want to show all ticks...
-    ax.set(xticks=np.arange(cm.shape[1]),
-           yticks=np.arange(cm.shape[0]),
-           # ... and label them with the respective list entries
-           xticklabels=range(cm.shape[1]), yticklabels=range(cm.shape[0]),
-           title='Confusion Matrix',
-           ylabel='True label',
-           xlabel='Predicted label')
-
-    # Rotate the tick labels and set their alignment.
-    plt.setp(ax.get_xticklabels(), rotation=45, ha="right", rotation_mode="anchor")
-
-    # Loop over data dimensions and create text annotations.
-    fmt = 'd'
-    thresh = cm.max() / 2.
-    for i in range(cm.shape[0]):
-        for j in range(cm.shape[1]):
-            ax.text(j, i, format(cm[i, j], fmt),
-                    ha="center", va="center",
-                    color="white" if cm[i, j] > thresh else "black")
-    fig.tight_layout()
-
-    # Convert the plot to a PIL Image
-    buf = io.BytesIO()
-    plt.savefig(buf, format='png')
-    buf.seek(0)
-    image = Image.open(buf)
-    return image
 
 def load_model(checkpoint, device):
     model = AutoModelForMaskedLM.from_pretrained(checkpoint).to(device)
@@ -174,9 +139,24 @@ def load_model(checkpoint, device):
 
     return model, tokenizer
 
+def swap_labels(result, label_vocab):
+    f_result = {}
+    idx2c = {v: k for k, v in label_vocab.items()}
+
+    # output of pytorch lightning .test is a list with all logged metrics, in this case only one dict
+    for c, acc in result[0].items():
+        if c == 'test_acc' or c == 'val_acc':
+            f_result[c] = acc
+        else:
+            class_label = int(c.split('_')[1])
+            f_result[idx2c[class_label]] = acc
+
+    return f_result
+
 if __name__ == "__main__":
     """
-    Run script: python main.py --model.model_type deberta --data.data_dir corpora
+    Run script
+    Shared levels: python main.py --model.model_type deberta --data.data_dir corpora --data.sampling --data.sampling_size 10000 --experiments.type shared_levels --results.confusion_matrix --trainer.epochs 1
     """
     config_dict = create_config_dict()
     pprint(config_dict)
@@ -269,8 +249,8 @@ if __name__ == "__main__":
         model = DiagModule.load_from_checkpoint(trainer.checkpoint_callback.best_model_path) # Load best checkpoint after training
 
         # Test best model on validation and test set
-        val_result = trainer.test(model, dev_loader, verbose=False)
-        test_result = trainer.test(model, test_loader, verbose=False)
+        val_result = swap_labels(trainer.test(model, dev_loader, verbose=False), CurrentExperiment.label_vocab)
+        test_result = swap_labels(trainer.test(model, test_loader, verbose=False), CurrentExperiment.label_vocab)
         
         val_final.append(val_result)
         test_final.append(test_result)
@@ -278,6 +258,9 @@ if __name__ == "__main__":
         result = {"test": test_result, "val": val_result}
         CurrentExperiment.results_file.write(f'Layer {layer_idx} \n {result}\n')
 
+        # save confusion matrix
+        if config_dict['results']['confusion_matrix']:
+            np.save(f'results/{CurrentExperiment.name}/confusion_matrix_{layer_idx}.npy', model.final_confusion_matrix)
 
     CurrentExperiment.results_file.close()
 

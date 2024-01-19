@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 ConfigDict = Dict[str, Dict[str, Any]]
 
-ARG_TYPES = ["tokenizer", "model", "trainer", "data", "activations", "experiments"]
+ARG_TYPES = ["tokenizer", "model", "trainer", "data", "activations", "experiments", "results"]
 
 
 def create_config_dict() -> ConfigDict:
@@ -68,6 +68,9 @@ def _create_arg_parser() -> ArgumentParser:
     parser.add_argument("--experiments.type", default='chunking', choices=['chunking', 'lca', 'lca_tree', 'shared_levels', 'unary', 'ii'])
     parser.add_argument("--experiments.checkpoint_path", default='models/')
     parser.add_argument("--experiments.control_task", action=argparse.BooleanOptionalAction)
+
+    # RESULTS
+    parser.add_argument("--results.confusion_matrix", action=argparse.BooleanOptionalAction)
 
     # TRAINER
     parser.add_argument("--trainer.batch_size", type=int, default=128)
