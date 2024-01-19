@@ -63,6 +63,35 @@ git rm -r -f --cached DirectoryName
 -f: force, if you have doubts, just do it
 --cached: leave the local copies!  
 
+### Branches
+Create branch
+```shell
+git branch <name_new_branch>
+```
+or 
+```shell
+git checkout -b <name_new_branch>
+```
+
+Switch to branch
+```shell
+git checkout <branch_name>
+```
+
+Merge with master
+```shell
+git checkout master
+git merge <branch_name>
+```
+
+Delete branch
+```shell
+git branch -d <branch_name>
+```
+
+Merge conflits....
+
+
 ## Explanation per directory
 
 ### data
