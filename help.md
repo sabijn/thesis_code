@@ -89,8 +89,27 @@ Delete branch
 git branch -d <branch_name>
 ```
 
-Merge conflits....
+Info on your current branch
+```shell
+git status
+```
 
+List branches
+```shell
+git branch
+```
+
+Merging:
+1. 
+From branch: 
+```shell
+git merge master
+```
+2. Usually you merge from the branch you want to merge into:
+```shell
+git checkout master
+git merge <branch_name>
+```
 
 ## Explanation per directory
 
