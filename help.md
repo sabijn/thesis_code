@@ -111,6 +111,9 @@ git checkout master
 git merge <branch_name>
 ```
 
+You know have a branch that does not an upstream equivalent. That means that you cannot push to your remote from this branch.
+You can only commit the changes and than merge with main. Main can than push it to your remote repository.
+
 ## Explanation per directory
 
 ### data
