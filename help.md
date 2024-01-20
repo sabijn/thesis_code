@@ -64,7 +64,7 @@ git rm -r -f --cached DirectoryName
 --cached: leave the local copies!  
 
 ### Branches
-Create branch
+**Create** branch
 ```shell
 git branch <name_new_branch>
 ```
@@ -73,23 +73,23 @@ or
 git checkout -b <name_new_branch>
 ```
 
-Switch to branch
+**Switch** to branch
 ```shell
 git checkout <branch_name>
 ```
 
-Merge with master
+**Merge** with master
 ```shell
 git checkout master
 git merge <branch_name>
 ```
 
-Delete branch
+**Delete** branch
 ```shell
 git branch -d <branch_name>
 ```
 
-Info on your current branch
+**Info** on your current branch
 ```shell
 git status
 ```
@@ -99,7 +99,7 @@ List branches
 git branch
 ```
 
-Merging:
+**Merging**:
 1. 
 From branch: 
 ```shell
@@ -113,6 +113,12 @@ git merge <branch_name>
 
 You know have a branch that does not an upstream equivalent. That means that you cannot push to your remote from this branch.
 You can only commit the changes and than merge with main. Main can than push it to your remote repository.
+
+**Create upstream**
+```shell
+git push --set-upstream origin <branch_name> 
+```
+When on the branch
 
 ## Explanation per directory
 
@@ -132,3 +138,7 @@ You can only commit the changes and than merge with main. Main can than push it 
 - train_unaries.txt : labels of single consistuent phrases. 
 - combined_predictions.txt : contains per word a tuple containing LCA_SHARED_UNARY
 - sentences_postags.pickle : list of lists containing tuples (word, postag)
+
+## Terminal colors
+1. conda config --set changeps1 false
+2. Edited prompt line in ~/.bash_profile
