@@ -74,40 +74,29 @@ def phrasePropertiesForAdjacentTokenPairsInPTB(k, tree, tokenizer, skip_unkown_t
     for l, s in enumerate(shared_levels):
         if l == 0:
             # If first token, append shared level of token 0 & 1
-            # if s < -4:
-            #     s = -4
-
-            # elif s > 4:
-            #     s = 4
-
-                
             shared_levels_rel.append(str(s)) 
             last_s = s
         else:
             rel = s - last_s
-            # if rel < -4:
-            #     rel = -4
-            # elif rel > 4:
-            #     rel = 4
-
             shared_levels_rel.append(str(rel))
             last_s = s
-    # shared_levels_rel = []
-    # for l, s in enumerate(shared_levels):
-    #     if l == 0:
-    #         # If first token, append shared level of token 0 & 1
-    #         shared_levels_rel.append(str(s)) 
-    #         last_s = s
-    #     else:
-    #         shared_levels_rel.append(str(s - last_s))
-    #         last_s = s
-    # return shared_levels_rel
-    shared_outliers = []
-    for s in shared_levels_rel:
-        if int(s) < -4 or int(s) > 4:
-            shared_outliers.append(s)
+
+    shared_levels_rel = []
+    for l, s in enumerate(shared_levels):
+        if l == 0:
+            # If first token, append shared level of token 0 & 1
+            shared_levels_rel.append(str(s)) 
+            last_s = s
         else:
-            shared_outliers.append(str(0))
+            shared_levels_rel.append(str(s - last_s))
+            last_s = s
+    return shared_levels_rel
+    # shared_outliers = []
+    # for s in shared_levels_rel:
+    #     if int(s) < -4 or int(s) > 4:
+    #         shared_outliers.append(s)
+    #     else:
+    #         shared_outliers.append(str(0))
 
     return shared_outliers
 
@@ -149,7 +138,7 @@ if __name__=='__main__':
     parser.add_argument('-cutoff')
     parser.add_argument('-max_sent_length')
     parser.add_argument('-next', action='store_true', default=True) # run in experiments
-    parser.add_argument('-shared_levels', default=Path('data/train_shared_balanced_bad_classes.txt')) # run in experiments
+    parser.add_argument('-shared_levels', default=Path('data/train_shared_withoutROOT.txt')) # run in experiments
     parser.add_argument('-unary', default=None) # run in experiments
     parsedargs = parser.parse_args()
 

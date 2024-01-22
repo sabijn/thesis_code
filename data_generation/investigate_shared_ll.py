@@ -7,7 +7,7 @@ home_path = os.environ['CURRENT_WDIR']
 
 # read in train_shared_levels.txt
 shared_levels = []
-with open(home_path / Path('data/train_shared_balanced.txt')) as f:
+with open(home_path / Path('data/train_shared_withoutROOT.txt')) as f:
     # shared levels
     for l in f:
         shared_levels.extend(l.strip('\n').split(' '))
