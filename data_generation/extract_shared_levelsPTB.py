@@ -52,9 +52,12 @@ def phrasePropertiesForAdjacentTokenPairsInPTB(k, tree, tokenizer, skip_unkown_t
 
         # if j not in tokenizer.vocab, skip this word and calculate LCA with next token
         if skip_unkown_tokens:
-            while j_tok not in tokenizer.vocab:
+            while j_tok not in tokenizer.vocab and j != (len(sent) - 1):
                 j = j + 1
                 j_tok = sent[j]
+
+            if j == len(sent) - 1:
+                break
 
         lowest_common_ancestor = tree.treeposition_spanning_leaves(i,j+1)
 
@@ -108,9 +111,6 @@ def phrasePropertiesForAdjacentTokenPairsInPTB(k, tree, tokenizer, skip_unkown_t
     #         shared_outliers.append(str(0))
 
     # return shared_outliers
-
-def sample_data():
-    pass
 
 if __name__=='__main__':
     """
@@ -194,6 +194,7 @@ if __name__=='__main__':
     for k, tree in enumerate(tqdm(tree_corpus)):
         if k - len(ignored_sents) > cutoff:
             continue
+        
         # some sentences are not covered yet
         if k in ignore_list or len(tree.leaves()) > max_sent_length: #31:
             ignored_sents.append(k)
