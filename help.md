@@ -69,6 +69,11 @@ poetry env info
 ```
 ```-p``` print only the path of your environment  
 
+Show all installed packages
+```shell
+poetry show
+```
+
 ## Conda
 Listing environment variables per environment
 ```shell
