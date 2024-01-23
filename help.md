@@ -59,7 +59,7 @@ poetry add <package_name>
 ```
 
 Open shell
-```shell
+```bash
 poetry shell
 ```
 
@@ -97,6 +97,20 @@ git rm -r -f --cached DirectoryName
 -r: recursively  
 -f: force, if you have doubts, just do it
 --cached: leave the local copies!  
+
+### Submodules
+Submodules are a short of hyperlink to other git repositories.  
+When you clone a git directory, the submodules are not standard cloned.  
+To add the submodules later on run:
+```shell
+git submodule init
+git submodule update
+```
+
+If you want to clone them directly, when cloning your repository, run:
+```shell
+git clone --recursive <repository_url>
+```
 
 ### Branches
 **Create** branch
