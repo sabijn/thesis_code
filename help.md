@@ -39,6 +39,36 @@ lowest_common_ancestor = tree.treeposition_spanning_leaves(i,j+1)
 tree[lowest_common_ancestor].label()
 ```
 
+## Poetry
+You switched from conda to poetry 
+How to create a .toml file
+```shell
+poetry init
+```
+
+After creating your project: check if the project is installed in your directory (check for an .env folder).  
+
+If you manually added packages to the dependencies file
+```shell
+poetry install
+```
+
+Add dependencies from command line
+```shell
+poetry add <package_name>
+```
+
+Open shell
+```shell
+poetry shell
+```
+
+Info on your environment
+```shell
+poetry env info 
+```
+```-p``` print only the path of your environment  
+
 ## Conda
 Listing environment variables per environment
 ```shell
