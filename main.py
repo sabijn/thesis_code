@@ -37,7 +37,7 @@ class MyModule(nn.Module):
         return self.dense0(X)
 
 class DiagModule(pl.LightningModule):
-    def __init__(self, model_hparams):
+    def __init__(self, model_hparams, optimizer_hparams):
         super().__init__()
         # Exports the hyperparameters to a YAML file, and create "self.hparams" namespace
         self.save_hyperparameters()
@@ -161,7 +161,7 @@ if __name__ == "__main__":
     config_dict = create_config_dict()
     pprint(config_dict)
 
-    home_dir = Path(os.environ['CURRENT_WDIR'])
+    home_dir = Path('/Users/sperdijk/Documents/Master/Jaar_3/Thesis/thesis_code')
     if home_dir.exists():
         logger.debug("Home directory exists!")
     else:
