@@ -148,6 +148,11 @@ List branches
 git branch
 ```
 
+See **differences** between branches
+```shell
+git diff <branch1> <branch2>
+```
+
 **Merging**:
 1. 
 From branch: 

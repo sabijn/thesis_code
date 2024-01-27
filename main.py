@@ -156,7 +156,7 @@ def swap_labels(result, label_vocab):
 if __name__ == "__main__":
     """
     Run script
-    Shared levels: python main.py --model.model_type deberta --data.data_dir corpora --data.sampling --data.sampling_size 10000 --experiments.type shared_levels --results.confusion_matrix
+    Shared levels: python main.py --model.model_type deberta --data.data_dir corpora --experiments.type shared_levels --results.confusion_matrix
     """
     config_dict = create_config_dict()
     pprint(config_dict)
