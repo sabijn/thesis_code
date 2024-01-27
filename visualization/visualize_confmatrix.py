@@ -30,7 +30,6 @@ def plot_confusion_matrix(cm, swapped_vocab):
     fig.tight_layout()
     plt.savefig(os.environ['CURRENT_WDIR'] + '/results/shared_levels/confusion_matrix.png')
 
-import numpy as np
 
 def reorder_confusion_matrix(conf_matrix, desired_order):
     """

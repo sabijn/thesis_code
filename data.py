@@ -23,26 +23,28 @@ class ExperimentManager():
         self.activations = self._load_activations()
 
     def _set_label_path(self):
-        match self.name:
-            case 'chunking':
-                logging.info('Running chunking experiments')
-                label_path = 'data/train_bies_labels.txt'
-            case 'lca':
-                logging.info('Running lca experiments')
-                label_path = 'data/train_rel_labels.txt'
-            case 'lca_tree':
-                logging.info('Running lca for full reconstructing (this means, concatenated layers!)')
-                label_path = 'data/train_rel_labels.txt'
-            case 'shared_levels':
-                if self.config_dict['data']['sampling']:
-                    logging.info('Running shared levels for full reconstructing with sampling (this means, concatenated layers!)')
-                    label_path = 'data/train_shared_balanced.txt'
-                else:
-                    logging.info('Running shared levels for full reconstructing WITHOUT sampling (this means, concatenated layers!)')
-                    label_path = 'data/train_shared_levels.txt'
-            case 'unary':
-                logging.info('Running unary experiments for full reconstruction.')
-                label_path = 'data/train_unaries.txt'
+        if self.name == 'chunking':
+            logging.info('Running chunking experiments')
+            label_path = 'data/train_bies_labels.txt'
+        elif self.name == 'lca':
+            logging.info('Running lca experiments')
+            label_path = 'data/train_rel_labels.txt'
+        elif self.name == 'lca_tree':
+            logging.info('Running lca for full reconstructing (this means, concatenated layers!)')
+            label_path = 'data/train_rel_labels.txt'
+        elif self.name == 'shared_levels':
+            if self.config_dict['data']['sampling']:
+                logging.info('Running shared levels for full reconstructing with sampling (this means, concatenated layers!)')
+                label_path = 'data/train_shared_balanced.txt'
+            else:
+                logging.info('Running shared levels for full reconstructing WITHOUT sampling (this means, concatenated layers!)')
+                label_path = 'data/train_shared_levels.txt'
+        elif self.name == 'unary':
+            logging.info('Running unary experiments for full reconstruction.')
+            label_path = 'data/train_unaries.txt'
+        else:
+            logging.critical("This experiment is not supported yet.")
+            raise ValueError('This experiment is not supported yet.')
         
         return label_path
 
