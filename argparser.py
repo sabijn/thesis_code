@@ -65,7 +65,7 @@ def _create_arg_parser() -> ArgumentParser:
                         help="How the activations are combined. Use in combination with LCA experiments.") 
 
     # EXPERIMENTS
-    parser.add_argument("--experiments.type", default='chunking', choices=['chunking', 'lca', 'lca_tree', 'shared_levels', 'unary', 'ii'])
+    parser.add_argument("--experiments.type", default='chunking', choices=['chunking', 'lca', 'lca_tree', 'shared_levels', 'unary'])
     parser.add_argument("--experiments.checkpoint_path", default='models/')
     parser.add_argument("--experiments.control_task", action=argparse.BooleanOptionalAction)
 

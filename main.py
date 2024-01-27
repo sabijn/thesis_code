@@ -1,23 +1,18 @@
-from transformers import AutoModelForMaskedLM
 from pathlib import Path
 from argparser import create_config_dict
 from data import ExperimentManager
-from tokenizer import *
-from pprint import pprint
-import torch
-import pickle
-from tqdm import tqdm
-import numpy as np
+from utils import format_predictions, swap_labels, load_model
+from model import DiagModule
 
 import pytorch_lightning as pl
 import torch
-from torch import nn
-import torch.optim as optim
 from pytorch_lightning.callbacks import ModelCheckpoint
 
-import torchmetrics
+import pickle
+from tqdm import tqdm
+import numpy as np
+from pprint import pprint
 import os
-import json
 import logging
 import sys
 
@@ -27,137 +22,7 @@ logging.basicConfig(stream=sys.stdout,
 
 logger = logging.getLogger(__name__)
 
-class MyModule(nn.Module):
-    def __init__(self, num_inp=768, num_units=18):
-        super(MyModule, self).__init__()
-
-        self.dense0 = nn.Linear(num_inp, num_units)
-
-    def forward(self, X, **kwargs):
-        return self.dense0(X)
-
-class DiagModule(pl.LightningModule):
-    def __init__(self, model_hparams, optimizer_hparams):
-        super().__init__()
-        # Exports the hyperparameters to a YAML file, and create "self.hparams" namespace
-        self.save_hyperparameters()
-        # Create model
-        self.model = MyModule(model_hparams['num_inp'], model_hparams['num_units'])
-        # Create loss module
-        self.loss_module = nn.CrossEntropyLoss()
-
-        # Initialize dictionary to store classwise accuracy
-        self.classwise_acc = {}
-        # Initialize confusion matrix
-        self.confmat = torchmetrics.ConfusionMatrix(task="multiclass", num_classes=model_hparams['num_units'], normalize="true")
-        self.final_confusion_matrix = None 
-    
-    def forward(self, x):
-        # Forward function that is run when visualizing the graph
-        return self.model(x)
-
-    def configure_optimizers(self):
-        optimizer = optim.SGD(self.parameters(), **self.hparams.optimizer_hparams)
-        return [optimizer]
-
-    def training_step(self, batch, batch_idx):
-        x, targets = batch
-        preds = self.model(x)
-        loss = self.loss_module(preds, targets)
-
-        acc = (preds.argmax(dim=-1) == targets).float().mean()
-
-        # Logs the accuracy per epoch to tensorboard (weighted average over batches)
-        self.log('train_acc', acc, on_step=False, on_epoch=True)
-        self.log('train_loss', loss)
-
-        return loss
-
-    def validation_step(self, batch, batch_idx):
-        x, targets = batch
-        preds = self.model(x).argmax(dim=-1)
-
-        acc = (targets == preds).float().mean()
-        self.log('val_acc', acc)
-        # Calculate classwise accuracy
-        class_acc = torchmetrics.functional.accuracy(preds, targets, task='multiclass', num_classes=self.hparams.model_hparams['num_units'], average=None).cpu().numpy()
-
-        # Update classwise accuracy in the log dictionary
-        for i, acc in enumerate(class_acc):
-            self.classwise_acc[f'class_{i}'] = acc
-        
-        # Calculate confusion matrix
-        self.confmat(preds, targets)
-        
-
-    def test_step(self, batch, batch_idx):
-        x, targets = batch
-        preds = self.model(x).argmax(dim=-1)
-
-        acc = (targets == preds).float().mean()
-        self.log('test_acc', acc)
-
-        # Calculate classwise accuracy
-        class_acc = torchmetrics.functional.accuracy(preds, targets, task='multiclass', num_classes=self.hparams.model_hparams['num_units'], average=None).cpu().numpy()
-
-        # Update classwise accuracy in the log dictionary
-        for i, acc in enumerate(class_acc):
-            self.classwise_acc[f'class_{i}'] = acc
-        
-        # Calculate confusion matrix
-        self.confmat(preds, targets)
-
-    def on_validation_epoch_end(self):
-        # Log classwise accuracy at the end of each epoch
-        self.log_dict(self.classwise_acc, on_epoch=True, prog_bar=True)
-        self.classwise_acc = {}
-
-        # Compute and log confusion matrix
-        conf_matrix = self.confmat.compute()
-        # self.logger.experiment.add_image("Confusion Matrix", plot_confusion_matrix(conf_matrix), self.current_epoch)
-        self.final_confusion_matrix = self.confmat.compute().cpu().numpy()
-        self.confmat.reset()
-
-    def on_test_epoch_end(self):
-        # Log classwise accuracy at the end of testing
-        self.log_dict(self.classwise_acc, on_epoch=True, prog_bar=True)
-
-        self.classwise_acc = {}
-
-        # Compute and log confusion matrix
-        conf_matrix = self.confmat.compute()
-        # self.logger.experiment.add_image("Confusion Matrix", plot_confusion_matrix(conf_matrix), self.current_epoch)
-        self.final_confusion_matrix = self.confmat.compute().cpu().numpy()
-        self.confmat.reset()
-
-def load_model(checkpoint, device):
-    model = AutoModelForMaskedLM.from_pretrained(checkpoint).to(device)
-
-    with open(f'{checkpoint}/added_tokens.json') as f:
-        vocab = json.load(f)
-    tokenizer = create_tf_tokenizer_from_vocab(vocab)
-
-    return model, tokenizer
-
-def swap_labels(result, label_vocab):
-    f_result = {}
-    idx2c = {v: k for k, v in label_vocab.items()}
-
-    # output of pytorch lightning .test is a list with all logged metrics, in this case only one dict
-    for c, acc in result[0].items():
-        if c == 'test_acc' or c == 'val_acc':
-            f_result[c] = acc
-        else:
-            class_label = int(c.split('_')[1])
-            f_result[idx2c[class_label]] = acc
-
-    return f_result
-
-if __name__ == "__main__":
-    """
-    Run script
-    Shared levels: python main.py --model.model_type deberta --data.data_dir corpora --experiments.type shared_levels --results.confusion_matrix
-    """
+def main():
     config_dict = create_config_dict()
     pprint(config_dict)
 
@@ -248,19 +113,20 @@ if __name__ == "__main__":
 
         model = DiagModule.load_from_checkpoint(trainer.checkpoint_callback.best_model_path) # Load best checkpoint after training
 
-        # Test best model on validation and test set
-        val_result = swap_labels(trainer.test(model, dev_loader, verbose=False), CurrentExperiment.label_vocab)
+        # Test best model on test set
         test_result = swap_labels(trainer.test(model, test_loader, verbose=False), CurrentExperiment.label_vocab)
-        
-        val_final.append(val_result)
         test_final.append(test_result)
-
-        result = {"test": test_result, "val": val_result}
+        result = {"test": test_result}
         CurrentExperiment.results_file.write(f'Layer {layer_idx} \n {result}\n')
 
         # save confusion matrix
         if config_dict['results']['confusion_matrix']:
             np.save(f'results/{CurrentExperiment.name}/confusion_matrix_{layer_idx}.npy', model.final_confusion_matrix)
+        
+        # save predictions
+        predictions = format_predictions(model.predictions, CurrentExperiment.label_vocab, CurrentExperiment.sentence_lengths)
+        with open(f'results/{CurrentExperiment.name}/predictions_{CurrentExperiment.name}.txt', 'wb') as f:
+            pickle.dump(predictions, f)
 
     CurrentExperiment.results_file.close()
 
@@ -270,3 +136,11 @@ if __name__ == "__main__":
     with open(CurrentExperiment.test_results_file, 'wb') as f:
         pickle.dump(test_final, f)
     print("Label vocab", CurrentExperiment.label_vocab)
+
+
+if __name__ == "__main__":
+    """
+    Run script
+    Shared levels: python main.py --model.model_type deberta --data.data_dir corpora --experiments.type shared_levels --results.pred_labels 
+    """
+    main()

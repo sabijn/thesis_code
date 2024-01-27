@@ -17,6 +17,7 @@ class ExperimentManager():
         self.config_dict = config_dict
         self.name = config_dict['experiments']['type']
         self.device = config_dict['trainer']['device']
+        self.sentence_lengths = []
         self.label_path = self._set_label_path()
         self.labels, self.label_vocab, self.indices = self._create_labels()
         self._set_results_file()
@@ -54,7 +55,9 @@ class ExperimentManager():
 
         with open(self.label_path, 'r') as f:
             for line in f:
-                labels.extend(line.strip().split())
+                sent = line.strip().split()
+                self.sentence_lengths.append(len(sent))
+                labels.extend(sent)
         
         vocab = {l: idx for idx, l in enumerate(set(labels))}
         
