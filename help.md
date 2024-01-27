@@ -196,3 +196,14 @@ When on the branch
 ## Terminal colors
 1. conda config --set changeps1 false
 2. Edited prompt line in ~/.bash_profile
+
+## Installation errors
+
+This section lists all errors you have had concering M1 chips, versions, etc. 
+
+### NotImplementedError CustumTokenizer
+This error occurs when using the library **transformers**>=4.34.0.  
+They changed the *add_tokens* function of the PreTrainedTokenizer class such that it calls the not implemented get_vocab in the base class.  
+Solutions:
+1. Downgrade to transformers version 4.33.*
+2. Add a custom get_vocab to your CustomTokenizer (in the past you went with option 1.)
