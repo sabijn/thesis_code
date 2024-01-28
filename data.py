@@ -17,37 +17,30 @@ class ExperimentManager():
         self.config_dict = config_dict
         self.name = config_dict['experiments']['type']
         self.device = config_dict['trainer']['device']
-        self.sentence_lengths = []
+        self.rel_toks = self._read_rel_toks()
         self.label_path = self._set_label_path()
         self.labels, self.label_vocab, self.indices = self._create_labels()
+        self.idx2class = self._create_idx2class()
         self._set_results_file()
         self.activations = self._load_activations()
 
-    def _set_label_path(self):
-        if self.name == 'chunking':
-            logging.info('Running chunking experiments')
-            label_path = 'data/train_bies_labels.txt'
-        elif self.name == 'lca':
-            logging.info('Running lca experiments')
-            label_path = 'data/train_rel_labels.txt'
-        elif self.name == 'lca_tree':
-            logging.info('Running lca for full reconstructing (this means, concatenated layers!)')
-            label_path = 'data/train_rel_labels.txt'
-        elif self.name == 'shared_levels':
-            if self.config_dict['data']['sampling']:
-                logging.info('Running shared levels for full reconstructing with sampling (this means, concatenated layers!)')
-                label_path = 'data/train_shared_balanced.txt'
-            else:
-                logging.info('Running shared levels for full reconstructing WITHOUT sampling (this means, concatenated layers!)')
-                label_path = 'data/train_shared_levels.txt'
-        elif self.name == 'unary':
-            logging.info('Running unary experiments for full reconstruction.')
-            label_path = 'data/train_unaries.txt'
-        else:
-            logging.critical("This experiment is not supported yet.")
-            raise ValueError('This experiment is not supported yet.')
-        
-        return label_path
+    def _create_control_task_labels(self):
+        """
+        Randomly assign BIES labels to tokens based on distribution of labels in the training set.
+        """
+        # randomly assign bies labels based on distribution of labels in the training set
+        p = []
+
+        for uv in set(self.labels.tolist()):
+            p.append(self.labels.tolist().count(uv))
+
+        control_labels = np.random.choice(list(set(self.labels.tolist())), len(self.labels), p=[elem/sum(p) for elem in p])
+        tokenized_control_labels = torch.tensor(control_labels).to(self.device)
+
+        return tokenized_control_labels
+
+    def _create_idx2class(self):
+        return {v: k for k, v in self.label_vocab.items()}
 
     def _create_labels(self):
         logging.info(f'Creating labels for {self.name}')
@@ -55,9 +48,7 @@ class ExperimentManager():
 
         with open(self.label_path, 'r') as f:
             for line in f:
-                sent = line.strip().split()
-                self.sentence_lengths.append(len(sent))
-                labels.extend(sent)
+                labels.extend(line.strip().split())
         
         vocab = {l: idx for idx, l in enumerate(set(labels))}
         
@@ -74,21 +65,6 @@ class ExperimentManager():
             indices = None
 
         return tokenized_labels, vocab, indices
-
-    def _create_control_task_labels(self):
-        """
-        Randomly assign BIES labels to tokens based on distribution of labels in the training set.
-        """
-        # randomly assign bies labels based on distribution of labels in the training set
-        p = []
-
-        for uv in set(self.labels.tolist()):
-            p.append(self.labels.tolist().count(uv))
-
-        control_labels = np.random.choice(list(set(self.labels.tolist())), len(self.labels), p=[elem/sum(p) for elem in p])
-        tokenized_control_labels = torch.tensor(control_labels).to(self.device)
-
-        return tokenized_control_labels
 
     def create_train_dev_test_split(self, idx, train_size=0.8, dev_size=0.9):
         states = self.activations[idx]
@@ -109,33 +85,9 @@ class ExperimentManager():
         X_test = states[test_ids]
         y_test = self.labels[test_ids]
 
+        self.rel_toks_test = [self.rel_toks[idx] for idx in test_ids]
+
         return X_train, y_train, X_dev, y_dev, X_test, y_test
-
-    def _set_results_file(self):
-        if self.config_dict['experiments']['control_task']:
-            self.results_file = open(f'results/{self.name}/results_control{self.config_dict["experiments"]["control_task"]}.txt', 'w')
-            self.test_results_file = f'results/{self.name}/test_results_control{self.config_dict["experiments"]["control_task"]}.pickle'
-            self.val_results_file = f'results/{self.name}/val_results_control{self.config_dict["experiments"]["control_task"]}.pickle'
-            self.base_name = f'{self.name}/best_model_control_{self.name}'
-        else:
-            self.results_file = open(f'results/{self.name}/results_default_{self.config_dict["data"]["sampling_size"]}.txt', 'w')
-            self.test_results_file = f'results/{self.name}/test_results_default_{self.config_dict["data"]["sampling_size"]}.pickle'
-            self.val_results_file = f'results/{self.name}/val_results_default_{self.config_dict["data"]["sampling_size"]}.pickle'
-            self.base_name = f'{self.name}/best_model_default_{self.name}'
-    
-    def _sample_data(self, labels):
-        # sample data to obtain balanced classes
-        class_idx = Counter(labels.tolist())
-
-        all_indices = []
-        for count in class_idx.values():
-            if count > self.config_dict['data']['sampling_size']:
-                indices = list(np.random.choice(count, self.config_dict['data']['sampling_size'], replace=False))
-                all_indices.extend(indices)
-        
-        sampled_labels = torch.tensor([labels[idx] for idx in all_indices]).to(self.device)
-    
-        return sampled_labels, all_indices
 
     def _load_activations(self):
         """
@@ -176,3 +128,62 @@ class ExperimentManager():
                 f"Length of labels ({len(self.labels)}) does not match length of activations ({len(activations[0])})"
 
         return activations
+
+    def _read_rel_toks(self):
+        with open(self.config_dict['data']['rel_toks'], 'r') as f:
+            rel_toks = f.readlines()
+        
+        return [tok.strip('\n') for sent in rel_toks for tok in sent.split(' ')]
+
+    def _set_label_path(self):
+        if self.name == 'chunking':
+            logging.info('Running chunking experiments')
+            label_path = 'data/train_bies_labels.txt'
+        elif self.name == 'lca':
+            logging.info('Running lca experiments')
+            label_path = 'data/train_rel_labels.txt'
+        elif self.name == 'lca_tree':
+            logging.info('Running lca for full reconstructing (this means, concatenated layers!)')
+            label_path = 'data/train_rel_labels.txt'
+        elif self.name == 'shared_levels':
+            if self.config_dict['data']['sampling']:
+                logging.info('Running shared levels for full reconstructing with sampling (this means, concatenated layers!)')
+                label_path = 'data/train_shared_balanced.txt'
+            else:
+                logging.info('Running shared levels for full reconstructing WITHOUT sampling (this means, concatenated layers!)')
+                label_path = 'data/train_shared_levels.txt'
+        elif self.name == 'unary':
+            logging.info('Running unary experiments for full reconstruction.')
+            label_path = 'data/train_unaries.txt'
+        else:
+            logging.critical("This experiment is not supported yet.")
+            raise ValueError('This experiment is not supported yet.')
+        
+        return label_path
+
+    def _set_results_file(self):
+        if self.config_dict['experiments']['control_task']:
+            self.results_file = open(f'results/{self.name}/results_control{self.config_dict["experiments"]["control_task"]}.txt', 'w')
+            self.test_results_file = f'results/{self.name}/test_results_control{self.config_dict["experiments"]["control_task"]}.pickle'
+            self.val_results_file = f'results/{self.name}/val_results_control{self.config_dict["experiments"]["control_task"]}.pickle'
+            self.base_name = f'{self.name}/best_model_control_{self.name}'
+        else:
+            self.results_file = open(f'results/{self.name}/results_default_{self.config_dict["data"]["sampling_size"]}.txt', 'w')
+            self.test_results_file = f'results/{self.name}/test_results_default_{self.config_dict["data"]["sampling_size"]}.pickle'
+            self.val_results_file = f'results/{self.name}/val_results_default_{self.config_dict["data"]["sampling_size"]}.pickle'
+            self.base_name = f'{self.name}/best_model_default_{self.name}'
+    
+    def _sample_data(self, labels):
+        # sample data to obtain balanced classes
+        class_idx = Counter(labels.tolist())
+
+        all_indices = []
+        for count in class_idx.values():
+            if count > self.config_dict['data']['sampling_size']:
+                indices = list(np.random.choice(count, self.config_dict['data']['sampling_size'], replace=False))
+                all_indices.extend(indices)
+        
+        sampled_labels = torch.tensor([labels[idx] for idx in all_indices]).to(self.device)
+    
+        return sampled_labels, all_indices
+

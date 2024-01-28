@@ -124,9 +124,9 @@ def main():
             np.save(f'results/{CurrentExperiment.name}/confusion_matrix_{layer_idx}.npy', model.final_confusion_matrix)
         
         # save predictions
-        predictions = format_predictions(model.predictions, CurrentExperiment.label_vocab, CurrentExperiment.sentence_lengths)
+        predictions = format_predictions(model.predictions, CurrentExperiment.idx2class, CurrentExperiment.rel_toks_test)
         with open(f'results/{CurrentExperiment.name}/predictions_{CurrentExperiment.name}.txt', 'wb') as f:
-            pickle.dump(predictions, f)
+            f.write(predictions.encode('utf-8'))
 
     CurrentExperiment.results_file.close()
 
@@ -141,6 +141,6 @@ def main():
 if __name__ == "__main__":
     """
     Run script
-    Shared levels: python main.py --model.model_type deberta --data.data_dir corpora --experiments.type shared_levels --results.pred_labels 
+    Shared levels: python main.py --model.model_type deberta --data.data_dir corpora --experiments.type shared_levels
     """
     main()

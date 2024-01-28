@@ -7,7 +7,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-def format_predictions(predictions: np.array, vocab: Dict, sentence_lengths: List) -> List[str]:
+def format_predictions(predictions: np.array, vocab: Dict, rel_toks: List) -> List[str]:
     """
     Format the predictions of a model to a list of strings.
 
@@ -16,17 +16,22 @@ def format_predictions(predictions: np.array, vocab: Dict, sentence_lengths: Lis
     :param sentence_lengths: A list of integers representing the sentence lengths.
     :return: A list of strings representing the predictions.
     """
-    formatted_predictions = []
-    idx2c = {v: k for k, v in vocab.items()}
+    formatted_output = []
+    sent = ''
+    prev_line_sent_ix = rel_toks[0].split('_')[0]
 
-    cursor = 0
-    for sent in sentence_lengths:
-        preds_per_sent = list(predictions[cursor:cursor+sent])
-        new_labels = [idx2c[word] for word in preds_per_sent]
-        formatted_predictions.append(' '.join(new_labels) + '\n')
-        cursor += sent
+    for i, (label, tok) in enumerate(zip(predictions.tolist(), rel_toks)):
+        current_idx = tok.split('_')[0]
 
-    return ''.join(formatted_predictions)
+        if current_idx != prev_line_sent_ix:
+            formatted_output.append(sent + '\n')
+            sent = f'{vocab[label]} '
+            prev_line_sent_ix = current_idx
+        else:
+            sent += f'{vocab[label]} '
+    formatted_output.append(sent)
+
+    return ''.join(formatted_output)
 
 def swap_labels(result, label_vocab):
     f_result = {}

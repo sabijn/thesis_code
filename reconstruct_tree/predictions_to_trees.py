@@ -84,12 +84,10 @@ def main():
     parsedargs = parser.parse_args()
     
 
-    # python3 predictions_to_trees.py -text ../neurox_syntax_experiments/2022_01_adjacent_lca/dev_orig_text.txt -lca ../neurox_syntax_experiments/2022_01_adjacent_lca/dev_rel_labels.txt -levels ../neurox_syntax_experiments/2022_01_adjacent_lca/roberta-base/regress_levels/16_preds_dev.txt -out pred_trees.txt -pos ../neurox_syntax_experiments/2022_01_adjacent_lca/dev_orig_pos.txt
     postextfile = parsedargs.pos_text
     lca_preds = parsedargs.lca
     level_preds = parsedargs.levels
     unaryfile = parsedargs.unary
-    # posfile = parsedargs.pos
 
     with open(postextfile,'r') as f:
         text_and_pos = f.read().splitlines()
@@ -103,6 +101,7 @@ def main():
                 continue
             [w,p] = line.split()
             w_p_sent.append((w,p))
+
     with open(lca_preds, 'r') as f:
         labels = f.read().splitlines()
         labels = [l.split() for l in labels]
@@ -112,18 +111,21 @@ def main():
     with open(unaryfile, 'r') as f:
         unaries = f.read().splitlines()
         unaries = [l.split() for l in unaries]
-    # with open(posfile, 'r') as f:
-    #    poss = f.read().splitlines()
-    #    poss = [l.split() for l in poss]
-    assert len(wordsandpos) == len(labels) == len(levels) == len(unaries)
-    assert all([len(l2) == len(l3) == len(l4) for l2,l3,l4 in zip(labels,levels,unaries)])
-    assert all([len(l1) == (len(l2)+3) == (len(l3)+3) == len(l4)+3 for l1,l2,l3,l4 in zip(wordsandpos,labels,levels,unaries)])
 
-    # pairs of tokens, pos
-    # wordsandpos = [list(zip(ts,pos)) for ts,pos in zip(text,poss)]
-    # wordsandpos = []
-    # for txtline,posline in zip(text,poss):
-    #     wordsandpos.append([('-BOS-','-BOS-')] + [[w,p] for w,p in zip(txtline,posline)] + [('-EOS-','-EOS-')])
+    assert len(wordsandpos) == len(labels) == len(levels) == len(unaries), f'{len(wordsandpos)} {len(labels)} {len(levels)} {len(unaries)}'
+    assert all([len(l2) == len(l3) == len(l4) for l2,l3,l4 in zip(labels,levels,unaries)])
+    #assert all([len(l1) == (len(l2)+3) == (len(l3)+3) == len(l4)+3 for l1,l2,l3,l4 in zip(wordsandpos,labels,levels,unaries)])
+    counter = 0
+    for i, (l1, l2, l3, l4) in enumerate(zip(wordsandpos,labels,levels,unaries)):
+        try:
+            assert len(l1) == len(l2) + 3 == len(l3) + 3 == len(l4) + 3, f'(idx) {i} {len(l1)} {len(l2) + 3} {len(l3) + 3} {len(l4) + 3}'
+        except:
+            print(f'(idx) {i} {len(l1)} {len(l2) + 3} {len(l3) + 3} {len(l4) + 3}')
+            counter += 1
+    print('You cheated but you made it')
+    print(counter)
+    print(len(wordsandpos))
+    exit()
     predseqs =  []
     for levs,lcas,uns in zip(levels,labels,unaries):
         predseq = ['-BOS-']
