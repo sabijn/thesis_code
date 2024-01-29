@@ -398,7 +398,7 @@ char *argv[];
 	    dsp_info();
 	}
     }
-
+    
     if(fgets(buff,5000,fd2)!=NULL){
 	Error("Number of lines unmatch (too many lines in test file)\n");
     }

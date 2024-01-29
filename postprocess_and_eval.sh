@@ -18,8 +18,8 @@ python3 reconstruct_tree/predictions_to_trees.py -pos_text $datadir/test_POS.txt
 # labeledoutput=$resultsdir"full_tree/concat_evalb_labeled.log"
 # unlabeledoutput=$resultsdir"full_tree/concat_evalb_unlabeled.log"
 
-# tree2labels/EVALB/evalb -p tree2labels/EVALb/COLLINS.prm $modeldir/concat_test_trees.txt $datadir/test_gold_trees.txt > $labeledoutput
-# tree2labels/EVALB/evalb -p tree2labels/EVALb/COLLINS_unlabeled.prm $modeldir/concat_test_trees.txt $datadir/test_gold_trees.txt > $unlabeledoutput
+# EVALB/evalb -p EVALB/COLLINS.prm $resultsdir/full_tree/concat_test_trees.txt $datadir/test_gold_trees_cleaned.txt > $labeledoutput
+# EVALB/evalb -p EVALB/COLLINS_unlabeled.prm $resultsdir/full_tree/concat_test_trees.txt $datadir/test_gold_trees_cleaned.txt > $unlabeledoutput
 
 # echo "STEP: Done with eval. Results are in the files: "
 # echo $labeledoutput

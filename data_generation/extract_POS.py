@@ -29,16 +29,16 @@ def format_and_write(pos_corpus, output_file):
     with open(output_file, 'w') as f:
         for sentence in pos_corpus:
             for word, pos in sentence:
-                if word not in tokenizer.vocab:
-                    print('Skipping word not in tokenizer vocab: ', word)
-                    continue
+                # if word not in tokenizer.vocab:
+                #     print('Skipping word not in tokenizer vocab: ', word)
+                #     continue
                 f.write(f'{word} {pos.split("_")[0]}\n')
             f.write('\n')
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--data', default=Path('corpora/eval_trees_10k.txt'))
-    parser.add_argument('--output_file', default=Path('data/train_POS.txt'))
+    parser.add_argument('--output_file', default=Path('data/train_POS_v1.txt'))
     args = parser.parse_args()
 
     home = Path('/Users/sperdijk/Documents/Master/Jaar_3/Thesis/thesis_code')
