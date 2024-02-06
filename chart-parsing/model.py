@@ -1,8 +1,11 @@
 import torch
 import torch.nn as nn
 from typing import Optional
-from allennlp import SelfAttentiveSpanExtractor
+from allennlp.modules.span_extractors.self_attentive_span_extractor import SelfAttentiveSpanExtractor
 
+import logging
+
+logger = logging.getLogger(__name__)
 
 class SpanProbe(nn.Module):
     def __init__(self, hidden_size, num_labels, hidden_dropout_prob=0., **kwargs):
@@ -17,6 +20,7 @@ class SpanProbe(nn.Module):
         span_embeddings = span_embeddings.view(-1, self.hidden_size)
         span_embeddings = self.dropout(span_embeddings)
         logits = self.classifier(span_embeddings)
+
         return logits
 
 
@@ -36,6 +40,7 @@ class Config:
             representation += (f"{key:<{max_len+3}}{str_value}\n")
             
         return representation
+    
 
 class ProbeConfig(Config):
     lr: float = 1e-2
@@ -44,5 +49,4 @@ class ProbeConfig(Config):
     verbose: bool = True
     num_items: Optional[int] = None
     weight_decay: float = 0.1
-
-
+    device: torch.device = None

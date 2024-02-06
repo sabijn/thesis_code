@@ -3,7 +3,11 @@ import sys
 import torch
 import pprint
 import nltk
-import tqdm
+from tqdm import tqdm
+import pickle
+import json
+from pathlib import Path
+import pprint
 
 from argparser import create_arg_parser
 from utils import load_model
@@ -17,37 +21,73 @@ logging.basicConfig(stream=sys.stdout,
 
 logger = logging.getLogger(__name__)
 
-def main(config, model, tokenizer):
+def main(config):
     """
     Main function to run span probing
     """
-    logger.info('Running span probing...')
-
-    skip_labels = ['WHPP', 'NX', 'WHNP', 'X', 'WHADJP', 'WHADVP', 'RRC', 'NAC', 'CONJP', 'SBARQ']
+    logger.info('Running span probing.')
+    logger.info('Loading model...')
+    model, tokenizer = load_model(config.model_path, config.device)
+    model.eval()
+    logger.info('Model loaded.')
 
     logger.info('Loading data...')
     with open(config.data) as f:
         tree_corpus = [nltk.Tree.fromstring(l.strip()) for l in f]
     logger.info('Data loaded.')
 
-    all_span_ids, all_tokenized_labels, span_label_vocab = extract_span_labels(
-        tree_corpus, 
-        merge_pos=True,
-        merge_at=True,
-        skip_labels=skip_labels,
-    )
-    all_states = create_states(tokenizer, tree_corpus, model, concat=False, verbose=True, all_layers=True)  
+    logger.info('Extracting span labels...')
+    if (config.span_ids_path.exists() and 
+        config.tokenized_labels_path.exists() and 
+        config.label_vocab_path.exists()):
+
+        logger.info('Span labels already extracted. Loading from filesystem.')
+        all_span_ids = pickle.load(open(config.span_ids_path, 'rb'))
+        all_tokenized_labels = pickle.load(open(config.tokenized_labels_path, 'rb'))
+        span_label_vocab = json.load(open(config.label_vocab_path, 'r'))
+    else:
+        all_span_ids, all_tokenized_labels, span_label_vocab = extract_span_labels(
+            tree_corpus, 
+            device=config.device,
+            merge_pos=True,
+            merge_at=True,
+            skip_labels=config.skip_labels,
+        )
+        pickle.dump(all_span_ids, open(config.span_ids_path, 'wb'))
+        pickle.dump(all_tokenized_labels, open(config.tokenized_labels_path, 'wb'))
+        json.dump(span_label_vocab, open(config.label_vocab_path, 'w'))
+
+    logger.info('Span labels extracted.')
+
+    logger.info('Creating states...')
+    if Path(config.created_states_path / 'states_all_layers.pkl').exists() and config.all_layers:
+        logger.info('States already created. Loading from filesystem with all layers.')
+        all_states = pickle.load(open(config.created_states_path / Path('states_all_layers.pkl'), 'rb'))
+        if config.concat:
+            all_states = {layer: torch.concat(states) for layer, states in all_states.items()}
+
+    elif Path(config.created_states_path / 'states.pkl').exists() and not config.all_layers:
+        logger.info('States already created. Loading from filesystem with only final layer.')
+        all_states = pickle.load(open(config.created_states_path / Path('states.pkl'), 'rb'))
+        if config.concat:
+            all_states = torch.concat(states)
+        # to be compatible with the for-loop over the layers
+        all_states = {0: all_states}
+    else:
+        all_states = create_states(tokenizer, tree_corpus, model, config, concat=config.concat, verbose=True, all_layers=config.all_layers)  
+        logger.info('States created.')
 
     layer_f1 = []
-    for states in tqdm(all_states.values()):
+    for idx, states in enumerate(tqdm(all_states.values())):
         hidden_size = states[0].shape[-1]
 
         probe_config = ProbeConfig(
             lr=config.lr,
             epochs=config.epochs,
-            verbose=True,
+            verbose=config.verbose,
             batch_size=config.batch_size,
-            weight_decay=config.weight_decay
+            weight_decay=config.weight_decay,
+            device=config.device
         )
 
         span_probe, loss_curve, train_accs, dev_accs, test_merged_f1, test_preds = probe_loop(
@@ -56,28 +96,23 @@ def main(config, model, tokenizer):
             all_tokenized_labels, 
             hidden_size, 
             span_label_vocab,
-            probe_config,
+            probe_config
         )
         
         layer_f1.append(test_merged_f1)
-
+    
+    with open(config.output_path / 'results_f1_all_layers.pkl', 'wb') as f:
+        pickle.dump(layer_f1, f)
+    
+    logger.info('Span probing done. Results are in data/results_f1_all_layers.pkl')
 
 if __name__ == '__main__':
     """
     Code to run span probing
-
-    What to do:
-    - self attentitive ding aan jaap vragen
-    - device in data
-    - 
     """
     logger.info('Loading configuration...')
     config = create_arg_parser()
-    logger.info(f'Running span probing with the following configuration: {config}')
+    logger.info('Configuration loaded.')
+    pprint.pprint(vars(config))
 
-    logger.info('Loading model...')
-    model, tokenizer = load_model(config.model_path, config.device)
-    model.eval()
-    logger.info('Model loaded.')
-
-    main(config, model, tokenizer)
+    main(config)

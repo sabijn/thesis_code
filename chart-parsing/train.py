@@ -5,9 +5,14 @@ import numpy as np
 import random
 from copy import deepcopy
 import torch
-import tqdm
+from tqdm import tqdm
+import logging
 
-from models import SpanProbe
+from model import SpanProbe
+from data import create_data_splits
+
+
+logger = logging.getLogger(__name__)
     
 
 def train_probe(train_data, dev_data, hidden_size, label_vocab, config):
@@ -15,7 +20,7 @@ def train_probe(train_data, dev_data, hidden_size, label_vocab, config):
     dev_states, dev_span_ids, dev_labels = dev_data
     train_size = len(train_states)
     
-    span_probe = SpanProbe(hidden_size, len(span_label_vocab), hidden_dropout_prob=0.).to(DEVICE)
+    span_probe = SpanProbe(hidden_size, len(label_vocab), hidden_dropout_prob=0.).to(config.device)
 
     optimizer = optim.AdamW(span_probe.parameters(), lr=config.lr, weight_decay=config.weight_decay)
     loss_function = nn.CrossEntropyLoss()
@@ -27,10 +32,11 @@ def train_probe(train_data, dev_data, hidden_size, label_vocab, config):
     best_probe = None
     best_dev_f1 = 0.
 
-    print(f"train f1\tdev f1\t\t--\tmerged f1\tmerged dev f1")
+    if config.verbose:
+        print(f"train f1\tdev f1\t\t--\tmerged f1\tmerged dev f1")
     
     try:
-        for epoch in tqdm(range(config.epochs)):
+        for epoch in tqdm(range(config.epochs), leave=False):
             random_ids = np.array(random.sample(range(train_size), k=train_size))
             batch_size = 48
 
@@ -125,20 +131,10 @@ def eval_probe(probe, states, spans, labels, label_vocab):
 
 
 def probe_loop(states, span_ids, labels, hidden_size, label_vocab, config):
-    corpus_size = len(states)
-    train_split, dev_split, test_split = int(0.8 * corpus_size), int(0.9 * corpus_size), corpus_size
-
-    train_states = states[:train_split]
-    dev_states = states[train_split:dev_split]
-    test_states = states[dev_split:test_split]
-    
-    train_span_ids = span_ids[:train_split]
-    dev_span_ids = span_ids[train_split:dev_split]
-    test_span_ids = span_ids[dev_split:test_split]    
-    
-    train_labels = labels[:train_split]
-    dev_labels = labels[train_split:dev_split]
-    test_labels = labels[dev_split:test_split]
+    assert len(states) == len(span_ids) == len(labels)
+    train_states, dev_states, test_states = create_data_splits(states)
+    train_span_ids, dev_span_ids, test_span_ids = create_data_splits(span_ids)
+    train_labels, dev_labels, test_labels = create_data_splits(labels)
 
     span_probe, loss_curve, train_accs, dev_accs = train_probe(
         (train_states, train_span_ids, train_labels),
