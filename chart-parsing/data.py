@@ -43,23 +43,13 @@ def tree_to_spanlabels(tree, device, merge_pos=False, merge_at=False, skip_label
     for treeposition, span in treeposition_to_span.items():
         treeposition_to_span[treeposition] = max(span, key=lambda x: x[1] - x[0])
 
-    nonterminal_treeposition = [
-        treeposition
-        for treeposition in tree.treepositions()
-        if isinstance(tree[treeposition], nltk.Tree)
-    ]
-
     span_ids = torch.zeros(len(treeposition_to_span), 2, device=device).long()
     labels = []
 
     for idx, (treeposition, span) in enumerate(treeposition_to_span.items()):
-        subtree = tree[treeposition]
-        start, end = treeposition_to_span[treeposition]
+        label = tree[treeposition].label()
+        span_ids[idx, :] = torch.tensor(treeposition_to_span[treeposition])
 
-        span_ids[idx, 0] = start
-        span_ids[idx, 1] = end
-
-        label = subtree.label()
         if merge_pos:
             label = label.split("_")[0]
         if merge_at:

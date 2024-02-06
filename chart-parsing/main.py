@@ -78,6 +78,7 @@ def main(config):
         logger.info('States created.')
 
     layer_f1 = []
+    # train probes per layer activation
     for idx, states in enumerate(tqdm(all_states.values())):
         hidden_size = states[0].shape[-1]
 
