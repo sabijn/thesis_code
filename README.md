@@ -1,3 +1,3 @@
 # Waar ben je gebleven
-AllenNLP even zelf in een file zetten
-(Je hebt je poetry file teruggezet)
+Write data to file instead of creating it everytime
+Run the span probe!

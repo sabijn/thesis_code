@@ -26,16 +26,16 @@ def main():
     config_dict = create_config_dict()
     pprint(config_dict)
 
-    home_dir = Path('/Users/sperdijk/Documents/Master/Jaar_3/Thesis/thesis_code')
+    home_dir = Path('/Users/sperdijk/Documents/Master/Jaar_3/Thesis/thesis_code/')
     if home_dir.exists():
         logger.debug("Home directory exists!")
     else:
         exit("Home directory does not exist!")
 
     if config_dict['model']['model_type'] == 'deberta':
-        model_path = Path('pcfg-lm/resources/checkpoints/deberta/')
+        model_path = home_dir / Path('pcfg-lm/resources/checkpoints/deberta/')
     elif config_dict['model']['model_type'] == 'gpt2':
-        model_path = Path('pcfg-lm/resources/checkpoints/gpt2/')
+        model_path = home_dir / Path('pcfg-lm/resources/checkpoints/gpt2/')
 
     if config_dict['trainer']['device'] is None:
         if torch.cuda.is_available():
