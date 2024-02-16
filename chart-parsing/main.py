@@ -78,6 +78,7 @@ def main(config):
         logger.info('States created.')
 
     layer_f1 = []
+    layer_predictions = []
     # train probes per layer activation
     for idx, states in enumerate(tqdm(all_states.values())):
         hidden_size = states[0].shape[-1]
@@ -101,9 +102,13 @@ def main(config):
         )
         
         layer_f1.append(test_merged_f1)
+        layer_predictions.append(test_preds)
     
     with open(config.output_path / 'results_f1_all_layers.pkl', 'wb') as f:
         pickle.dump(layer_f1, f)
+    
+    with(open(config.output_path / 'predictions_all_layers.pkl', 'wb')) as f:
+        pickle.dump(layer_predictions, f)
     
     logger.info('Span probing done. Results are in data/results_f1_all_layers.pkl')
 

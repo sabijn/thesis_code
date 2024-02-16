@@ -103,13 +103,15 @@ def eval_probe(probe, states, spans, labels, label_vocab):
             pred = probe(state.unsqueeze(0), span)
             pred = pred.argmax(-1)
             
-            all_labels.extend(label.tolist())
-            all_preds.extend(pred.tolist())
+            all_labels.append(label.tolist())
+            all_preds.append(pred.tolist())
     
     probe.train()
     
-    f1 = f1_score(all_labels, all_preds, average="micro")
-    conf = confusion_matrix(all_labels, all_preds)
+    concat_labels = list(np.concatenate(all_labels))
+    concat_preds = list(np.concatenate(all_preds))
+    f1 = f1_score(concat_labels, concat_preds, average="micro")
+    conf = confusion_matrix(concat_labels, concat_preds)
 
     base_labels = set(label.split("_")[0] for label in label_vocab.keys())
     idx_to_label = list(label_vocab.keys())
