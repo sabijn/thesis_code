@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #SBATCH --partition=illc
-#SBATCH --Account=illc
+#SBATCH -A=illc
 #SBATCH --job-name=pmasking
 #SBATCH --ntasks=1
 #SBATCH --gpus=1
@@ -9,13 +9,12 @@
 #SBATCH --time=04:00:00
 #SBATCH --output=logs/slurm_output_%A.out
 
-echo loading modules...
-module purge
-module load 2022
-module load Miniconda3/4.12.0
+echo setting up Miniconda...
+echo setting up conda...
+source miniconda3/etc/profile.d/conda.sh
 
 echo activating virtual env...
-source activate ...
+source activate basic310
 
 echo fetching and pulling latest changes from remote dir...
 unset -v BRANCH
@@ -37,8 +36,8 @@ then
     exit 1
 fi
 
+cd $HOME/Documents/thesis_code/perturbed-masking/
 git checkout $BRANCH
-cd $HOME/thesis_code/perturbed-masking/
 git fetch && git pull
 
 echo running perturbed masking...
