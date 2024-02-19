@@ -5,6 +5,7 @@ pcfg-lm/
 models/
 results/
 logs/
+jobs/
 
 # personal files
 garbage.py
