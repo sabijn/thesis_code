@@ -4,7 +4,7 @@ corpora/
 pcfg-lm/
 models/
 results/
-
+logs/
 
 # personal files
 garbage.py
