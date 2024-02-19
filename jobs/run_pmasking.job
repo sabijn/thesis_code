@@ -16,7 +16,11 @@ source miniconda3/etc/profile.d/conda.sh
 echo activating virtual env...
 source activate basic310
 
-echo fetching and pulling latest changes from remote dir...
+echo activating ssh connection...
+eval "$(ssh-agent -s)"
+ssh-add .ssh/id_ed25519
+
+echo parsing input arguments...
 unset -v BRANCH
 
 while getopts b:h flag
@@ -36,6 +40,7 @@ then
     exit 1
 fi
 
+echo fetching and pulling latest changes from remote dir...
 cd $HOME/Documents/thesis_code/perturbed-masking/
 git checkout $BRANCH
 git fetch && git pull
