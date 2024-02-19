@@ -174,6 +174,27 @@ git push --set-upstream origin <branch_name>
 ```
 When on the branch
 
+## Running remote
+
+### Setting up Git on your remote machine
+1. Generate ssh key (ssh-keygen -t ed25519)
+2. Copy the public key to GitHub
+3. Clone repository (git clone ...)
+
+#### Errors while setting up
+```bash
+Could not open a connection to your authentication agent.
+```
+Add your private key to your ssh-agent:
+```bash
+eval "$(ssh-agent)"
+ssh-add ~/.ssh/<your_private_key>
+```
+Should return something along the lines off:
+```bash
+Identity added: <path_to_your_key>
+```
+
 ## Explanation per directory
 
 ### data
