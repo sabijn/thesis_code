@@ -6,7 +6,7 @@
 #SBATCH --ntasks=1
 #SBATCH --gpus=1
 #SBATCH --time=04:00:00
-#SBATCH --output=slurm_output_%A.out
+#SBATCH --output=$HOME/Documents/thesis_code/logs/slurm_output_%A.out
 
 echo setting up Miniconda...
 source miniconda3/etc/profile.d/conda.sh
@@ -17,26 +17,6 @@ source activate basic310
 echo activating ssh connection...
 eval "$(ssh-agent -s)"
 ssh-add .ssh/id_ed25519
-
-echo parsing input arguments...
-unset -v BRANCH
-
-while getopts b:h flag
-do
-    case "${flag}" in
-        b) BRANCH=${OPTARG};;
-        ?|h) echo "Usage: $0 -b branch"; exit 1;;
-    esac
-done
-echo "Branch: $BRANCH";
-
-shift "$(( OPTIND - 1 ))"
-
-if [ -z "$BRANCH" ]
-then
-    echo "Branch is mandatory. Usage: $0 -b branch"
-    exit 1
-fi
 
 echo fetching and pulling latest changes from remote dir...
 cd $HOME/Documents/thesis_code/perturbed-masking/
