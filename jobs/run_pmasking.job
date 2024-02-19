@@ -18,6 +18,26 @@ echo activating ssh connection...
 eval "$(ssh-agent -s)"
 ssh-add .ssh/id_ed25519
 
+echo parsing input arguments...
+unset -v BRANCH
+
+while getopts b:h flag
+do
+    case "${flag}" in
+        b) BRANCH=${OPTARG};;
+        ?|h) echo "Usage: $0 -b branch"; exit 1;;
+    esac
+done
+echo "Branch: $BRANCH";
+
+shift "$(( OPTIND - 1 ))"
+
+if [ -z "$BRANCH" ]
+then
+    echo "Branch is mandatory. Usage: $0 -b branch"
+    exit 1
+fi
+
 echo fetching and pulling latest changes from remote dir...
 cd $HOME/Documents/thesis_code/perturbed-masking/
 git checkout $BRANCH
