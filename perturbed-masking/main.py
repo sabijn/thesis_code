@@ -49,7 +49,7 @@ def main(config):
     corpus = Corpus(config.data)
     
     out = [[] for i in range(config.layers)]
-    for sents, tree2list, nltk_tree in tqdm(zip(corpus.sens, corpus.trees, corpus.nltk_trees), total = len(corpus.sens)):
+    for sents, tree2list, nltk_tree in tqdm(zip(corpus.sens, corpus.trees, corpus.nltk_trees), total = len(corpus.sens), disable=config.quiet):
         per_sen_result = extract_matrix(config, model, tokenizer, sents, tree2list, nltk_tree, mask_id)
 
         for k, one_layer_result in enumerate(per_sen_result):

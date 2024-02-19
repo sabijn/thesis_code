@@ -47,7 +47,8 @@ echo running perturbed masking...
 srun python main.py --data=$HOME/data/eval_trees_10k.txt \
                     --home_model_path=$HOME/models/ \
                     --output_dir=$HOME/thesis_code/perturbed-masking/results_remote/ \
-                    --embedding_layer
+                    --embedding_layer \
+                    --quiet
 
 echo adding, committing, and pushing results to remote dir...
 git add $HOME/thesis_code/perturbed-masking/

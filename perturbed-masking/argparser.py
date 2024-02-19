@@ -12,6 +12,8 @@ def create_arg_parser():
     # GENERAL
     argparser.add_argument('--metric', type=str, default='dist', choices=['dist', 'cos'],
                            help='Metric to use for analysis')
+    argparser.add_argument('--quiet', action=argparse.BooleanOptionalAction,
+                           help='Print verbose information')
     
     # MODEL
     argparser.add_argument('--device', type=str, default=None,
