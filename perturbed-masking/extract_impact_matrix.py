@@ -61,8 +61,7 @@ def get_representations(model, tokens_tensor, segments_tensor):
     :return: hidden states for all layers
     """
     with torch.no_grad():
-        model_outputs = model(tokens_tensor, segments_tensor)
-        all_layers = model_outputs[-1]  # 12 layers + embedding layer
+        all_layers = model(tokens_tensor, segments_tensor, output_hidden_states=True).hidden_states
 
     return all_layers
 
@@ -75,15 +74,15 @@ def represenations_per_layer(all_layers, i, config):
 
     :return: hidden states for i-th token in all layers
     """
-    all_layers_matrix_as_list = []
-    for layer in all_layers:
+    repr_per_layer = [[] for i in range(config.layers)]
+    for k, layer in enumerate(all_layers):
         if config.device != 'cpu':
             hidden_states_for_token_i = layer[:, i, :].cpu().numpy()
         else:
             hidden_states_for_token_i = layer[:, i, :].numpy()
-        all_layers_matrix_as_list.append(hidden_states_for_token_i)
+        repr_per_layer[k].append(hidden_states_for_token_i)
 
-    return all_layers_matrix_as_list
+    return repr_per_layer 
 
 
 def create_impact_matrices(config, all_layers_matrix_as_list, sents, tokenized_text, tree2list, nltk_tree):
@@ -103,7 +102,7 @@ def create_impact_matrices(config, all_layers_matrix_as_list, sents, tokenized_t
     return temp
 
 
-def prepare_sentence(sents, tokenizer, mask_id):
+def prepare_sentence(sents, tokenizer):
     """
     Function to prepare sentence for analysis
     :param sentence: sentence
@@ -119,7 +118,7 @@ def prepare_sentence(sents, tokenizer, mask_id):
     indexed_tokens = tokenizer.convert_tokens_to_ids(tokenized_text)
     assert len(sents) == len(tokenized_text) - 2, 'Something went wrong with tokeninzing.'
 
-    mapping = match_tokenized_to_untokenized(tokenized_text, sentence)
+    mapping = match_tokenized_to_untokenized(tokenized_text, sents)
 
     return tokenized_text, indexed_tokens, mapping
 
@@ -135,7 +134,7 @@ def extract_matrix(config, model, tokenizer, sents, tree2list, nltk_tree, mask_i
     """
 
     logger.debug('Tokenize sentences.')
-    tokenized_text, indexed_tokens, mapping = prepare_sentence(sents, tokenizer, mask_id)
+    tokenized_text, indexed_tokens, mapping = prepare_sentence(sents, tokenizer)
     assert mapping != False, 'Tokenization mismatch'
     logger.debug('Tokenization done.')
 
@@ -144,6 +143,9 @@ def extract_matrix(config, model, tokenizer, sents, tree2list, nltk_tree, mask_i
         # 1. Mask i-th token
         tmp_indexed_tokens = mask_ith_token(indexed_tokens, i, mask_id, mapping)
         one_batch = batch_mask_combinations(tmp_indexed_tokens, mask_id, mapping, tokenized_text)
+        assert len(one_batch) == len(sents) + 2, f'Batch size mismatch, {len(one_batch)} != {len(sents) + 2}'
+        for j in one_batch:
+            assert len(j) == len(tokenized_text), f'Tokenized text size mismatch, {len(j)} != {len(tokenized_text)}'
 
         # 2. Convert one batch to PyTorch tensors
         tokens_tensor = torch.tensor(one_batch).to(config.device)
@@ -151,9 +153,15 @@ def extract_matrix(config, model, tokenizer, sents, tree2list, nltk_tree, mask_i
 
         # 3. Get all hidden states for one batch
         all_layers = get_representations(model, tokens_tensor, segments_tensor)
+        assert len(all_layers) == config.layers, f'Number of layers mismatch, {len(all_layers)} != {config.layers}'
+        assert all_layers[0].shape[0] == len(sents) + 2, f'Batch size mismatch, {all_layers[0].shape[0]} != {len(sents) + 2}'
 
         # 4. get hidden states for word_i in one batch
-        all_layers_matrix_as_list = represenations_per_layer(all_layers, i, config)
+        result_ith_word = represenations_per_layer(all_layers, i, config)
+
+        for k, one_layer in enumerate(result_ith_word):
+            all_layers_matrix_as_list[k].extend(one_layer)
+
 
     temp = create_impact_matrices(config, all_layers_matrix_as_list, sents, tokenized_text, tree2list, nltk_tree)
 

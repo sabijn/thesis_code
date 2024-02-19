@@ -10,6 +10,8 @@ def create_arg_parser():
     argparser = argparse.ArgumentParser(description='Perturbed Masking')
 
     # GENERAL
+    argparser.add_argument('--metric', type=str, default='dist', choices=['dist', 'cos'],
+                           help='Metric to use for analysis')
     
     # MODEL
     argparser.add_argument('--device', type=str, default=None,
