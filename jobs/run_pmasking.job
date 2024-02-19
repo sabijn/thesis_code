@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#SBATCH --partitions=illc
+#SBATCH --partition=illc
 #SBATCH --account=illc
 #SBATCH --job-name=pmasking
 #SBATCH --ntasks=1
