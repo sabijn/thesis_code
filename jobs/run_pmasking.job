@@ -1,7 +1,6 @@
 #!/bin/bash
 
-#SBATCH --partition=illc
-#SBATCH -A=illc
+#SBATCH --partition=illc_dmg
 #SBATCH --job-name=pmasking
 #SBATCH --ntasks=1
 #SBATCH --gpus=1
