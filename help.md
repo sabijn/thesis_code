@@ -195,6 +195,12 @@ Should return something along the lines off:
 Identity added: <path_to_your_key>
 ```
 
+### Installing Conda on FNWI cluster
+Unfortunately the FNWI 'former-lisa' cluster does not work like you are used to.  
+
+1. Install conda in your homedirectory. Follow [this tutorial](https://docs.anaconda.com/free/miniconda/#quick-command-line-install) for installation.  
+2. The storage space is limited (10GB)
+
 ## Explanation per directory
 
 ### data

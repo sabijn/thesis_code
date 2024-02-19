@@ -1,0 +1,14 @@
+#!/bin/bash
+
+while getopts u:a:f:h flag
+do
+    case "${flag}" in
+        u) username=${OPTARG};;
+        a) age=${OPTARG};;
+        f) fullname=${OPTARG};;
+        ?|h) echo "Usage: $0 -u username -a age -f fullname"; exit 1;;
+    esac
+done
+echo "Username: $username";
+echo "Age: $age";
+echo "Full Name: $fullname";

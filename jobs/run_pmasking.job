@@ -1,0 +1,58 @@
+#!/bin/bash
+
+#SBATCH --partition=illc
+#SBATCH --Account=illc
+#SBATCH --job-name=pmasking
+#SBATCH --ntasks=1
+#SBATCH --gpus=1
+#SBATCH --cpus-per-task=3
+#SBATCH --time=04:00:00
+#SBATCH --output=logs/slurm_output_%A.out
+
+echo loading modules...
+module purge
+module load 2022
+module load Miniconda3/4.12.0
+
+echo activating virtual env...
+source activate ...
+
+echo fetching and pulling latest changes from remote dir...
+unset -v BRANCH
+
+while getopts b:h flag
+do
+    case "${flag}" in
+        b) BRANCH=${OPTARG};;
+        ?|h) echo "Usage: $0 -b branch"; exit 1;;
+    esac
+done
+echo "Branch: $BRANCH";
+
+shift "$(( OPTIND - 1 ))"
+
+if [ -z "$BRANCH" ]
+then
+    echo "Branch is mandatory. Usage: $0 -b branch"
+    exit 1
+fi
+
+git checkout $BRANCH
+cd $HOME/thesis_code/perturbed-masking/
+git fetch && git pull
+
+echo running perturbed masking...
+srun python main.py --data=$HOME/data/eval_trees_10k.txt \
+                    --home_model_path=$HOME/models/ \
+                    --output_dir=$HOME/thesis_code/perturbed-masking/results_remote/ \
+                    --embedding_layer
+
+echo adding, committing, and pushing results to remote dir...
+git add $HOME/thesis_code/perturbed-masking/
+git commit -m "save results from run (automated commit from Lisa)."
+git push
+
+echo done.
+
+
+

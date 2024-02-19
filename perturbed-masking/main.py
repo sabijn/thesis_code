@@ -54,6 +54,7 @@ def main(config):
 
         for k, one_layer_result in enumerate(per_sen_result):
             out[k].extend(one_layer_result)
+        break
 
     write_to_file(out, config)
 
