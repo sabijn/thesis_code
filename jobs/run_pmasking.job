@@ -44,7 +44,7 @@ git checkout $BRANCH
 git fetch && git pull
 
 echo running perturbed masking...
-srun python main.py --data=$HOME/data/eval_trees_10k.txt \
+srun python main.py --data=$HOME/data/eval_trees_1000.txt \
                     --home_model_path=$HOME/models/ \
                     --output_dir=$HOME/thesis_code/perturbed-masking/results_remote/ \
                     --embedding_layer \

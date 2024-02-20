@@ -182,6 +182,7 @@ When on the branch
 3. Clone repository (git clone ...)
 
 #### Errors while setting up
+The following error occurs everytime, you enter the cluster! So add this to your jobscript.
 ```bash
 Could not open a connection to your authentication agent.
 ```
@@ -200,6 +201,7 @@ Unfortunately the FNWI 'former-lisa' cluster does not work like you are used to.
 
 1. Install conda in your homedirectory. Follow [this tutorial](https://docs.anaconda.com/free/miniconda/#quick-command-line-install) for installation.  
 2. The storage space is limited (10GB)
+3. Option to install environments in /nvmestore (see Whatsapp with Vera). You just did it in your home.
 
 ## Explanation per directory
 
