@@ -47,10 +47,10 @@ def batch_mask_combinations(indexed_tokens, mask_id, mapping, tokenized_text):
             if mapping[tmp_id] != -1:
                 one_batch[j][tmp_id] = mask_id
 
-    return one_batch
+    return torch.tensor(one_batch)
 
 
-def get_representations(model, tokens_tensor, segments_tensor):
+def get_representations(model, tokens_tensor, config):
     """
     Function to get hidden states for all layers for one batch
     :param model: model
@@ -60,8 +60,10 @@ def get_representations(model, tokens_tensor, segments_tensor):
 
     :return: hidden states for all layers
     """
+    attention_mask = torch.ones_like(tokens_tensor).to(config.device)
+
     with torch.no_grad():
-        all_layers = model(tokens_tensor, segments_tensor, output_hidden_states=True).hidden_states
+        all_layers = model(tokens_tensor, attention_mask=attention_mask, output_hidden_states=True).hidden_states
 
     return all_layers
 
@@ -139,24 +141,20 @@ def extract_matrix(config, model, tokenizer, sents, tree2list, nltk_tree, mask_i
     logger.debug('Tokenization done.')
 
     all_layers_matrix_as_list = [[] for i in range(config.layers)]
+
     for i in range(0, len(tokenized_text)):
         # 1. Mask i-th token
         tmp_indexed_tokens = mask_ith_token(indexed_tokens, i, mask_id, mapping)
-        one_batch = batch_mask_combinations(tmp_indexed_tokens, mask_id, mapping, tokenized_text)
-        assert len(one_batch) == len(sents) + 2, f'Batch size mismatch, {len(one_batch)} != {len(sents) + 2}'
-        for j in one_batch:
-            assert len(j) == len(tokenized_text), f'Tokenized text size mismatch, {len(j)} != {len(tokenized_text)}'
 
-        # 2. Convert one batch to PyTorch tensors
-        tokens_tensor = torch.tensor(one_batch).to(config.device)
-        segments_tensor = torch.tensor([[0 for _ in one_sent] for one_sent in one_batch]).to(config.device)
+        # i with all j gives one batch (sen length + 2, sen length + 2)
+        one_batch = batch_mask_combinations(tmp_indexed_tokens, mask_id, mapping, tokenized_text).to(config.device)
 
-        # 3. Get all hidden states for one batch
-        all_layers = get_representations(model, tokens_tensor, segments_tensor)
+        # 2. Get all hidden states for one batch
+        all_layers = get_representations(model, one_batch, config)
         assert len(all_layers) == config.layers, f'Number of layers mismatch, {len(all_layers)} != {config.layers}'
         assert all_layers[0].shape[0] == len(sents) + 2, f'Batch size mismatch, {all_layers[0].shape[0]} != {len(sents) + 2}'
 
-        # 4. get hidden states for word_i in one batch
+        # 3. get hidden states for word_i in one batch
         result_ith_word = represenations_per_layer(all_layers, i, config)
 
         for k, one_layer in enumerate(result_ith_word):

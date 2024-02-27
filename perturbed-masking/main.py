@@ -40,21 +40,21 @@ def main(config):
     """
     logger.info('Running span probing.')
     logger.info('Loading model...')
-    model, tokenizer = load_model(config.model_path, config.device)
+    model, tokenizer = load_model(config)
     model.eval()
     logger.info('Model loaded.')
 
     mask_id = tokenizer.convert_tokens_to_ids(['[MASK]'])[0]
+    print(mask_id)
 
     corpus = Corpus(config.data)
     
     out = [[] for i in range(config.layers)]
-    for sents, tree2list, nltk_tree in tqdm(zip(corpus.sens, corpus.trees, corpus.nltk_trees), total = len(corpus.sens), disable=config.quiet):
+    for sents, tree2list, nltk_tree in tqdm(zip(corpus.sens, corpus.trees, corpus.nltk_trees), total = len(corpus.sens)):
         per_sen_result = extract_matrix(config, model, tokenizer, sents, tree2list, nltk_tree, mask_id)
 
         for k, one_layer_result in enumerate(per_sen_result):
             out[k].extend(one_layer_result)
-        break
 
     write_to_file(out, config)
 

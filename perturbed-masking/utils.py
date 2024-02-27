@@ -4,15 +4,21 @@ import json
 import torch
 import unicodedata
 
-from transformers import AutoModelForMaskedLM
+from transformers import AutoModelForMaskedLM, AutoModelForCausalLM
 from tokenizer import create_tf_tokenizer_from_vocab
 import logging
 import pickle
 
 logger = logging.getLogger(__name__)
 
-def load_model(checkpoint, device):
-    model = AutoModelForMaskedLM.from_pretrained(checkpoint).to(device)
+def load_model(config):
+    checkpoint = config.model_path
+    if config.model == 'gpt2':
+        model = AutoModelForCausalLM.from_pretrained(checkpoint).to(config.device)
+    elif config.model == 'deberta':
+        model = AutoModelForMaskedLM.from_pretrained(checkpoint).to(config.device)
+    else:
+        raise ValueError(f'Unknown model: {config.model}')
 
     with open(f'{checkpoint}/added_tokens.json') as f:
         vocab = json.load(f)
@@ -23,6 +29,7 @@ def load_model(checkpoint, device):
 def get_all_subword_id(mapping, idx):
     current_id = mapping[idx]
     id_for_all_subwords = [tmp_id for tmp_id, v in enumerate(mapping) if v == current_id]
+
     return id_for_all_subwords
 
 def find_root(parse):
@@ -47,7 +54,7 @@ def _run_strip_accents(text):
 
 def match_tokenized_to_untokenized(subwords, sentence):
     token_subwords = np.zeros(len(sentence))
-    sentence = [_run_strip_accents(x) for x in sentence]
+    #sentence = [_run_strip_accents(x) for x in sentence]
     token_ids, subwords_str, current_token, current_token_normalized = [-1] * len(subwords), "", 0, None
     for i, subword in enumerate(subwords):
         if subword in ["[CLS]", "[SEP]"]: continue
@@ -86,7 +93,7 @@ def write_to_file(out, config):
     Write the impact matrices per layer to a seperate file
     """
     for k, one_layer_out in enumerate(out):
-        k_output = config.output_file.format(config.model_type, config.metric, config.data_split, str(k))
+        k_output = config.output_dir / f'{config.model}_{config.metric}_{str(k)}.pkl'
         with open(k_output, 'wb') as fout:
             pickle.dump(out[k], fout)
             fout.close()

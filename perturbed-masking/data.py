@@ -16,13 +16,12 @@ class Corpus():
         with open(dataset, 'r') as f:
             for line in f:
                 tree = nltk.Tree.fromstring(line)
-                self.trees.append(self.tree2list(line))
+                self.trees.append(self.tree2list(tree))
                 self.nltk_trees.append(tree)
                 self.sens.append(tree.leaves())
     
     def tree2list(self, tree):
         if isinstance(tree, nltk.Tree):
-            print(tree.label())
             if tree.label().split('_')[0] in word_tags:
                 return tree.leaves()[0]
             else:

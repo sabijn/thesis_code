@@ -28,7 +28,7 @@ def create_arg_parser():
                            help='Include embedding layer in analysis.')
     
     # PATHS
-    argparser.add_argument('--data', type=Path, default=Path('/Users/sperdijk/Documents/Master/Jaar_3/Thesis/thesis_code/corpora/eval_trees_10k.txt'),
+    argparser.add_argument('--data', type=Path, default=Path('/Users/sperdijk/Documents/Master/Jaar_3/Thesis/thesis_code/corpora/eval_trees_1000.txt'),
                         help='Path to data')
     argparser.add_argument('--home_model_path', type=Path, default=Path('/Users/sperdijk/Documents/Master/Jaar_3/Thesis/thesis_code/pcfg-lm/resources/checkpoints/'),
                         help='Path to directory were the differen models are stored.')
@@ -63,7 +63,7 @@ def create_arg_parser():
 
     elif config.model == 'gpt2':
         model_path = config.home_model_path / Path('gpt2/')
-        layers = 12 # TODO: check this
+        layers = 8
     
     if config.embedding_layer:
         layers += 1
@@ -73,6 +73,5 @@ def create_arg_parser():
 
     # Configure output files
     config.output_dir.mkdir(parents=True, exist_ok=True)
-    config.output_file = config.output_dir / '{}-{}-{}-{}.pkl'
 
     return config
