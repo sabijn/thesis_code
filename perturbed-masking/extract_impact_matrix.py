@@ -2,7 +2,7 @@ import torch
 import logging
 import sys
 
-from utils import get_all_subword_id, match_tokenized_to_untokenized
+from utils.utils import get_all_subword_id, match_tokenized_to_untokenized
 import numpy as np
 
 logging.basicConfig(stream=sys.stdout,

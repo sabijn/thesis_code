@@ -6,21 +6,9 @@ from decoder import mart, right_branching, left_branching
 import re
 word_tags = ['RBR', 'DT', 'VBP', 'VBZ', 'IN', 'VBG', 'NNS', 'CC', 'FW', 'VBD', 'HASH', 'RBS', 'MD', 'DOT', 'RP', 'POS', 'EX', 'TO', 'NNPS', 'PDT', 'VBN', 'VB', 'RB', 'JJR', 'PRPDOLLAR', 'JJ', 'APOSTROPHE', 'RRB', 'JJS', 'SYM', 'WPDOLLAR', 'COLON', 'UH', 'WDT', 'PRP', 'TICK', 'LRB', 'WRB', 'WP', 'NN', 'COMMA', 'CD', 'NNP']
 from collections import Counter
-from utils import match_tokenized_to_untokenized
+from utils.utils import match_tokenized_to_untokenized
 import os
-
-def get_brackets(tree, idx=0):
-    brackets = set()
-    if isinstance(tree, list) or isinstance(tree, nltk.Tree):
-        for node in tree:
-            node_brac, next_idx = get_brackets(node, idx)
-            if next_idx - idx > 1:
-                brackets.add((idx, next_idx))
-                brackets.update(node_brac)
-            idx = next_idx
-        return brackets, idx
-    else:
-        return brackets, idx + 1
+from evaluation import pm_constituent_evaluation
 
 
 def softmax(x):
@@ -113,42 +101,6 @@ def decoding(args):
     return trees, results
 
 
-def constituent_evaluation(trees, results):
-    prec_list = []
-    reca_list = []
-    f1_list = []
-
-    nsens = 0
-    for tree, result in zip(trees, results):
-        nsens += 1
-        _, _, _, tree2list, _ = result
-
-        model_out, _ = get_brackets(tree)
-        std_out, _ = get_brackets(tree2list)
-        overlap = model_out.intersection(std_out)
-
-        prec = float(len(overlap)) / (len(model_out) + 1e-8)
-        reca = float(len(overlap)) / (len(std_out) + 1e-8)
-
-        if len(std_out) == 0:
-            reca = 1.
-            if len(model_out) == 0:
-                prec = 1.
-        f1 = 2 * prec * reca / (prec + reca + 1e-8)
-        prec_list.append(prec)
-        reca_list.append(reca)
-        f1_list.append(f1)
-
-    prec_list, reca_list, f1_list \
-        = np.array(prec_list).reshape((-1, 1)), np.array(reca_list).reshape((-1, 1)), np.array(
-        f1_list).reshape((-1, 1))
-    print('-' * 80)
-    np.set_printoptions(precision=4)
-    print('Mean Prec:', prec_list.mean(axis=0),
-          ', Mean Reca:', reca_list.mean(axis=0),
-          ', Mean F1:', f1_list.mean(axis=0))
-
-
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
@@ -170,8 +122,8 @@ if __name__ == '__main__':
         raise FileNotFoundError
 
     trees, results = decoding(args)
-    print('pred', trees[0])
-    print('gold', results[0][3])
-    exit()
+    
+    print(trees[0])
+    print(type(trees[0]))
 
-    constituent_evaluation(trees[:10], results[:10])
+    #pm_constituent_evaluation(trees[:10], results[:10])

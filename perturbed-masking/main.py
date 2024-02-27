@@ -22,7 +22,8 @@ import pprint
 import numpy as np
 import os
 
-from utils import load_model, write_to_file
+from utils.utils import load_model
+from utils.wr_utils import write_to_file
 from argparser import create_arg_parser
 from data import Corpus
 from extract_impact_matrix import extract_matrix

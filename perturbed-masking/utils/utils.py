@@ -11,6 +11,7 @@ import pickle
 
 logger = logging.getLogger(__name__)
 
+
 def load_model(config):
     checkpoint = config.model_path
     if config.model == 'gpt2':
@@ -86,14 +87,3 @@ def match_tokenized_to_untokenized(subwords, sentence):
     assert current_token == len(sentence)
 
     return token_ids
-
-
-def write_to_file(out, config):
-    """
-    Write the impact matrices per layer to a seperate file
-    """
-    for k, one_layer_out in enumerate(out):
-        k_output = config.output_dir / f'{config.model}_{config.metric}_{str(k)}.pkl'
-        with open(k_output, 'wb') as fout:
-            pickle.dump(out[k], fout)
-            fout.close()
