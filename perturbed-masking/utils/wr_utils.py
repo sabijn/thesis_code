@@ -9,3 +9,12 @@ def write_im_to_file(out, config):
         with open(k_output, 'wb') as fout:
             pickle.dump(out[k], fout)
             fout.close()
+
+def listtree2str(tree):
+    """
+    Convert tree represented as nested lists to bracketed string.
+    """
+    if isinstance(tree, str):
+        return tree
+    else:
+        return '(' + ' '.join([listtree2str(subtree) for subtree in tree]) + ')'

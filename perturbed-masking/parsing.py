@@ -7,6 +7,7 @@ import re
 word_tags = ['RBR', 'DT', 'VBP', 'VBZ', 'IN', 'VBG', 'NNS', 'CC', 'FW', 'VBD', 'HASH', 'RBS', 'MD', 'DOT', 'RP', 'POS', 'EX', 'TO', 'NNPS', 'PDT', 'VBN', 'VB', 'RB', 'JJR', 'PRPDOLLAR', 'JJ', 'APOSTROPHE', 'RRB', 'JJS', 'SYM', 'WPDOLLAR', 'COLON', 'UH', 'WDT', 'PRP', 'TICK', 'LRB', 'WRB', 'WP', 'NN', 'COMMA', 'CD', 'NNP']
 from collections import Counter
 from utils.utils import match_tokenized_to_untokenized
+from utils.wr_utils import listtree2str
 import os
 from evaluation import pm_constituent_evaluation
 
@@ -114,16 +115,24 @@ if __name__ == '__main__':
     parser.add_argument('--subword', default='avg')
 
     args = parser.parse_args()
-    args.matrix = f'results/{args.model}_{args.mertric}_{args.layer}.pkl'
+
 
     # check if file exists
-    if not os.path.exists(args.matrix):
-        print(f'File {args.matrix} does not exist')
-        raise FileNotFoundError
+    for i in range(9):
+        args.matrix = f'results/i_matrices/{args.model}_{args.mertric}_{i}.pkl'
+        if not os.path.exists(args.matrix):
+            raise FileNotFoundError(f'File {args.matrix} does not exist.')
 
-    trees, results = decoding(args)
-    
-    print(trees[0])
-    print(type(trees[0]))
+        trees, results = decoding(args)
+        
+        # convert trees to strings and write to file
+        trees_str = [listtree2str(tree) for tree in trees]
+        # with open(f'results/trees/trees_{args.model}_{args.mertric}_{i}.txt', 'w') as f:
+        #     for tree in trees_str:
+        #         f.write(f'{tree}\n')
 
+        with open(f'results/trees/trees_{args.model}_{args.mertric}_{i}_list.pkl', 'wb') as f:
+            pickle.dump(trees, f)
+
+    # evaluation
     #pm_constituent_evaluation(trees[:10], results[:10])

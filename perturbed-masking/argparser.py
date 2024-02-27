@@ -32,7 +32,7 @@ def create_arg_parser():
                         help='Path to data')
     argparser.add_argument('--home_model_path', type=Path, default=Path('/Users/sperdijk/Documents/Master/Jaar_3/Thesis/thesis_code/pcfg-lm/resources/checkpoints/'),
                         help='Path to directory were the differen models are stored.')
-    argparser.add_argument('--output_dir', type=Path, default=Path('/Users/sperdijk/Documents/Master/Jaar_3/Thesis/thesis_code/perturbed-masking/results/'),
+    argparser.add_argument('--output_dir', type=Path, default=Path('/Users/sperdijk/Documents/Master/Jaar_3/Thesis/thesis_code/perturbed-masking/results/i_matrices/'),
                         help='Path to output')
 
     config = argparser.parse_args()
