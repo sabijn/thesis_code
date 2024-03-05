@@ -2,6 +2,7 @@ from ete3 import Tree as EteTree
 import torch
 from tqdm import tqdm
 import nltk
+import re
 import logging
 
 logger = logging.getLogger(__name__)
@@ -9,6 +10,9 @@ logger = logging.getLogger(__name__)
 
 class FancyTree(EteTree):
     def __init__(self, *args, **kwargs):
+        self.word2idx = kwargs.pop('word2idx', None)
+        self.idx2word = kwargs.pop('idx2word', None)
+        
         super().__init__(*args, format=1, **kwargs)
         
     def __str__(self):
@@ -17,39 +21,115 @@ class FancyTree(EteTree):
     def __repr__(self):
         return str(self)
 
+def create_ete3_from_pred(sentence):
+    tree_idx = 1
+    newick_str = ''
+    split_sentence = sentence.split(' ')
 
-def rec_tokentree_to_ete(tokentree):
-    idx = str(tokentree.token["id"])
-    children = tokentree.children
-    if children:
-        return f"({','.join(rec_tokentree_to_ete(t) for t in children)}){idx}"
-    else:
-        return idx
-    
-def tokentree_to_ete(tokentree):
-    newick_str = rec_tokentree_to_ete(tokentree)
+    for i, element in enumerate(split_sentence):
+        if element == '(':
+            newick_str += element
+        elif element == ')':
+            newick_str += element + str(tree_idx)
+            tree_idx += 1
+        else:
+            newick_str += str(tree_idx)
+            tree_idx += 1
+        
+        if (i != len(split_sentence) - 1 and 
+            split_sentence[i + 1] != ')' and element != '('):
+            newick_str += ','
 
     return FancyTree(f"{newick_str};")
 
-def create_gold_distances(corpus):
-    all_distances = []
+def _remove_postags(input_string):
+    # Pattern to match '<capital letter>_<number>' and optional brackets if directly before a word
+    #pattern = r'\(?(?=[A-Z]*_\d+\) )?[A-Z]*_\d+\)?\s?'
+    pattern = r'[A-Z]*_[0-9]*'
+    # Replace the pattern with an empty string
+    output_string = re.sub(pattern, '', input_string)
+    return output_string
 
-    for item in tqdm(corpus):
-        tokentree = item.to_tree()
-        ete_tree = tokentree_to_ete(tokentree)
-        # nltk_tree = tokentree_to_nltk(tokentree)
-        sen_len = len(ete_tree.search_nodes())
-        distances = torch.zeros((sen_len, sen_len))
+def _remove_redundant_brackets(input_string):
+    new_string = ''
+    split_string = input_string.split(' ')
 
-        for node1 in ete_tree.search_nodes():
-            for node2 in ete_tree.search_nodes():
-                distances[int(node1.name)-1][int(node2.name)-1] = node1.get_distance(node2)
+    for i, element in enumerate(split_string):
+        if re.search("[a-zA-Z]*\)", element):
+            # remove bracket from element and add to newstring 
+            new_word = element[:-1]
+            head = new_word.rstrip(')')
+            tail = new_word[len(head):]
+            for char in tail:
+                head += f' {char}'
 
-        all_distances.append(distances)
+            new_string += head + ' '
+        elif i != len(split_string) - 1 and re.search("[a-zA-Z]*\)", split_string[i + 1]) and element == '(':
+            continue
+        else:
+            new_string += f'{element} '
+    
+    for match in re.findall(r"\( ?[a-zA-Z]* ?\)", new_string):
+        new_string = new_string.replace(match, match.strip(' (').strip(') '))
 
-    return all_distances
+    return new_string.rstrip(' ')
 
-def create_pred_distances(corpus):
+
+def _simplify_tree(node):
+    """
+    Simplify the tree by removing nodes that have only one child and connecting
+    the child directly to the node's parent.
+    """
+    # List to keep track of nodes to be removed
+    nodes_to_remove = []
+
+    # Traverse tree in post-order: children before their parents
+    for child in node.traverse("postorder"):
+        # Check if the node has exactly one child
+        if len(child.children) == 1:
+            nodes_to_remove.append(child)
+
+    # Remove identified nodes and connect their children to the nodes' parents
+    for node_to_remove in nodes_to_remove:
+        parent = node_to_remove.up  # Get the parent of the node to be removed
+        child = node_to_remove.children[0]  # Get the single child
+        if parent:  # If the node to remove is not the root
+            # Connect the child directly to the parent of the node to be removed
+            parent.add_child(child)
+            # Remove the node from its parent
+            node_to_remove.detach()
+        else:
+            # If the node to remove is the root and has only one child, update the tree's root
+            node.set_outgroup(child)
+    
+    return node
+
+def _reset_node_names(tree):
+    """
+    Reset the names of all nodes in the tree based on their preorder traversal index.
+    """
+    # Traverse tree in preorder and update names
+    for index, node in enumerate(tree.traverse("postorder")):
+        node.name = str(index + 1)
+    
+    return tree
+
+def gold_tree_to_ete(gold_tree):
+    # Remove the postags from the gold tree
+    gold_tree = _remove_postags(gold_tree)
+
+    # Remove redundant brackets
+    gold_tree = _remove_redundant_brackets(gold_tree)
+
+    # Create the ete3 tree
+    gold_tree = create_ete3_from_pred(gold_tree)
+    gold_tree = _simplify_tree(gold_tree)
+    gold_tree = _reset_node_names(gold_tree)
+
+    return gold_tree
+
+
+def create_distances(corpus):
     all_distances = []
 
     for ete_tree in tqdm(corpus):
@@ -63,22 +143,3 @@ def create_pred_distances(corpus):
         all_distances.append(distances)
 
     return all_distances
-
-def _nestedlist2nestedtuple(nestedlist):
-    return tuple(map(_nestedlist2nestedtuple, nestedlist)) if isinstance(nestedlist, list) else nestedlist
-
-def tree2etetree(nestedtuple):
-    tree_format = str(_nestedlist2nestedtuple(nestedtuple))
-    if ';' in tree_format or ':' in tree_format:
-        tree_format = tree_format.replace(';', ',')
-        tree_format = tree_format.replace(':', ',')
-    etetree = EteTree((tree_format + ';'))
-
-    return etetree
-
-def nltk_tree_to_tokentree(nltk_tree):
-    if isinstance(nltk_tree, nltk.Tree):
-        children = [nltk_tree_to_tokentree(child) for child in nltk_tree]
-        return EteTree.TokenTree(nltk_tree.label(), children)
-    else:
-        return EteTree.TokenTree(nltk_tree.label(), [])

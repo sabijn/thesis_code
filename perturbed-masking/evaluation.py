@@ -1,10 +1,14 @@
 import numpy as np
 import nltk
-from collections import defaultdict
+from collections import defaultdict, Counter
 import torch
 from scipy.stats import spearmanr
 import pickle
-from utils.ete_utils import tree2etetree, create_gold_distances, create_pred_distances
+from utils.ete_utils import *
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 ############################################################################################################
 # Evaluation from Perturbed Masking paper
@@ -95,17 +99,32 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    # Load the gold distances
-    with open(f'results/trees/trees_{args.model}_{args.metric}_{args.layer}_list.pkl', 'rb') as f:
-        pred_trees = pickle.load(f)
+    # Load the predicted trees
+    with open(f'results/trees/trees_{args.model}_{args.metric}_{args.layer}.txt', 'r') as f:
+        pred_trees = [line.strip('\n') for line in f.readlines()]
 
-    pred_trees = [tree2etetree(tree) for tree in pred_trees]
-    pred_distances = create_pred_distances(pred_trees)
-    print(pred_distances[0])
+    # Load the gold trees
+    with open('/Users/sperdijk/Documents/Master/Jaar_3/Thesis/thesis_code/corpora/eval_trees_1000.txt', 'r') as f:
+        gold_trees = [line.strip('\n') for line in f.readlines()]
 
+    pred_ete_trees = [create_ete3_from_pred(tree) for tree in pred_trees]
+    gold_ete_trees = [gold_tree_to_ete(tree) for tree in gold_trees]
 
-    # # Load the predicted distances
-    # with open(f'results/distances/{args.model}_{args.mertric}_layer_{args.layer}.pkl', 'rb') as f:
-    #     gold_trees = pickle.load(f)
+    # Calculate distances in gold trees
+    pred_distances = create_distances(pred_ete_trees)
+    gold_distances = create_distances(gold_ete_trees)
 
-    # Calculate the Spearman correlation
+    # Check if the tree lengths are the same, if not, remove tree
+    counter = 0
+    for i, (pred, gold) in enumerate(zip(pred_distances, gold_distances)):
+        if pred.shape != gold.shape:
+            logger.warning(f'The tree length of sentence {i} ({pred.shape[0]}) is not the same as the gold tree length ({gold.shape[0]}).\
+                           Removing sentence from evaluation.')
+            del pred_distances[i]
+            del gold_distances[i]
+
+    # Calculate Spearman correlation
+    spearman = calc_spearman(pred_distances, gold_distances)
+    print(f'Spearman correlation: {spearman}')
+    
+    

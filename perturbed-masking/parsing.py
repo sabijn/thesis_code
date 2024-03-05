@@ -127,12 +127,12 @@ if __name__ == '__main__':
         
         # convert trees to strings and write to file
         trees_str = [listtree2str(tree) for tree in trees]
-        # with open(f'results/trees/trees_{args.model}_{args.mertric}_{i}.txt', 'w') as f:
-        #     for tree in trees_str:
-        #         f.write(f'{tree}\n')
+        with open(f'results/trees/trees_{args.model}_{args.mertric}_{i}.txt', 'w') as f:
+            for tree in trees_str:
+                f.write(f'{tree}\n')
 
-        with open(f'results/trees/trees_{args.model}_{args.mertric}_{i}_list.pkl', 'wb') as f:
-            pickle.dump(trees, f)
+        # with open(f'results/trees/trees_{args.model}_{args.mertric}_{i}_list.pkl', 'wb') as f:
+        #     pickle.dump(trees, f)
 
     # evaluation
     #pm_constituent_evaluation(trees[:10], results[:10])

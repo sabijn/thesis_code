@@ -17,4 +17,4 @@ def listtree2str(tree):
     if isinstance(tree, str):
         return tree
     else:
-        return '(' + ' '.join([listtree2str(subtree) for subtree in tree]) + ')'
+        return '( ' + ' '.join([listtree2str(subtree) for subtree in tree]) + ' )'
