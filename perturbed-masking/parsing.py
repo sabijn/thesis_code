@@ -58,8 +58,11 @@ def merge_subwords_in_one_column(matrix, mapping):
     return np.array(final_matrix).transpose()
 
 
-def matrix_transform(matrix):
+def matrix_transform(matrix, remove_punct=False):
+    # remove CLS tokens
     matrix = matrix[1:, 1:]
+    if remove_punct:
+        matrix = matrix[:-1, :-1]
     matrix = softmax(matrix)
     matrix = 1. - matrix
     np.fill_diagonal(matrix, 0.)
@@ -87,7 +90,10 @@ def decoding(args):
         assert final_matrix.shape[0] == final_matrix.shape[1]
         assert final_matrix.shape[0] == init_matrix.shape[0] - 1
 
-        final_matrix = matrix_transform(final_matrix)
+        final_matrix = matrix_transform(final_matrix, args.remove_punct)
+
+        if args.remove_punct:
+            sen = sen[:-1]
 
         if args.decoder == 'mart':
             parse_tree = mart(final_matrix, sen)
@@ -106,19 +112,20 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
     # Data args
-    parser.add_argument('--model', default='deberta')
+    parser.add_argument('--model', default='deberta', choices=['deberta', 'gpt2'])
     parser.add_argument('--mertric', default='dist', choices=['dist', 'cos'])
     parser.add_argument('--layer', default=8 , type=str, choices=['0', '1', '2', '3', '4', '5', '6', '7', '8'])
 
     # Decoding args
     parser.add_argument('--decoder', default='mart')
     parser.add_argument('--subword', default='avg')
+    parser.add_argument('--remove_punct', action=argparse.BooleanOptionalAction)
 
     args = parser.parse_args()
 
 
     # check if file exists
-    for i in range(9):
+    for i in range(1, 9):
         args.matrix = f'results/i_matrices/{args.model}_{args.mertric}_{i}.pkl'
         if not os.path.exists(args.matrix):
             raise FileNotFoundError(f'File {args.matrix} does not exist.')
@@ -127,12 +134,11 @@ if __name__ == '__main__':
         
         # convert trees to strings and write to file
         trees_str = [listtree2str(tree) for tree in trees]
-        with open(f'results/trees/trees_{args.model}_{args.mertric}_{i}.txt', 'w') as f:
+
+        if args.remove_punct:
+            results_dir = 'trees_without_punct'
+        else:
+            results_dir = 'trees'
+        with open(f'results/{results_dir}/trees_{args.model}_{args.mertric}_{i}.txt', 'w') as f:
             for tree in trees_str:
                 f.write(f'{tree}\n')
-
-        # with open(f'results/trees/trees_{args.model}_{args.mertric}_{i}_list.pkl', 'wb') as f:
-        #     pickle.dump(trees, f)
-
-    # evaluation
-    #pm_constituent_evaluation(trees[:10], results[:10])

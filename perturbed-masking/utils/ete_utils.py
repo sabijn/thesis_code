@@ -47,33 +47,25 @@ def _remove_postags(input_string):
     #pattern = r'\(?(?=[A-Z]*_\d+\) )?[A-Z]*_\d+\)?\s?'
     pattern = r'[A-Z]*_[0-9]*'
     # Replace the pattern with an empty string
-    output_string = re.sub(pattern, '', input_string)
+    output_string = re.sub(pattern, ' ', input_string)
+
     return output_string
 
-def _remove_redundant_brackets(input_string):
+def _add_space(input_string):
     new_string = ''
     split_string = input_string.split(' ')
 
     for i, element in enumerate(split_string):
         if re.search("[a-zA-Z]*\)", element):
-            # remove bracket from element and add to newstring 
-            new_word = element[:-1]
-            head = new_word.rstrip(')')
-            tail = new_word[len(head):]
-            for char in tail:
-                head += f' {char}'
+            split_text = re.split(r'(?<=[a-zA-Z.])(?=\))', element)
 
-            new_string += head + ' '
-        elif i != len(split_string) - 1 and re.search("[a-zA-Z]*\)", split_string[i + 1]) and element == '(':
+            new_string += split_text[0] + ' ' + ' '.join([e for e in split_text[1]]) + ' '
+        elif element == ' ' or element == '':
             continue
         else:
             new_string += f'{element} '
-    
-    for match in re.findall(r"\( ?[a-zA-Z]* ?\)", new_string):
-        new_string = new_string.replace(match, match.strip(' (').strip(') '))
 
     return new_string.rstrip(' ')
-
 
 def _simplify_tree(node):
     """
@@ -117,12 +109,11 @@ def _reset_node_names(tree):
 def gold_tree_to_ete(gold_tree):
     # Remove the postags from the gold tree
     gold_tree = _remove_postags(gold_tree)
-
-    # Remove redundant brackets
-    gold_tree = _remove_redundant_brackets(gold_tree)
+    gold_tree = _add_space(gold_tree)
 
     # Create the ete3 tree
     gold_tree = create_ete3_from_pred(gold_tree)
+    print(gold_tree)
     gold_tree = _simplify_tree(gold_tree)
     gold_tree = _reset_node_names(gold_tree)
 
