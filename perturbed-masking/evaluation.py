@@ -63,6 +63,33 @@ def pm_constituent_evaluation(trees, results):
     print('Mean Prec:', prec_list.mean(axis=0),
           ', Mean Reca:', reca_list.mean(axis=0),
           ', Mean F1:', f1_list.mean(axis=0))
+    
+    return (prec_list.mean(axis=0), reca_list.mean(axis=0), f1_list.mean(axis=0))
+
+
+def classic_evaluation(args, gold_trees, pred_trees):
+    all_layer_results = []
+    for layer in range(1, args.layers - 1):
+        gold, pred = gold_trees[layer], pred_trees[layer]
+
+        skip_idx = []
+        for i, result in enumerate(gold):
+            gold_tree = result[3]
+            if gold_tree[-1] not in ['.', '!', '?']:
+                skip_idx.append(i)
+
+        # remove list of indices from list
+        pred = [pred[i] for i in range(len(pred)) if i not in skip_idx]
+
+        gold = [gold[i] for i in range(len(gold)) if i not in skip_idx]
+        assert len(pred_trees) == len(gold_trees)
+
+        results = pm_constituent_evaluation(pred, gold)
+        all_layer_results.append(results)
+    
+    with open(f'results/classic_dist_{args.model}_all_layers_without_punct.pkl', 'wb') as f:
+        pickle.dump(all_layer_results, f)
+
 
 ############################################################################################################
 # Evaluation from Hewitt and Manning (Spearmann)
@@ -91,6 +118,48 @@ def calc_spearman(pred_distances, gold_distances):
     mean_pvalue = np.mean([mean_pvalue_for_each_length[x] for x in range(5,51) if x in mean_pvalue_for_each_length])
 
     return mean, mean_pvalue
+    
+
+def spearman_evaluation(args, pred_trees):
+    # Load the gold trees
+    with open(args.data, 'r') as f:
+        gold_trees = [line.strip('\n') for line in f.readlines()]
+
+    if args.remove_punct:
+        # trees are skipped if they have "'" or "''" as last token
+        gold_trees, skipped_idx = remove_punctuation_nltk(gold_trees)
+    else:
+        skipped_idx = []
+
+    gold_ete_trees = [gold_tree_to_ete(tree) for tree in gold_trees]
+    gold_distances = create_distances(gold_ete_trees)
+
+    results = []
+    for l in tqdm(range(args.layers - 1), leave=False):
+        pred_layer = [tree for i, tree in enumerate(pred_trees[l]) if i not in skipped_idx]
+
+        assert len(pred_layer) == len(gold_trees), f'Length of pred trees ({len(pred_layer)}) is not the same as the gold trees ({len(gold_trees)}).'
+        pred_ete_trees = [create_ete3_from_pred(tree) for tree in pred_layer]
+        pred_distances = create_distances(pred_ete_trees)
+
+        # Check if the tree lengths are the same, if not, remove tree
+        for i, (pred, gold) in enumerate(zip(pred_distances, gold_distances)):
+            if pred.shape != gold.shape:
+                logger.warning(f'The tree length of sentence {i} ({pred.shape[0]}) is not the same as the gold tree length ({gold.shape[0]}).\
+                            Removing sentence from evaluation.')
+                del pred_distances[i]
+                if l == '0':
+                    del gold_distances[i]
+
+        # Calculate Spearman correlation
+        spearman, pvalue = calc_spearman(pred_distances, gold_distances)
+        results.append((spearman, pvalue))
+        print(f'Spearman correlation: {spearman}')
+    
+    # Save results
+    result_path = f'results/spearman_{args.metric}_{args.model}_without_punct.pkl' if args.remove_punct else f'results/spearman_{args.metric}_{args.model}.pkl'
+    with open(result_path, 'wb') as f:
+        pickle.dump(results, f)
 
 
 if __name__ == '__main__':
@@ -101,50 +170,15 @@ if __name__ == '__main__':
     parser.add_argument('--model', default='deberta')
     parser.add_argument('--metric', default='dist', choices=['dist', 'cos'])
     parser.add_argument('--layer', default=8 , type=str, choices=['0', '1', '2', '3', '4', '5', '6', '7', '8'])
+    parser.add_argument('--evaluation', default='spearman', choices=['spearman', 'classic'])
+    parser.add_argument('--remove_punct', action=argparse.BooleanOptionalAction)
 
     args = parser.parse_args()
 
-        # Load the gold trees
-    with open('/Users/sperdijk/Documents/Master/Jaar_3/Thesis/thesis_code/corpora/eval_trees_1000.txt', 'r') as f:
-        gold_trees = [line.strip('\n') for line in f.readlines()]
-    
-    for tree in gold_trees:
-        #tree = tree.replace('(DOT_0 .)', '')
-        nltk.Tree.fromstring(tree).pretty_print()
-        print(gold_tree_to_ete(tree))
-        break
-    exit()
-    
-    gold_ete_trees = [gold_tree_to_ete(tree) for tree in gold_trees]
-    gold_distances = create_distances(gold_ete_trees)
-
-    results_dict = {'deberta' : [], 'gpt2' : []}
-    for m in tqdm(['deberta', 'gpt2']):
-        for l in tqdm(['0', '1', '2', '3', '4', '5', '6', '7', '8'], leave=False):
-            # Load the predicted trees
-            with open(f'results/trees/trees_{m}_{args.metric}_{l}.txt', 'r') as f:
-                pred_trees = [line.strip('\n') for line in f.readlines()]
-
-            pred_ete_trees = [create_ete3_from_pred(tree) for tree in pred_trees]
-            pred_distances = create_distances(pred_ete_trees)
-
-            # Check if the tree lengths are the same, if not, remove tree
-            counter = 0
-            for i, (pred, gold) in enumerate(zip(pred_distances, gold_distances)):
-                if pred.shape != gold.shape:
-                    logger.warning(f'The tree length of sentence {i} ({pred.shape[0]}) is not the same as the gold tree length ({gold.shape[0]}).\
-                                Removing sentence from evaluation.')
-                    del pred_distances[i]
-                    if m == 'deberta' and l == '0':
-                        del gold_distances[i]
-
-            # Calculate Spearman correlation
-            spearman, pvalue = calc_spearman(pred_distances, gold_distances)
-            results_dict[m].append((spearman, pvalue))
-            print(f'Spearman correlation: {spearman}')
-    
-    # Save results
-    with open(f'results/spearman_dist_all.pkl', 'wb') as f:
-        pickle.dump(results_dict, f)
+    if args.evaluation == 'spearman':
+        spearman_evaluation(args)
+    elif args.evaluation == 'classic':
+        classic_evaluation(args)
+        
     
     

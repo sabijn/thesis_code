@@ -1,15 +1,15 @@
-import nltk
 import argparse
 import pickle
 import numpy as np
+import os
+
 from decoder import mart, right_branching, left_branching
-import re
-word_tags = ['RBR', 'DT', 'VBP', 'VBZ', 'IN', 'VBG', 'NNS', 'CC', 'FW', 'VBD', 'HASH', 'RBS', 'MD', 'DOT', 'RP', 'POS', 'EX', 'TO', 'NNPS', 'PDT', 'VBN', 'VB', 'RB', 'JJR', 'PRPDOLLAR', 'JJ', 'APOSTROPHE', 'RRB', 'JJS', 'SYM', 'WPDOLLAR', 'COLON', 'UH', 'WDT', 'PRP', 'TICK', 'LRB', 'WRB', 'WP', 'NN', 'COMMA', 'CD', 'NNP']
-from collections import Counter
+from evaluation import pm_constituent_evaluation
 from utils.utils import match_tokenized_to_untokenized
 from utils.wr_utils import listtree2str
-import os
-from evaluation import pm_constituent_evaluation
+
+
+WORD_TAGS = ['RBR', 'DT', 'VBP', 'VBZ', 'IN', 'VBG', 'NNS', 'CC', 'FW', 'VBD', 'HASH', 'RBS', 'MD', 'DOT', 'RP', 'POS', 'EX', 'TO', 'NNPS', 'PDT', 'VBN', 'VB', 'RB', 'JJR', 'PRPDOLLAR', 'JJ', 'APOSTROPHE', 'RRB', 'JJS', 'SYM', 'WPDOLLAR', 'COLON', 'UH', 'WDT', 'PRP', 'TICK', 'LRB', 'WRB', 'WP', 'NN', 'COMMA', 'CD', 'NNP']
 
 
 def softmax(x):
@@ -34,7 +34,7 @@ def merge_subwords_in_one_row(matrix, mapping):
     return merge_column_matrix
 
 
-def merge_subwords_in_one_column(matrix, mapping):
+def merge_subwords_in_one_column(args, matrix, mapping):
     # merge subwords in one column (influence on subwords == average of the subwords)
     # transpose the matrix so we can work with row instead of columns
     matrix = np.array(matrix).transpose()
@@ -59,25 +59,27 @@ def merge_subwords_in_one_column(matrix, mapping):
 
 
 def matrix_transform(matrix, remove_punct=False):
-    # remove CLS tokens
-    matrix = matrix[1:, 1:]
-    if remove_punct:
-        matrix = matrix[:-1, :-1]
     matrix = softmax(matrix)
     matrix = 1. - matrix
     np.fill_diagonal(matrix, 0.)
 
     return matrix
 
+def remove_punctuation(sentence, matrix):
+    # remove CLS tokens
+    matrix = matrix[1:, 1:]
 
-def decoding(args):
+    # remove punctuation from sentence
+    if sentence[-1] in ['.', '!', '?']:
+        sentence = sentence[:-1]
+        matrix = matrix[:-1, :-1]
+    
+    return sentence, matrix
+
+def decoding(args, results):
     """
     Map the impact matrix to an unlabeled parse tree
     """
-    # impact matrix
-    with open(args.matrix, 'rb') as f:
-        results = pickle.load(f)
-
     trees = []
     for (sen, tokenized_text, init_matrix, tree2list, nltk_tree) in results:
         mapping = match_tokenized_to_untokenized(tokenized_text, sen)
@@ -86,14 +88,19 @@ def decoding(args):
         merge_column_matrix = merge_subwords_in_one_row(init_matrix, mapping)
 
         # merge subwords in one column (influence on subwords == average of the subwords)
-        final_matrix = merge_subwords_in_one_column(merge_column_matrix, mapping)
+        final_matrix = merge_subwords_in_one_column(args, merge_column_matrix, mapping)
         assert final_matrix.shape[0] == final_matrix.shape[1]
         assert final_matrix.shape[0] == init_matrix.shape[0] - 1
 
-        final_matrix = matrix_transform(final_matrix, args.remove_punct)
-
+        # removing punctuation from matrix and sentence
         if args.remove_punct:
-            sen = sen[:-1]
+            sen, final_matrix = remove_punctuation(sen, final_matrix)
+            assert len(sen) == final_matrix.shape[0]
+        else:
+            final_matrix = final_matrix[1:, 1:]
+        
+        # creating probailities
+        final_matrix = matrix_transform(final_matrix)
 
         if args.decoder == 'mart':
             parse_tree = mart(final_matrix, sen)
@@ -114,12 +121,12 @@ if __name__ == '__main__':
     # Data args
     parser.add_argument('--model', default='deberta', choices=['deberta', 'gpt2'])
     parser.add_argument('--mertric', default='dist', choices=['dist', 'cos'])
-    parser.add_argument('--layer', default=8 , type=str, choices=['0', '1', '2', '3', '4', '5', '6', '7', '8'])
 
     # Decoding args
     parser.add_argument('--decoder', default='mart')
     parser.add_argument('--subword', default='avg')
     parser.add_argument('--remove_punct', action=argparse.BooleanOptionalAction)
+    parser.add_argument('--list', action=argparse.BooleanOptionalAction)
 
     args = parser.parse_args()
 
@@ -131,14 +138,18 @@ if __name__ == '__main__':
             raise FileNotFoundError(f'File {args.matrix} does not exist.')
 
         trees, results = decoding(args)
-        
-        # convert trees to strings and write to file
-        trees_str = [listtree2str(tree) for tree in trees]
 
         if args.remove_punct:
             results_dir = 'trees_without_punct'
         else:
             results_dir = 'trees'
-        with open(f'results/{results_dir}/trees_{args.model}_{args.mertric}_{i}.txt', 'w') as f:
-            for tree in trees_str:
-                f.write(f'{tree}\n')
+        
+        if args.list:
+            with open(f'results/{results_dir}/trees_{args.model}_{args.mertric}_{i}_list.pkl', 'wb') as f:
+                pickle.dump(trees, f)
+        else:
+            # convert trees to strings and write to file
+            trees_str = [listtree2str(tree) for tree in trees]
+            with open(f'results/{results_dir}/trees_{args.model}_{args.mertric}_{i}.txt', 'w') as f:
+                for tree in trees_str:
+                    f.write(f'{tree}\n')

@@ -1,9 +1,14 @@
 import torch
 import logging
 import sys
-
-from utils.utils import get_all_subword_id, match_tokenized_to_untokenized
 import numpy as np
+from tqdm import tqdm
+
+from data import Corpus
+from utils.utils import get_all_subword_id, match_tokenized_to_untokenized
+from utils.utils import load_model
+from utils.wr_utils import write_im_to_file
+
 
 logging.basicConfig(stream=sys.stdout,
     level=logging.INFO,
@@ -164,3 +169,27 @@ def extract_matrix(config, model, tokenizer, sents, tree2list, nltk_tree, mask_i
     temp = create_impact_matrices(config, all_layers_matrix_as_list, sents, tokenized_text, tree2list, nltk_tree)
 
     return temp
+
+
+def main_impact_matrix(config):
+    """
+    Main function to run span probing
+    """
+    logger.info('Running span probing.')
+    logger.info('Loading model...')
+    model, tokenizer = load_model(config)
+    model.eval()
+    logger.info('Model loaded.')
+
+    mask_id = tokenizer.convert_tokens_to_ids(['[MASK]'])[0]
+
+    corpus = Corpus(config.data)
+    
+    out = [[] for i in range(config.layers)]
+    for sents, tree2list, nltk_tree in tqdm(zip(corpus.sens, corpus.trees, corpus.nltk_trees), total = len(corpus.sens)):
+        per_sen_result = extract_matrix(config, model, tokenizer, sents, tree2list, nltk_tree, mask_id)
+
+        for k, one_layer_result in enumerate(per_sen_result):
+            out[k].extend(one_layer_result)
+
+    write_im_to_file(out, config)

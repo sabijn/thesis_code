@@ -14,11 +14,12 @@ def create_arg_parser():
                            help='Metric to use for analysis')
     argparser.add_argument('--quiet', action=argparse.BooleanOptionalAction,
                            help='Print verbose information')
+    argparser.add_argument('--remove_punct', action=argparse.BooleanOptionalAction)
     
     # MODEL
     argparser.add_argument('--device', type=str, default=None,
                            help='Device to run on')
-    argparser.add_argument('--model', type=str, default='deberta',
+    argparser.add_argument('--model', type=str, default='deberta', choices=['deberta', 'gpt2'],
                            help='Model type')
     argparser.add_argument('--seed', type=int, default=42,
                            help='Random seed')
@@ -34,6 +35,16 @@ def create_arg_parser():
                         help='Path to directory were the differen models are stored.')
     argparser.add_argument('--output_dir', type=Path, default=Path('/Users/sperdijk/Documents/Master/Jaar_3/Thesis/thesis_code/perturbed-masking/results/i_matrices/'),
                         help='Path to output')
+    argparser.add_argument('--tree_path', type=Path, default=Path('/Users/sperdijk/Documents/Master/Jaar_3/Thesis/thesis_code/perturbed-masking/results/'),
+                        help='Path to directory were the trees are stored.')
+    
+    # DECODER 
+    argparser.add_argument('--decoder', default='mart')
+    argparser.add_argument('--subword', default='avg')
+
+    # EVALUATION
+    argparser.add_argument('--evaluation', default='spearman', choices=['spearman', 'classic'],
+                           help='Type of evaluation to perform')
 
     config = argparser.parse_args()
 
@@ -73,5 +84,11 @@ def create_arg_parser():
 
     # Configure output files
     config.output_dir.mkdir(parents=True, exist_ok=True)
+
+    # Configure tree results path
+    if config.remove_punct:
+        config.tree_path = config.tree_path / Path('trees_without_punct/')
+    else:
+        config.tree_path = config.tree_path / Path('trees/')
 
     return config

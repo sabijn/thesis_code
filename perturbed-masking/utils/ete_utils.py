@@ -20,6 +20,7 @@ class FancyTree(EteTree):
     
     def __repr__(self):
         return str(self)
+    
 
 def create_ete3_from_pred(sentence):
     tree_idx = 1
@@ -42,6 +43,7 @@ def create_ete3_from_pred(sentence):
 
     return FancyTree(f"{newick_str};")
 
+
 def _remove_postags(input_string):
     # Pattern to match '<capital letter>_<number>' and optional brackets if directly before a word
     #pattern = r'\(?(?=[A-Z]*_\d+\) )?[A-Z]*_\d+\)?\s?'
@@ -51,21 +53,30 @@ def _remove_postags(input_string):
 
     return output_string
 
+
 def _add_space(input_string):
     new_string = ''
     split_string = input_string.split(' ')
 
     for i, element in enumerate(split_string):
-        if re.search("[a-zA-Z]*\)", element):
-            split_text = re.split(r'(?<=[a-zA-Z.])(?=\))', element)
+        #if re.search("[a-zA-Z0-9.;,:!``>\?\*]+\)", element):
+        if re.search("(?<! )\)", element):
+            # split_text = re.split(r'(?<=[a-zA-Z0-9.;:,!``>\?\*])(?=\))', element)
+            for char in element:
+                if char == ')':
+                    idx = element.index(char)
+                    break
+            
 
-            new_string += split_text[0] + ' ' + ' '.join([e for e in split_text[1]]) + ' '
+            new_string += element[:idx] + ' ' + ' '.join(char for char in element[idx:]) + ' '
+
         elif element == ' ' or element == '':
             continue
         else:
             new_string += f'{element} '
 
     return new_string.rstrip(' ')
+
 
 def _simplify_tree(node):
     """
@@ -81,9 +92,11 @@ def _simplify_tree(node):
         if len(child.children) == 1:
             nodes_to_remove.append(child)
 
+    new_root = None
     # Remove identified nodes and connect their children to the nodes' parents
     for node_to_remove in nodes_to_remove:
         parent = node_to_remove.up  # Get the parent of the node to be removed
+
         child = node_to_remove.children[0]  # Get the single child
         if parent:  # If the node to remove is not the root
             # Connect the child directly to the parent of the node to be removed
@@ -91,10 +104,11 @@ def _simplify_tree(node):
             # Remove the node from its parent
             node_to_remove.detach()
         else:
-            # If the node to remove is the root and has only one child, update the tree's root
-            node.set_outgroup(child)
-    
-    return node
+            new_root = child
+            node_to_remove.detach()
+
+    return new_root if new_root else node
+
 
 def _reset_node_names(tree):
     """
@@ -106,19 +120,47 @@ def _reset_node_names(tree):
     
     return tree
 
+
 def gold_tree_to_ete(gold_tree):
-    # Remove the postags from the gold tree
     gold_tree = _remove_postags(gold_tree)
     gold_tree = _add_space(gold_tree)
 
     # Create the ete3 tree
     gold_tree = create_ete3_from_pred(gold_tree)
-    print(gold_tree)
+
     gold_tree = _simplify_tree(gold_tree)
     gold_tree = _reset_node_names(gold_tree)
 
     return gold_tree
 
+def remove_punctuation_nltk(trees):
+    new_trees = []
+    skipped_idx = []
+
+    for i, string_tree in enumerate(trees):
+        tree = nltk.Tree.fromstring(string_tree)
+        try:
+            punct = tree[(1,)]
+        except:
+            new_trees.append(tree._pformat_flat("", "()", False))
+            continue
+
+        if (punct.leaves() == ['<apostrophe><apostrophe>'] or
+            punct.leaves() == ['<apostrophe>']):
+
+            skipped_idx.append(i)
+
+        elif (punct.leaves() != ['.'] and
+            punct.leaves() != ['!'] and
+            punct.leaves() != ['?']):
+
+            new_trees.append(tree._pformat_flat("", "()", False))
+
+        else:
+            del tree[(1,)]
+            new_trees.append(tree._pformat_flat("", "()", False))
+    
+    return new_trees, skipped_idx
 
 def create_distances(corpus):
     all_distances = []
