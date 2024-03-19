@@ -11,6 +11,7 @@ from argparser import create_arg_parser
 from parsing import decoding
 from evaluation import spearman_evaluation, classic_evaluation
 from utils.wr_utils import listtree2str
+from edge_probe import edge_probing_labelling
 
 
 logging.basicConfig(stream=sys.stdout,
@@ -24,7 +25,7 @@ def get_impact_matrices(config):
     all_layer_results = []
     exist = True
     # removing embedding layer
-    for layer in range(1, config.layers):
+    for layer in range(config.layers):
         matrix_path = f'{config.output_dir}/{config.model}_{config.metric}_{layer}.pkl'
 
         if os.path.exists(matrix_path):
@@ -46,8 +47,8 @@ def get_impact_matrices(config):
 
 def get_predicted_trees(config, all_layer_info):
     pred_trees = []
-    for i in range(1, config.layers):
-        tree_file = Path(f'trees_{config.model}_{config.metric}_{i}_list.pkl') if config.evaluation == 'classic' \
+    for i in range(config.layers):
+        tree_file = Path(f'trees_{config.model}_{config.metric}_{i}_list.pkl') if config.evaluation == 'classic' or config.evaluation == 'labelled' \
             else Path(f'trees_{config.model}_{config.metric}_{i}.txt')
         tree_path = config.tree_path / tree_file
 
@@ -57,7 +58,7 @@ def get_predicted_trees(config, all_layer_info):
             trees, _ = decoding(config, all_layer_info[i - 1])
             pred_trees.append(trees)
 
-            if config.evaluation == 'classic':
+            if config.evaluation == 'classic' or config.evaluation == 'labelled':
                 with open(tree_path, 'wb') as f:
                     pickle.dump(trees, f)
             elif config.evaluation == 'spearman':
@@ -70,7 +71,7 @@ def get_predicted_trees(config, all_layer_info):
         else:
             logger.debug(f'File {tree_path} exists. Loading from file system.')
             # load parse trees
-            if config.evaluation == 'classic':
+            if config.evaluation == 'classic' or config.evaluation == 'labelled':
                 logger.debug('Loading trees as list.')
                 with open(tree_path, 'rb') as f:
                     pred_trees.append(pickle.load(f))
@@ -80,7 +81,7 @@ def get_predicted_trees(config, all_layer_info):
                     pred_trees.append([line.strip('\n') for line in f.readlines()])
             else:
                 logger.debug('Unknown evaluation type. As result, the correct way of saving is unknown. Exiting')
-                exit(1)
+                raise ValueError(f'Evaluation type {config.evaluation} not supported.')
 
     logger.info('Parse trees loaded.')
     
@@ -91,18 +92,22 @@ def main(config):
     # Contains: [(sentence, tokenized_text, impact matrix, tree2list, nltk_tree)]
     all_layer_info = get_impact_matrices(config)
 
-    assert len(all_layer_info) == (config.layers - 1), f'Number of layers {len(all_layer_info)} does not match the expected number of layers {config.layers}.'
+    assert len(all_layer_info) == config.layers, f'Number of layers {len(all_layer_info)} does not match the expected number of layers {config.layers}.'
     # 2. Generate or load predicted trees
     pred_trees = get_predicted_trees(config, all_layer_info)
 
     # 2. Evaluate parse trees
-    assert len(pred_trees) == (config.layers - 1), f'Number of layers {len(pred_trees)} does not match the expected number of layers {config.layers}.'
+    assert len(pred_trees) == config.layers, f'Number of layers {len(pred_trees)} does not match the expected number of layers {config.layers}.'
+    print(config.evaluation, flush=True)
     if config.evaluation == 'spearman':
         logger.info('Started spearman evaluation...')
         spearman_evaluation(config, pred_trees)
     elif config.evaluation == 'classic':
         logger.info('Started classic evaluation...')
         classic_evaluation(config, all_layer_info, pred_trees)
+    elif config.evaluation == 'labelled':
+        logger.info('Started labelled evaluation...')
+        edge_probing_labelling(config, pred_trees)
     else:
         raise ValueError(f'Evaluation type {config.evaluation} not supported.')
 

@@ -5,7 +5,8 @@ word_tags = ['COLON', 'TO', 'TICK', 'NN', 'JJR', 'PDT', 'CD', 'RBS', 'NNP', 'JJS
             'VB', 'CC', 'VBZ', 'HASH', 'MD', 'IN', 'WRB', 'UH', 'LRB', 'VBD', 'VBP', 'VBG', 'DOT']
 
 class Corpus():
-    def __init__(self, dataset):
+    def __init__(self, dataset, split=None):
+        self.split = split
         self.sens = []
         self.trees = []
         self.nltk_trees = []
@@ -19,6 +20,13 @@ class Corpus():
                 self.trees.append(self.tree2list(tree))
                 self.nltk_trees.append(tree)
                 self.sens.append(tree.leaves())
+
+        if self.split:
+            corpus_size = len(self.sens)
+            _, dev_split, test_split = int(0.9 * corpus_size), corpus_size
+            self.sens = self.sens[dev_split:test_split]
+            self.trees = self.trees[dev_split:test_split]
+            self.nltk_trees = self.nltk_trees[dev_split:test_split]
     
     def tree2list(self, tree):
         if isinstance(tree, nltk.Tree):

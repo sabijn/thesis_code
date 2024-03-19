@@ -29,22 +29,28 @@ def create_arg_parser():
                            help='Include embedding layer in analysis.')
     
     # PATHS
-    argparser.add_argument('--data', type=Path, default=Path('/Users/sperdijk/Documents/Master/Jaar_3/Thesis/thesis_code/corpora/eval_trees_1000.txt'),
+    argparser.add_argument('--data', type=Path, default=Path('/Users/sperdijk/Documents/Master/Jaar_3/Thesis/thesis_code/corpora/eval_trees_10k.txt'),
                         help='Path to data')
     argparser.add_argument('--home_model_path', type=Path, default=Path('/Users/sperdijk/Documents/Master/Jaar_3/Thesis/thesis_code/pcfg-lm/resources/checkpoints/'),
                         help='Path to directory were the differen models are stored.')
-    argparser.add_argument('--output_dir', type=Path, default=Path('/Users/sperdijk/Documents/Master/Jaar_3/Thesis/thesis_code/perturbed-masking/results/i_matrices/'),
+    argparser.add_argument('--output_dir', type=Path, default=Path('/Users/sperdijk/Documents/Master/Jaar_3/Thesis/thesis_code/perturbed-masking/test_results/i_matrices/'),
                         help='Path to output')
-    argparser.add_argument('--tree_path', type=Path, default=Path('/Users/sperdijk/Documents/Master/Jaar_3/Thesis/thesis_code/perturbed-masking/results/'),
+    argparser.add_argument('--tree_path', type=Path, default=Path('/Users/sperdijk/Documents/Master/Jaar_3/Thesis/thesis_code/perturbed-masking/test_results/'),
                         help='Path to directory were the trees are stored.')
+    argparser.add_argument('--span_data', type=Path, default=Path('/Users/sperdijk/Documents/Master/Jaar_3/Thesis/thesis_code/perturbed-masking/span_data/'))
+    argparser.add_argument('--created_states_path', type=Path, default=Path('/Users/sperdijk/Documents/Master/Thesis/thesis_code/edge-probing/data/'))
     
     # DECODER 
     argparser.add_argument('--decoder', default='mart')
     argparser.add_argument('--subword', default='avg')
 
     # EVALUATION
-    argparser.add_argument('--evaluation', default='spearman', choices=['spearman', 'classic'],
+    argparser.add_argument('--evaluation', default='spearman', choices=['spearman', 'classic', 'labelled'],
                            help='Type of evaluation to perform')
+    argparser.add_argument('--all_layers', action=argparse.BooleanOptionalAction)
+    argparser.add_argument('--concat', action=argparse.BooleanOptionalAction)
+    argparser.add_argument('--split', action=argparse.BooleanOptionalAction,
+                           help='Split of the data for testing')
 
     config = argparser.parse_args()
 

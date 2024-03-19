@@ -183,7 +183,7 @@ def main_impact_matrix(config):
 
     mask_id = tokenizer.convert_tokens_to_ids(['[MASK]'])[0]
 
-    corpus = Corpus(config.data)
+    corpus = Corpus(config.data, config.split)
     
     out = [[] for i in range(config.layers)]
     for sents, tree2list, nltk_tree in tqdm(zip(corpus.sens, corpus.trees, corpus.nltk_trees), total = len(corpus.sens)):

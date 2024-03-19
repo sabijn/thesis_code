@@ -69,7 +69,7 @@ def pm_constituent_evaluation(trees, results):
 
 def classic_evaluation(args, gold_trees, pred_trees):
     all_layer_results = []
-    for layer in range(1, args.layers - 1):
+    for layer in range(args.layers):
         gold, pred = gold_trees[layer], pred_trees[layer]
 
         skip_idx = []
@@ -87,7 +87,8 @@ def classic_evaluation(args, gold_trees, pred_trees):
         results = pm_constituent_evaluation(pred, gold)
         all_layer_results.append(results)
     
-    with open(f'results/classic_dist_{args.model}_all_layers_without_punct.pkl', 'wb') as f:
+    result_path = f'results/classic_dist_{args.model}_all_layers_without_punct.pkl' if args.remove_punct else f'results/classic_dist_{args.model}_all_layers.pkl'
+    with open(result_path, 'wb') as f:
         pickle.dump(all_layer_results, f)
 
 
@@ -135,7 +136,7 @@ def spearman_evaluation(args, pred_trees):
     gold_distances = create_distances(gold_ete_trees)
 
     results = []
-    for l in tqdm(range(args.layers - 1), leave=False):
+    for l in tqdm(range(args.layers), leave=False):
         pred_layer = [tree for i, tree in enumerate(pred_trees[l]) if i not in skipped_idx]
 
         assert len(pred_layer) == len(gold_trees), f'Length of pred trees ({len(pred_layer)}) is not the same as the gold trees ({len(gold_trees)}).'
