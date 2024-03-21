@@ -5,6 +5,8 @@ pcfg-lm/
 models/
 results/
 logs/
+span_data/
+test_results/
 
 # personal files
 garbage.py
