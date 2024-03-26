@@ -7,6 +7,8 @@ results/
 logs/
 span_data/
 test_results/
+grammars/
+treebanks/
 
 # personal files
 garbage.py
