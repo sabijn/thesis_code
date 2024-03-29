@@ -257,7 +257,7 @@ class Language(Generic[C]):
 
         plt.show()
     
-    def tree_to_pos(tree, merge=True):
+    def tree_to_pos(self, tree, merge=True):
         if merge:
             return [
                 prod.lhs().symbol().split('_')[0] for prod in tree.productions()
