@@ -13,3 +13,23 @@ Started to load full PCFG...
 slurmstepd: error: Detected 2 oom-kill event(s) in StepId=3242.0. Some of your processes may have been killed by the cgroup out-of-memory handler.
 srun: error: fnwi-cn005: task 0: Out Of Memory
 adding, committing, and pushing results to remote dir...
+[feature/retrain 370f0ef] save results from run (automated commit from Lisa).
+ Committer: Sabijn Perdijk <11864265@fnwi-cn005.localdomain>
+Your name and email address were configured automatically based
+on your username and hostname. Please check that they are accurate.
+You can suppress this message by setting them explicitly. Run the
+following command and follow the instructions in your editor to edit
+your configuration file:
+
+    git config --global --edit
+
+After doing this, you may fix the identity used for this commit with:
+
+    git commit --amend --reset-author
+
+ 2 files changed, 36 insertions(+)
+ create mode 100644 reduce_grammar/jobs/slurm_output_3242.out
+To github.com:sabijn/thesis_code.git
+   539364e..370f0ef  feature/retrain -> feature/retrain
+done.
+slurmstepd: error: Detected 2 oom-kill event(s) in StepId=3242.batch. Some of your processes may have been killed by the cgroup out-of-memory handler.
