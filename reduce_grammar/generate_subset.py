@@ -253,10 +253,11 @@ if __name__ == '__main__':
     parser.add_argument('--lexical', action=argparse.BooleanOptionalAction)
 
     args = parser.parse_args()
-
+    print('Started to load full PCFG...', flush=True)
     with open(args.pcfg_dir) as f:
         raw_grammar = f.read()
     grammar = nltk_PCFG.fromstring(raw_grammar)
+    print('Finished loading PCFG...', flush=True)
 
     grammar = create_lookup_probs(grammar)
     prod_productions_v2 = [rule for lhs in grammar._lhs_index.values() for rule in lhs]
