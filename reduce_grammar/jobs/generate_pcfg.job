@@ -1,0 +1,57 @@
+#!/bin/bash
+
+#SBATCH --partition=illc
+#SBATCH --account=illc
+#SBATCH --job-name=pcfg
+#SBATCH --ntasks=1
+#SBATCH --gpus=1
+#SBATCH --time=04:00:00
+#SBATCH --output=logs/slurm_output_%A.out
+
+echo setting up Miniconda...
+source $HOME/miniconda3/etc/profile.d/conda.sh
+
+echo activating virtual env...
+conda activate $HOME/miniconda3/envs/basic310
+echo "current conda environment: $CONDA_DEFAULT_ENV"
+
+echo activating ssh connection...
+eval "$(ssh-agent -s)"
+ssh-add $HOME/.ssh/id_ed25519
+
+echo parsing input arguments...
+unset -v BRANCH
+
+while getopts b:h flag
+do
+    case "${flag}" in
+        b) BRANCH=${OPTARG};;
+        ?|h) echo "Usage: $0 -b branch"; exit 1;;
+    esac
+done
+echo "Branch: $BRANCH";
+
+shift "$(( OPTIND - 1 ))"
+
+if [ -z "$BRANCH" ]
+then
+    echo "Branch is mandatory. Usage: $0 -b branch"
+    exit 1
+fi
+
+echo fetching and pulling latest changes from remote dir...
+cd $HOME/Documents/thesis_code/perturbed-masking/
+git checkout $BRANCH
+git fetch && git pull
+
+echo running perturbed masking...
+srun python generate_pcfg.py --pcfg_dir=$HOME/thesis_code/reduce_grammar/grammars/nltk/nltk_pcfg.txt\
+                    --output_dir=$HOME/thesis_code/reduce_grammar/results \
+                    --save
+
+echo adding, committing, and pushing results to remote dir...
+git add $HOME/thesis_code/perturbed-masking/
+git commit -m "save results from run (automated commit from Lisa)."
+git push
+
+echo done.
