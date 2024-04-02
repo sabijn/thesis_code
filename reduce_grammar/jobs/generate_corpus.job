@@ -49,8 +49,8 @@ versions=("normal" "pos")
 for version in "${versions[@]}"; do
     echo "Running script for version $version"
     srun python generate_corpora.py --version="$version" \
-                        --output_dir=scratch/$USER/results \
-                        --data_dir=scratch/$USER
+                        --output_dir=/scratch/$USER/results \
+                        --data_dir=/scratch/$USER
 done
 
 echo adding, committing, and pushing results to remote dir...
