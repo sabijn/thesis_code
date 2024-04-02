@@ -40,8 +40,7 @@ then
 fi
 
 echo fetching and pulling latest changes from remote dir...
-cd $HOME/Documents/thesis_code/perturbed-masking/
-git checkout $BRANCH
+cd $HOME/Documents/thesis_code/reduce_grammar/
 git fetch && git pull
 
 echo running perturbed masking...
