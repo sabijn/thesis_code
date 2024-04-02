@@ -46,7 +46,7 @@ git fetch && git pull
 
 echo running perturbed masking...
 srun python generate_subset.py --pcfg_dir=/scratch/$USER/nltk_pcfg.txt\
-                    --output_dir=scratch/$USER/results \
+                    --output_dir=/scratch/$USER/results \
                     --save \
                     --no_recursion
 

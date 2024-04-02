@@ -217,9 +217,14 @@ def create_subset_pcfg(productions, args, top_k=0.2, no_recursion=False, save=Tr
     subset_pcfg_pos = PCFG(start, pos_productions)
     
     if save:
+        if args.lexical:
+            version = '_lexical'
+        else:
+            version = ''
+
         print('Write subset PCFG to pickle...')
-        write_to_txt(subset_pcfg, f'{args.output_dir}/subset_pcfg_{top_k}.txt')
-        write_to_txt(subset_pcfg_pos, f'{args.output_dir}/subset_pcfg_{top_k}_pos.txt')
+        write_to_txt(subset_pcfg, f'{args.output_dir}/subset_pcfg_{top_k}{version}.txt')
+        write_to_txt(subset_pcfg_pos, f'{args.output_dir}/subset_pcfg_{top_k}_pos{version}.txt')
 
     print('Done')
     
