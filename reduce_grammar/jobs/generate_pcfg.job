@@ -49,7 +49,7 @@ srun python generate_subset.py --pcfg_dir=$HOME/thesis_code/reduce_grammar/gramm
                     --save
 
 echo adding, committing, and pushing results to remote dir...
-git add $HOME/thesis_code/reduce_grammar/
+git add $HOME/Documents/thesis_code/reduce_grammar/
 git commit -m "save results from run (automated commit from Lisa)."
 git push
 
