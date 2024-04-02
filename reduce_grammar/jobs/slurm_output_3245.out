@@ -14,3 +14,23 @@ Finished loading PCFG...
 ************ Creating subset PCFG with top k = 0.9... ************
 Starting with 2513065 productions.
 Created subset PCFG with a length of 249907 productions.
+Cleaning subset: (1) removing unreachable productions...
+Amount of reachable nonterminals: 693
+Finished cleaning subset (1) left with 237195 productions.
+Cleaning subset: (2) renormalizing probabilities...
+Finished cleaning subset (2)
+Cleaning subset: (3) adding POS tags...
+Finished cleaning subset (3)
+Write subset PCFG to pickle...
+Traceback (most recent call last):
+  File "/home/11864265/Documents/thesis_code/reduce_grammar/generate_subset.py", line 268, in <module>
+    subset_pcfg, subset_pcfg_pos = load_subset_pcfg(prod_productions_v2, 
+  File "/home/11864265/Documents/thesis_code/reduce_grammar/generate_subset.py", line 242, in load_subset_pcfg
+    subset_pcfg, subset_pcfg_pos = create_subset_pcfg(prob_productions, args, top_k, save=save, lexical=lexical, no_recursion=no_recursion)
+  File "/home/11864265/Documents/thesis_code/reduce_grammar/generate_subset.py", line 221, in create_subset_pcfg
+    write_to_txt(subset_pcfg, f'{args.output_dir}/subset_pcfg_{top_k}.txt')
+  File "/home/11864265/Documents/thesis_code/reduce_grammar/generate_subset.py", line 156, in write_to_txt
+    f = open(filename, 'w')
+FileNotFoundError: [Errno 2] No such file or directory: 'scratch/11864265/results/subset_pcfg_0.9.txt'
+srun: error: fnwi-cn005: task 0: Exited with exit code 1
+adding, committing, and pushing results to remote dir...
