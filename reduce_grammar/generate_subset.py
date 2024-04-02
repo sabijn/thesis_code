@@ -1,6 +1,6 @@
 import nltk
 from nltk import ProbabilisticProduction, PCFG, Nonterminal
-from tqdm.notebook import tqdm
+from tqdm import tqdm
 import random
 from typing import List, Tuple, Dict, Any
 import itertools
