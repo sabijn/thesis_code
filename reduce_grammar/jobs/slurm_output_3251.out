@@ -28,3 +28,23 @@ usage: generate_corpora.py [-h] [--version {normal,lexical,pos}]
 generate_corpora.py: error: unrecognized arguments: --save --no_recursion
 srun: error: fnwi-cn005: task 0: Exited with exit code 2
 adding, committing, and pushing results to remote dir...
+[feature/retrain 1ad96bd] save results from run (automated commit from Lisa).
+ Committer: Sabijn Perdijk <11864265@fnwi-cn005.localdomain>
+Your name and email address were configured automatically based
+on your username and hostname. Please check that they are accurate.
+You can suppress this message by setting them explicitly. Run the
+following command and follow the instructions in your editor to edit
+your configuration file:
+
+    git config --global --edit
+
+After doing this, you may fix the identity used for this commit with:
+
+    git commit --amend --reset-author
+
+ 3 files changed, 65 insertions(+)
+ create mode 100644 reduce_grammar/jobs/slurm_output_3245.out
+ create mode 100644 reduce_grammar/jobs/slurm_output_3251.out
+To github.com:sabijn/thesis_code.git
+   daff715..1ad96bd  feature/retrain -> feature/retrain
+done.
