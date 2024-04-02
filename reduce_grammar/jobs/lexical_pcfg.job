@@ -50,7 +50,7 @@ srun python generate_pcfg.py --pcfg_dir=$HOME/thesis_code/reduce_grammar/grammar
                     --lexical
 
 echo adding, committing, and pushing results to remote dir...
-git add $HOME/thesis_code/perturbed-masking/
+git add $HOME/thesis_code/reduce_grammar/
 git commit -m "save results from run (automated commit from Lisa)."
 git push
 
