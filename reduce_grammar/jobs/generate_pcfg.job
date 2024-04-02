@@ -44,7 +44,7 @@ cd $HOME/Documents/thesis_code/reduce_grammar/
 git fetch && git pull
 
 echo running perturbed masking...
-srun python generate_subset.py --pcfg_dir=$HOME/thesis_code/reduce_grammar/grammars/nltk/nltk_pcfg.txt\
+srun python generate_subset.py --pcfg_dir=$HOME/Documents/thesis_code/reduce_grammar/grammars/nltk/nltk_pcfg.txt\
                     --output_dir=$HOME/thesis_code/reduce_grammar/results \
                     --save
 
