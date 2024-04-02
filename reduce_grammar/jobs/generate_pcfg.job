@@ -6,7 +6,7 @@
 #SBATCH --ntasks=1
 #SBATCH --gpus=1
 #SBATCH --time=04:00:00
-#SBATCH --output=logs/slurm_output_%A.out
+#SBATCH --output=$HOME/thesis_code/reduce_grammar/logs/slurm_output_%A.out
 
 echo setting up Miniconda...
 source $HOME/miniconda3/etc/profile.d/conda.sh
