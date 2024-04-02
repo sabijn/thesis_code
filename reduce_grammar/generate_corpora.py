@@ -9,7 +9,7 @@ import argparse
 
 def main(args):
     for top_k in [0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8]:
-        grammar_file = f'grammars/nltk/{args.version}/subset_pcfg_{top_k}.txt'
+        grammar_file = f'{args.data_dir}/{args.version}/subset_pcfg_{top_k}.txt'
         encoder = "transformer"
         tokenizer_config = TokenizerConfig(
                 add_cls=(encoder == "transformer"),
@@ -45,6 +45,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Generate corpora')
     parser.add_argument('--version', type=str, default='normal', choices=['normal', 'lexical', 'pos'],
                         help='Version of the corpus to generate.')
+    parser.add_argument('--data_dir', type=str, default='grammars/nltk')
     parser.add_argument('--output_dir', type=str, default='corpora',
                         help='Output directory for the generated corpora.')
     parser.add_argument('--verbose', action=argparse.BooleanOptionalAction)
