@@ -225,7 +225,7 @@ def create_subset_pcfg(productions, args, top_k=0.2, no_recursion=False, save=Tr
     
     return subset_pcfg, subset_pcfg_pos
 
-def load_subset_pcfg(prob_productions, top_k=0.2, save=True, load=True, lexical=False):
+def load_subset_pcfg(prob_productions, args, top_k=0.2, save=True, load=True, lexical=False):
     filename = f'grammars/nltk/subset_pcfg_{top_k}.pkl'
     filename_pos = f'grammars/nltk/subset_pcfg_{top_k}_pos.pkl'
     
@@ -239,7 +239,7 @@ def load_subset_pcfg(prob_productions, top_k=0.2, save=True, load=True, lexical=
 
             return subset_pcfg, subset_pcfg_pos
     
-    subset_pcfg, subset_pcfg_pos = create_subset_pcfg(prob_productions, top_k, save=save, lexical=lexical)
+    subset_pcfg, subset_pcfg_pos = create_subset_pcfg(prob_productions, args, top_k, save=save, lexical=lexical)
 
     return subset_pcfg, subset_pcfg_pos
 
