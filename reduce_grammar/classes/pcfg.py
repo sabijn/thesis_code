@@ -30,6 +30,7 @@ class PCFGConfig(LanguageConfig):
     verbose: bool = True
     output_dir: str = 'corpora'
     top_k: float = 0.2
+    version: str = 'normal'
 
 
 class PCFG(Language[PCFGConfig]):
@@ -57,19 +58,19 @@ class PCFG(Language[PCFGConfig]):
         return grammar
     
     def save_pcfg(self) -> None:
-        with open(f'{self.config.output_dir}/train_sent_{self.config.top_k}.txt', 'w') as f:
+        with open(f'{self.config.output_dir}/train_sent_{self.config.version}_{self.config.top_k}.txt', 'w') as f:
             f.write('\n'.join(self.train_corpus))
         
         if self.config.split_ratio[1] != 0.0:
-            with open(f'{self.config.output_dir}/dev_sent_{self.config.top_k}.txt', 'w') as f:
+            with open(f'{self.config.output_dir}/dev_sent_{self.config.version}_{self.config.top_k}.txt', 'w') as f:
                 f.write('\n'.join(self.train_corpus))
         
         if self.config.split_ratio[2] != 0.0:
-            with open(f'{self.config.output_dir}/test_sent_{self.config.top_k}.txt', 'w') as f:
+            with open(f'{self.config.output_dir}/test_sent_{self.config.version}_{self.config.top_k}.txt', 'w') as f:
                 f.write('\n'.join(self.train_corpus))
         
         if self.config.store_trees:
-            with open(f'{self.config.output_dir}/all_trees_{self.config.top_k}.txt', 'w') as f:
+            with open(f'{self.config.output_dir}/all_trees_{self.config.version}_{self.config.top_k}.txt', 'w') as f:
                 f.write('\n'.join(tree._pformat_flat("", "()", False) for tree in list(self.tree_corpus.values())))
 
 
