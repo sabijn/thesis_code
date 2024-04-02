@@ -225,7 +225,7 @@ def create_subset_pcfg(productions, args, top_k=0.2, no_recursion=False, save=Tr
     
     return subset_pcfg, subset_pcfg_pos
 
-def load_subset_pcfg(prob_productions, args, top_k=0.2, save=True, load=True, lexical=False):
+def load_subset_pcfg(prob_productions, args, top_k=0.2, save=True, load=True, lexical=False, no_recursion=False):
     filename = f'grammars/nltk/subset_pcfg_{top_k}.pkl'
     filename_pos = f'grammars/nltk/subset_pcfg_{top_k}_pos.pkl'
     
@@ -239,7 +239,7 @@ def load_subset_pcfg(prob_productions, args, top_k=0.2, save=True, load=True, le
 
             return subset_pcfg, subset_pcfg_pos
     
-    subset_pcfg, subset_pcfg_pos = create_subset_pcfg(prob_productions, args, top_k, save=save, lexical=lexical)
+    subset_pcfg, subset_pcfg_pos = create_subset_pcfg(prob_productions, args, top_k, save=save, lexical=lexical, no_recursion=no_recursion)
 
     return subset_pcfg, subset_pcfg_pos
 
@@ -251,6 +251,7 @@ if __name__ == '__main__':
     parser.add_argument('--save', action=argparse.BooleanOptionalAction)
     parser.add_argument('--load', action=argparse.BooleanOptionalAction)
     parser.add_argument('--lexical', action=argparse.BooleanOptionalAction)
+    parser.add_argument('--no_recursion', action=argparse.BooleanOptionalAction)
 
     args = parser.parse_args()
     print('Started to load full PCFG...', flush=True)
@@ -264,4 +265,9 @@ if __name__ == '__main__':
 
     for k in [0.9]:
         PRODS_SEEN = set()  # to prevent recursion
-        subset_pcfg, subset_pcfg_pos = load_subset_pcfg(prod_productions_v2, args, top_k=k, save=args.save, load=args.load, lexical=args.lexical)
+        subset_pcfg, subset_pcfg_pos = load_subset_pcfg(prod_productions_v2, 
+                                                        args, top_k=k, 
+                                                        save=args.save,
+                                                        load=args.load, 
+                                                        lexical=args.lexical,
+                                                        no_recursion=args.no_recursion)
