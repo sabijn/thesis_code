@@ -15,3 +15,27 @@ Traceback (most recent call last):
 FileNotFoundError: [Errno 2] No such file or directory: '/home/11864265/thesis_code/reduce_grammar/grammars/nltk/nltk_pcfg.txt'
 srun: error: fnwi-cn005: task 0: Exited with exit code 1
 adding, committing, and pushing results to remote dir...
+[feature/retrain 0d7556a] save results from run (automated commit from Lisa).
+ Committer: Sabijn Perdijk <11864265@fnwi-cn005.localdomain>
+Your name and email address were configured automatically based
+on your username and hostname. Please check that they are accurate.
+You can suppress this message by setting them explicitly. Run the
+following command and follow the instructions in your editor to edit
+your configuration file:
+
+    git config --global --edit
+
+After doing this, you may fix the identity used for this commit with:
+
+    git commit --amend --reset-author
+
+ 6 files changed, 101 insertions(+)
+ create mode 100644 reduce_grammar/jobs/slurm_output_3233.out
+ create mode 100644 reduce_grammar/jobs/slurm_output_3234.out
+ create mode 100644 reduce_grammar/jobs/slurm_output_3235.out
+ create mode 100644 reduce_grammar/jobs/slurm_output_3236.out
+ create mode 100644 reduce_grammar/jobs/slurm_output_3237.out
+ create mode 100644 reduce_grammar/jobs/slurm_output_3238.out
+To github.com:sabijn/thesis_code.git
+   b11ff85..0d7556a  feature/retrain -> feature/retrain
+done.
