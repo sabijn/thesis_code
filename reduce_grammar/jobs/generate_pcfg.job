@@ -48,7 +48,8 @@ echo running perturbed masking...
 srun python generate_subset.py --pcfg_dir=/scratch/$USER/nltk_pcfg.txt\
                     --output_dir=/scratch/$USER/results \
                     --save \
-                    --no_recursion
+                    --no_recursion \
+                    --lexical
 
 echo adding, committing, and pushing results to remote dir...
 git add $HOME/Documents/thesis_code/reduce_grammar/
