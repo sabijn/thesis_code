@@ -154,7 +154,7 @@ def create_lookup_probs(pcfg):
 
 def write_to_txt(pcfg, filename) -> None:
     f = open(filename, 'w')
-    for prod in subset_pcfg.productions():
+    for prod in pcfg.productions():
         lhs = prod.lhs()
         # Check each element in rhs; if it's a string, add quotations
         rhs_with_quotes = []
