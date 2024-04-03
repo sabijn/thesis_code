@@ -268,7 +268,7 @@ if __name__ == '__main__':
     grammar = create_lookup_probs(grammar)
     prod_productions_v2 = [rule for lhs in grammar._lhs_index.values() for rule in lhs]
 
-    for k in [0.9]:
+    for k in [0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]:
         PRODS_SEEN = set()  # to prevent recursion
         subset_pcfg, subset_pcfg_pos = load_subset_pcfg(prod_productions_v2, 
                                                         args, top_k=k, 
