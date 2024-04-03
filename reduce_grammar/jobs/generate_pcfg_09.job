@@ -2,7 +2,7 @@
 
 #SBATCH --partition=illc
 #SBATCH --account=illc
-#SBATCH --job-name=pcfg
+#SBATCH --job-name=pcfg09
 #SBATCH --ntasks=1
 #SBATCH --gpus=1
 #SBATCH --mem=28000M
