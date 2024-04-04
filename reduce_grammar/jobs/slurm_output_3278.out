@@ -1,0 +1,46 @@
+setting up Miniconda...
+activating virtual env...
+current conda environment: basic310
+activating ssh connection...
+Agent pid 2436197
+Identity added: /home/11864265/.ssh/id_ed25519 (11864265@fnwi-h0.science.uva.nl)
+parsing input arguments...
+Branch: feature/retrain_grammar
+fetching and pulling latest changes from remote dir...
+From github.com:sabijn/thesis_code
+   3d77b93..dffa744  feature/retrain -> origin/feature/retrain
+Updating 3d77b93..dffa744
+Fast-forward
+ reduce_grammar/classes/__init__.py   |   5 +-
+ reduce_grammar/classes/experiment.py | 389 +++++++++++++++++++++++++++++++++++
+ reduce_grammar/classes/model.py      | 234 +++++++++++++++++++++
+ reduce_grammar/generate_corpora.py   |   5 +-
+ reduce_grammar/retrain.py            |  93 +++++++++
+ reduce_grammar/utils.py              |  11 +
+ 6 files changed, 734 insertions(+), 3 deletions(-)
+ create mode 100644 reduce_grammar/classes/experiment.py
+ create mode 100644 reduce_grammar/classes/model.py
+ create mode 100644 reduce_grammar/retrain.py
+ create mode 100644 reduce_grammar/utils.py
+running generating corpora...
+Running script for version normal
+Traceback (most recent call last):
+  File "/home/11864265/Documents/thesis_code/reduce_grammar/generate_corpora.py", line 1, in <module>
+    from classes import (PCFG, PCFGConfig,
+  File "/home/11864265/Documents/thesis_code/reduce_grammar/classes/__init__.py", line 5, in <module>
+    from .model import LanguageClassifier, ModelConfig
+  File "/home/11864265/Documents/thesis_code/reduce_grammar/classes/model.py", line 6, in <module>
+    from fairseq.modules import TransformerSentenceEncoder
+ModuleNotFoundError: No module named 'fairseq'
+srun: error: fnwi-cn005: task 0: Exited with exit code 1
+Running script for version pos
+Traceback (most recent call last):
+  File "/home/11864265/Documents/thesis_code/reduce_grammar/generate_corpora.py", line 1, in <module>
+    from classes import (PCFG, PCFGConfig,
+  File "/home/11864265/Documents/thesis_code/reduce_grammar/classes/__init__.py", line 5, in <module>
+    from .model import LanguageClassifier, ModelConfig
+  File "/home/11864265/Documents/thesis_code/reduce_grammar/classes/model.py", line 6, in <module>
+    from fairseq.modules import TransformerSentenceEncoder
+ModuleNotFoundError: No module named 'fairseq'
+srun: error: fnwi-cn005: task 0: Exited with exit code 1
+adding, committing, and pushing results to remote dir...
