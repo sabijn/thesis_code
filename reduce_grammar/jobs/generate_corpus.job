@@ -45,7 +45,7 @@ cd $HOME/Documents/thesis_code/reduce_grammar/
 git fetch && git pull
 
 echo running generating corpora...
-versions=("normal" "pos")
+versions=("normal")
 for version in "${versions[@]}"; do
     echo "Running script for version $version"
     srun python generate_corpora.py --version="$version" \

@@ -128,7 +128,7 @@ class Tokenizer:
                 ]
             )
 
-        return torch.tensor(token_ids, device=self.config['device'])
+        return torch.tensor(token_ids, device=self.config.device)
 
     def translate(self, item: Tensor, omit_cls: bool = False) -> str:
         sen_list = [self.idx2token[idx] for idx in item.tolist()]

@@ -193,7 +193,7 @@ class Language(Generic[C]):
 
             targets = torch.tensor(labels[idx: idx + batch_size])
 
-            yield input_ids.to(self.config['device']), targets.to(self.config['device']).float(), lengths, None
+            yield input_ids.to(self.config.device), targets.to(self.config.device).float(), lengths, None
 
     def batchify_masked(self, corpus: List[Tensor], batch_size=None):
         batch_size = batch_size or len(corpus)
@@ -221,7 +221,7 @@ class Language(Generic[C]):
 
             targets = torch.tensor(targets)
 
-            yield input_ids.to(self.config['device']), targets.to(self.config['device']), lengths, masks
+            yield input_ids.to(self.config.device), targets.to(self.config.device), lengths, masks
 
     def batchify_generative(self, corpus: List[Tensor], batch_size=None):
         batch_size = batch_size or len(corpus)
@@ -238,7 +238,7 @@ class Language(Generic[C]):
             targets = items[:, 1:]
             flat_targets = self._unpad_sequence(targets, lengths)
 
-            yield input_ids.to(self.config['device']), flat_targets.to(self.config['device']), lengths, None
+            yield input_ids.to(self.config.device), flat_targets.to(self.config.device), lengths, None
 
     def gen_baselines(*args, **kwargs):
         raise NotImplementedError
@@ -275,4 +275,4 @@ class Language(Generic[C]):
         concat_fn = torch.stack if tensor.ndim > 2 else torch.tensor
         tensor_list = [value for row, idx in zip(tensor, lengths) for value in row[:idx]]
 
-        return concat_fn(tensor_list).to(self.config['device'])
+        return concat_fn(tensor_list).to(self.config.device)

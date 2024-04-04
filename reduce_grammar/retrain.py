@@ -28,6 +28,7 @@ if __name__ == '__main__':
         grammar_file = f"{args.data_dir}/normal/subset_pcfg_{top_k}.txt"
         encoder = 'transformer'
 
+        print('Loading tokenizer')
         tokenizer_config = TokenizerConfig(
             add_cls=(encoder == "transformer"),
             masked_lm=(encoder == "transformer"),
@@ -35,6 +36,7 @@ if __name__ == '__main__':
         )
         tokenizer = Tokenizer(tokenizer_config)
 
+        print('Initializing PCFG')
         config = PCFGConfig(
             is_binary=False,
             min_length=args.min_length,
@@ -53,6 +55,7 @@ if __name__ == '__main__':
         lm_language = PCFG(config, tokenizer)
 
         ## LM PRETRAINING
+        print('Initializing model')
         model_config = ModelConfig(
             nhid = 25,
             num_layers = 2,
@@ -87,6 +90,7 @@ if __name__ == '__main__':
             experiment_config,
         )
 
+        print("Start training")
         performance = experiment.train(lm_language)
         # dump performance in pkl
         with open(f"{args.output_dir}/performance.pkl", 'wb') as f:
@@ -98,3 +102,4 @@ if __name__ == '__main__':
         model.save(f"{args.output_dir}/model.pt")
 
         plot_results(args, top_k, performance[0]['train'], performance[0]['dev'], performance[0]['test'], real_output=True)
+        break
