@@ -6,8 +6,12 @@ import argparse
 
 
 def main(args):
-    for top_k in [0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]:
-        grammar_file = f'{args.data_dir}/{args.version}/subset_pcfg_{top_k}_lexical.txt'
+    for top_k in [0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]:
+        if args.version == 'pos':
+            extra = '_pos'
+        else:
+            extra = ''
+        grammar_file = f'{args.data_dir}/lexical/subset_pcfg_{top_k}{extra}_lexical.txt'
         encoder = "transformer"
         tokenizer_config = TokenizerConfig(
                 add_cls=(encoder == "transformer"),
@@ -36,7 +40,7 @@ def main(args):
         tokenizer = Tokenizer(tokenizer_config)
         
         lm_language = PCFG(config, tokenizer)
-        lm_language.save(f'{args.output_dir}/corpus_{top_k}_{args.version}_normal.pt')
+        lm_language.save(f'{args.output_dir}/corpus_{top_k}_lexical{extra}.pt')
         
 
 if __name__ == '__main__':
