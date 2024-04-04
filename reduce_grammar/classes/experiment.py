@@ -342,17 +342,6 @@ class Experiment:
         return avg_main_pos_probs      
 
 
-def plot_results(train_accs, dev_accs, test_acc, real_output=False):
-    plt.plot(train_accs)
-    plt.plot(dev_accs)
-    if test_acc is not None:
-        plt.axhline(test_acc, ls='--', lw=2)
-    if not real_output:
-        plt.ylim(0, 1)
-    plt.title("Performance")
-    plt.show()
-
-
 def plot_eval_corpora(accuracies: Dict[str, float], indomain_langs: List[int], xlabel: str):
     id_color = "#40B0A6"
     ood_color = "#E1BE6A"
@@ -378,10 +367,23 @@ def plot_eval_corpora(accuracies: Dict[str, float], indomain_langs: List[int], x
     plt.show()
 
 
-def train(model, language, config):
-    experiment = Experiment(
-        model,
-        config,
-    )
+# def train(model, language, config):
+#     experiment = Experiment(
+#         model,
+#         config,
+#     )
 
-    return experiment, experiment.train(language)
+#     return experiment, experiment.train(language)
+
+
+def tree_to_pos(tree, merge=True):
+    if merge:
+        return [
+            prod.lhs().symbol().split('_')[0] for prod in tree.productions()
+            if isinstance(prod.rhs()[0], str)
+        ]
+    else:
+        return [
+            prod.lhs().symbol() for prod in tree.productions()
+            if isinstance(prod.rhs()[0], str)
+        ]

@@ -1,9 +1,11 @@
-
+from classes import (PCFG, PCFGConfig,
+                    TokenizerConfig, Tokenizer, 
+                    ModelConfig, LanguageClassifier,
+                    ExperimentConfig, Experiment)
+from copy import deepcopy
+from utils import plot_results
 
 if __name__ == '__main__':
-
-
-
     test_scores = {}
 
 
@@ -32,21 +34,8 @@ if __name__ == '__main__':
         split_ratio=(.8,.1,.1),
         use_unk_pos_tags=True,
     )
+    
     lm_language = PCFG(config, tokenizer)
-    # binary_language = lm_language.make_binary(swap_subtrees, clone=True)
-
-    # treebank_config = TreebankConfig(
-    #     file='100k_sample_books.txt',
-    #     max_length=20,
-    #     min_length=4,
-    #     max_depth=20,
-    #     corpus_size=10_000,
-    #     sample=True,
-    #     use_unk_pos_tags=False,
-    #     masked_lm=(encoder == "transformer"),
-    #     start='S',
-    # )
-    # lm_language = Treebank(treebank_config, tokenizer)
 
     ## LM PRETRAINING
     model_config = ModelConfig(
@@ -77,10 +66,12 @@ if __name__ == '__main__':
         eval_dev_pos_performance=False,
         eval_test_pos_performance=True,
     )
+
     experiment = Experiment(
         model,
         experiment_config,
     )
+
     performance = experiment.train(lm_language)
     base_model = experiment.best_model
     model = deepcopy(base_model)  # detach reference so base_model can be used later
