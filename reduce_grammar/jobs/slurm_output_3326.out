@@ -29,3 +29,15 @@ FileNotFoundError: [Errno 2] No such file or directory: '/scratch/11864265/norma
 srun: error: fnwi-cn005: task 0: Exited with exit code 1
 Running script for version pos
 2024-04-04 15:04:50 | INFO | fairseq.tasks.text_to_speech | Please install tensorboardX: pip install tensorboardX
+Traceback (most recent call last):
+  File "/home/11864265/Documents/thesis_code/reduce_grammar/generate_corpora.py", line 60, in <module>
+    args = parser.parse_args()
+  File "/home/11864265/Documents/thesis_code/reduce_grammar/generate_corpora.py", line 40, in main
+    tokenizer = Tokenizer(tokenizer_config)
+  File "/home/11864265/Documents/thesis_code/reduce_grammar/classes/language.py", line 50, in __init__
+    self.grammar = self.create_grammar()
+  File "/home/11864265/Documents/thesis_code/reduce_grammar/classes/pcfg.py", line 46, in create_grammar
+    with open(self.config.grammar_file) as f:
+FileNotFoundError: [Errno 2] No such file or directory: '/scratch/11864265/pos/subset_pcfg_0.9.txt'
+srun: error: fnwi-cn005: task 0: Exited with exit code 1
+adding, committing, and pushing results to remote dir...
