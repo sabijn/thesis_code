@@ -21,3 +21,23 @@ Running script for version normal
 Running script for version pos
 2024-04-04 10:38:24 | INFO | fairseq.tasks.text_to_speech | Please install tensorboardX: pip install tensorboardX
 adding, committing, and pushing results to remote dir...
+[feature/retrain 943293a] save results from run (automated commit from Lisa).
+ Committer: Sabijn Perdijk <11864265@fnwi-cn005.localdomain>
+Your name and email address were configured automatically based
+on your username and hostname. Please check that they are accurate.
+You can suppress this message by setting them explicitly. Run the
+following command and follow the instructions in your editor to edit
+your configuration file:
+
+    git config --global --edit
+
+After doing this, you may fix the identity used for this commit with:
+
+    git commit --amend --reset-author
+
+ 3 files changed, 58 insertions(+)
+ create mode 100644 reduce_grammar/jobs/slurm_output_3279.out
+ create mode 100644 reduce_grammar/jobs/slurm_output_3280.out
+To github.com:sabijn/thesis_code.git
+   8978208..943293a  feature/retrain -> feature/retrain
+done.
