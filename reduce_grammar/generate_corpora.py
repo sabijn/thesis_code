@@ -38,7 +38,7 @@ def main(args):
         tokenizer = Tokenizer(tokenizer_config)
         
         lm_language = PCFG(config, tokenizer)
-        lm_language.save(f'{args.output_dir}/corpus_{top_k}.pt')
+        lm_language.save(f'{args.output_dir}/corpus_{top_k}_{args.version}.pt')
         break
         
 
