@@ -2,19 +2,19 @@ setting up Miniconda...
 activating virtual env...
 current conda environment: basic310
 activating ssh connection...
-Agent pid 2447044
+Agent pid 2457701
 Identity added: /home/11864265/.ssh/id_ed25519 (11864265@fnwi-h0.science.uva.nl)
 parsing input arguments...
 Branch: feature/retrain_grammar
 fetching and pulling latest changes from remote dir...
 Already up to date.
 running generating corpora...
-Running script for version lexical
-2024-04-04 17:01:30 | INFO | fairseq.tasks.text_to_speech | Please install tensorboardX: pip install tensorboardX
+Running script for version normal
+2024-04-05 14:25:29 | INFO | fairseq.tasks.text_to_speech | Please install tensorboardX: pip install tensorboardX
 Traceback (most recent call last):
-  File "/home/11864265/Documents/thesis_code/reduce_grammar/generate_corpora.py", line 62, in <module>
+  File "/home/11864265/Documents/thesis_code/reduce_grammar/generate_corpora.py", line 58, in <module>
     main(args)
-  File "/home/11864265/Documents/thesis_code/reduce_grammar/generate_corpora.py", line 42, in main
+  File "/home/11864265/Documents/thesis_code/reduce_grammar/generate_corpora.py", line 38, in main
     lm_language = PCFG(config, tokenizer)
   File "/home/11864265/Documents/thesis_code/reduce_grammar/classes/language.py", line 62, in __init__
     self.corpus = self.create_corpus()
@@ -38,24 +38,16 @@ Traceback (most recent call last):
     children = concatenate_subtrees(grammar, prod.rhs(), depth - 1)
   File "/home/11864265/Documents/thesis_code/reduce_grammar/classes/pcfg.py", line 228, in concatenate_subtrees
     children.append(generate_subtree(grammar, item, depth))
-  File "/home/11864265/Documents/thesis_code/reduce_grammar/classes/pcfg.py", line 242, in generate_subtree
-    children = concatenate_subtrees(grammar, prod.rhs(), depth - 1)
-  File "/home/11864265/Documents/thesis_code/reduce_grammar/classes/pcfg.py", line 228, in concatenate_subtrees
-    children.append(generate_subtree(grammar, item, depth))
-  File "/home/11864265/Documents/thesis_code/reduce_grammar/classes/pcfg.py", line 242, in generate_subtree
-    children = concatenate_subtrees(grammar, prod.rhs(), depth - 1)
-  File "/home/11864265/Documents/thesis_code/reduce_grammar/classes/pcfg.py", line 228, in concatenate_subtrees
-    children.append(generate_subtree(grammar, item, depth))
   File "/home/11864265/Documents/thesis_code/reduce_grammar/classes/pcfg.py", line 239, in generate_subtree
     probs = grammar._lhs_prob_index[lhs]
-KeyError: ATVP_22
+KeyError: ATNP_12
 srun: error: fnwi-cn005: task 0: Exited with exit code 1
 Running script for version pos
-2024-04-04 21:52:02 | INFO | fairseq.tasks.text_to_speech | Please install tensorboardX: pip install tensorboardX
+2024-04-05 14:25:51 | INFO | fairseq.tasks.text_to_speech | Please install tensorboardX: pip install tensorboardX
 Traceback (most recent call last):
-  File "/home/11864265/Documents/thesis_code/reduce_grammar/generate_corpora.py", line 62, in <module>
+  File "/home/11864265/Documents/thesis_code/reduce_grammar/generate_corpora.py", line 58, in <module>
     main(args)
-  File "/home/11864265/Documents/thesis_code/reduce_grammar/generate_corpora.py", line 42, in main
+  File "/home/11864265/Documents/thesis_code/reduce_grammar/generate_corpora.py", line 38, in main
     lm_language = PCFG(config, tokenizer)
   File "/home/11864265/Documents/thesis_code/reduce_grammar/classes/language.py", line 62, in __init__
     self.corpus = self.create_corpus()
@@ -79,34 +71,8 @@ Traceback (most recent call last):
     children = concatenate_subtrees(grammar, prod.rhs(), depth - 1)
   File "/home/11864265/Documents/thesis_code/reduce_grammar/classes/pcfg.py", line 228, in concatenate_subtrees
     children.append(generate_subtree(grammar, item, depth))
-  File "/home/11864265/Documents/thesis_code/reduce_grammar/classes/pcfg.py", line 242, in generate_subtree
-    children = concatenate_subtrees(grammar, prod.rhs(), depth - 1)
-  File "/home/11864265/Documents/thesis_code/reduce_grammar/classes/pcfg.py", line 228, in concatenate_subtrees
-    children.append(generate_subtree(grammar, item, depth))
-  File "/home/11864265/Documents/thesis_code/reduce_grammar/classes/pcfg.py", line 242, in generate_subtree
-    children = concatenate_subtrees(grammar, prod.rhs(), depth - 1)
-  File "/home/11864265/Documents/thesis_code/reduce_grammar/classes/pcfg.py", line 228, in concatenate_subtrees
-    children.append(generate_subtree(grammar, item, depth))
   File "/home/11864265/Documents/thesis_code/reduce_grammar/classes/pcfg.py", line 239, in generate_subtree
     probs = grammar._lhs_prob_index[lhs]
-KeyError: ATVP_22
+KeyError: ATNP_12
 srun: error: fnwi-cn005: task 0: Exited with exit code 1
 adding, committing, and pushing results to remote dir...
-[feature/retrain 7d412eb] save results from run (automated commit from Lisa).
- Committer: Sabijn Perdijk <11864265@fnwi-cn005.localdomain>
-Your name and email address were configured automatically based
-on your username and hostname. Please check that they are accurate.
-You can suppress this message by setting them explicitly. Run the
-following command and follow the instructions in your editor to edit
-your configuration file:
-
-    git config --global --edit
-
-After doing this, you may fix the identity used for this commit with:
-
-    git commit --amend --reset-author
-
- 2 files changed, 100 insertions(+)
-To github.com:sabijn/thesis_code.git
-   e860a9a..7d412eb  feature/retrain -> feature/retrain
-done.
