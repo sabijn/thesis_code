@@ -6,6 +6,10 @@ from copy import deepcopy
 from utils import plot_results
 import argparse
 import pickle
+import torch
+import logging
+
+logger = logging.getLogger(__name__)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Retrain')
@@ -19,8 +23,24 @@ if __name__ == '__main__':
     parser.add_argument('--max_length', type=int, default=25)
     parser.add_argument('--max_depth', type=int, default=25)
     parser.add_argument('--top_k', type=float, default=0.2)
+    parser.add_argument('--device', type=str, default=None)
 
     args = parser.parse_args()
+
+    if args.device is None:
+        if torch.cuda.is_available():
+            # For running on snellius
+            device = torch.device("cuda")
+            logger.info('Running on cuda.')
+        elif torch.backends.mps.is_available():
+            # For running on M1
+            device = torch.device("mps")
+            logger.info('Running on M1 GPU.')
+        else:
+            # For running on laptop
+            device = torch.device("cpu")
+            logger.info('Running on CPU.')
+
 
     for top_k in [0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]:
         test_scores = {}
@@ -28,7 +48,7 @@ if __name__ == '__main__':
         grammar_file = f"{args.data_dir}/normal/subset_pcfg_{top_k}.txt"
         encoder = 'transformer'
 
-        print('Loading tokenizer')
+        'Loading tokenizer'
         tokenizer_config = TokenizerConfig(
             add_cls=(encoder == "transformer"),
             masked_lm=(encoder == "transformer"),
@@ -49,7 +69,8 @@ if __name__ == '__main__':
             allow_duplicates=True,
             split_ratio=(.8,.1,.1),
             use_unk_pos_tags=True,
-            file=args.corpus_file
+            file=args.corpus_file,
+            device=device
         )
 
         lm_language = PCFG(config, tokenizer)
@@ -69,6 +90,7 @@ if __name__ == '__main__':
             pad_idx = tokenizer.pad_idx,
             mask_idx = tokenizer.mask_idx,
             non_linear_decoder = True,
+            device=device
         )
         model = LanguageClassifier(model_config)
 
