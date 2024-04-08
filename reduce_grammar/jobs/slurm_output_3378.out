@@ -115,3 +115,22 @@ FileNotFoundError: [Errno 2] No such file or directory: 'grammars/nltk/normal/su
 srun: error: fnwi-cn005: task 0: Exited with exit code 1
 /var/spool/slurm/d/job03378/slurm_script: line 54: --output_dir=/scratch/11864265/results: No such file or directory
 adding, committing, and pushing results to remote dir...
+[feature/retrain cad295d] save results from run (automated commit from Lisa).
+ Committer: Sabijn Perdijk <11864265@fnwi-cn005.localdomain>
+Your name and email address were configured automatically based
+on your username and hostname. Please check that they are accurate.
+You can suppress this message by setting them explicitly. Run the
+following command and follow the instructions in your editor to edit
+your configuration file:
+
+    git config --global --edit
+
+After doing this, you may fix the identity used for this commit with:
+
+    git commit --amend --reset-author
+
+ 2 files changed, 136 insertions(+)
+ create mode 100644 reduce_grammar/jobs/slurm_output_3378.out
+To github.com:sabijn/thesis_code.git
+   bf3c5e4..cad295d  feature/retrain -> feature/retrain
+done.
