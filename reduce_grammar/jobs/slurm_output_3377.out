@@ -1,0 +1,40 @@
+setting up Miniconda...
+activating virtual env...
+current conda environment: basic310
+activating ssh connection...
+Agent pid 2491040
+Identity added: /home/11864265/.ssh/id_ed25519 (11864265@fnwi-h0.science.uva.nl)
+parsing input arguments...
+Branch: feature/retrain_grammar
+fetching and pulling latest changes from remote dir...
+Already up to date.
+running perturbed masking...
+Started to load full PCFG...
+Finished loading PCFG...
+************ Creating subset PCFG with top k = 0.9... ************
+Starting with 2513065 productions.
+Created subset PCFG with a length of 249907 productions.
+Cleaning subset: (1) removing unreachable productions...
+Traceback (most recent call last):
+  File "/home/11864265/Documents/thesis_code/reduce_grammar/generate_subset.py", line 268, in <module>
+    subset_pcfg, subset_pcfg_pos = load_subset_pcfg(prod_productions_v2, 
+  File "/home/11864265/Documents/thesis_code/reduce_grammar/generate_subset.py", line 242, in load_subset_pcfg
+    subset_pcfg, subset_pcfg_pos = create_subset_pcfg(prob_productions, args, top_k, save=save, lexical=lexical, no_recursion=no_recursion)
+  File "/home/11864265/Documents/thesis_code/reduce_grammar/generate_subset.py", line 189, in create_subset_pcfg
+    final_subset_productions = set(
+  File "/home/11864265/Documents/thesis_code/reduce_grammar/generate_subset.py", line 100, in reachable_productions
+    yield from reachable_productions(
+  File "/home/11864265/Documents/thesis_code/reduce_grammar/generate_subset.py", line 100, in reachable_productions
+    yield from reachable_productions(
+  File "/home/11864265/Documents/thesis_code/reduce_grammar/generate_subset.py", line 100, in reachable_productions
+    yield from reachable_productions(
+  [Previous line repeated 989 more times]
+  File "/home/11864265/Documents/thesis_code/reduce_grammar/generate_subset.py", line 90, in reachable_productions
+    PRODS_SEEN.add((prod,))
+  File "/home/11864265/miniconda3/envs/basic310/lib/python3.10/site-packages/nltk/grammar.py", line 437, in __hash__
+    return hash((self._lhs, self._rhs, self.prob()))
+  File "/home/11864265/miniconda3/envs/basic310/lib/python3.10/site-packages/nltk/grammar.py", line 142, in __hash__
+    return hash(self._symbol)
+RecursionError: maximum recursion depth exceeded while calling a Python object
+srun: error: fnwi-cn005: task 0: Exited with exit code 1
+adding, committing, and pushing results to remote dir...
