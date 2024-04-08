@@ -74,7 +74,7 @@ def create_subset_productions(productions, top_k, lexical=False):
 
 
 
-def reachable_productions(productions, lhs, parents=tuple(), no_recursion=False):
+def reachable_productions(productions, lhs, parents=tuple(), prods_seen=set(), no_recursion=False):
     """
     Create a generator that yields all reachable productions from a given lhs symbol.
     """
@@ -85,9 +85,10 @@ def reachable_productions(productions, lhs, parents=tuple(), no_recursion=False)
     lhs_productions = [prod for prod in productions if prod.lhs() == lhs]
     
     for prod in lhs_productions:
-        if (prod,) in PRODS_SEEN:
+        # reminder: creates a tuple with one element (unmutable)
+        if (prod,) in prods_seen:
             continue
-        PRODS_SEEN.add((prod,))
+        prods_seen.add((prod,))
 
         # check if the rhs contains a parent symbol    
         if no_recursion and any([rhs in parents for rhs in prod.rhs()]):
@@ -101,6 +102,7 @@ def reachable_productions(productions, lhs, parents=tuple(), no_recursion=False)
                     productions, 
                     rhs, 
                     parents=new_parents,
+                    prod_seen=prods_seen,
                     no_recursion=no_recursion,
                 )
 
@@ -264,7 +266,6 @@ if __name__ == '__main__':
     grammar = create_lookup_probs(grammar)
     prod_productions_v2 = [rule for lhs in grammar._lhs_index.values() for rule in lhs]
 
-    PRODS_SEEN = set()  # to prevent recursion
     subset_pcfg, subset_pcfg_pos = load_subset_pcfg(prod_productions_v2, 
                                                     args, top_k=args.top_k, 
                                                     save=args.save,
