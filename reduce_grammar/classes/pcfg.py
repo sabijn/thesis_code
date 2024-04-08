@@ -14,6 +14,10 @@ from nltk.parse import IncrementalLeftCornerChartParser as Parser
 
 from .language import LanguageConfig, Language
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 BinaryCorpus = List[Tuple[Tensor, int]]
 LMCorpus = List[Tensor]
 Corpus = Union[BinaryCorpus, LMCorpus]

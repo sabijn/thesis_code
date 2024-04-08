@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 
-def plot_results(args, top_k, train_accs, dev_accs, test_acc, real_output=False) -> None:
+def plot_results(args, train_accs, dev_accs, test_acc, real_output=False) -> None:
     plt.plot(train_accs)
     plt.plot(dev_accs)
     if test_acc is not None:
@@ -8,4 +8,4 @@ def plot_results(args, top_k, train_accs, dev_accs, test_acc, real_output=False)
     if not real_output:
         plt.ylim(0, 1)
     plt.title("Performance")
-    plt.savefig(f"{args.output_dir}/performance_{top_k}.png")
+    plt.savefig(f"{args.output_dir}/performance_{args.version}_{args.top_k}.png")

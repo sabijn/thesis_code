@@ -16,6 +16,10 @@ from nltk import PCFG as nltk_PCFG
 from .config import Config
 from .tokenizer import Tokenizer
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 BinaryCorpus = List[Tuple[Tensor, int]]
 LMCorpus = List[Tensor]
@@ -50,6 +54,7 @@ class Language(Generic[C]):
         self.grammar = self.create_grammar()
 
         if self.config.file is not None:
+            logger.info('Loading corpus from file.')
             self.corpus, self.tree_corpus, self.pos_dict = torch.load(self.config.file)
             if self.config.corpus_size is not None and self.config.corpus_size < len(self.corpus):
                 # This allows us to subsample the larger corpus directly for smaller corpus sizes
@@ -57,6 +62,7 @@ class Language(Generic[C]):
                 self.tree_corpus = {sen: self.tree_corpus[sen] for sen in self.corpus}
                 self.pos_dict = {sen: self.pos_dict[sen] for sen in self.corpus}
         else:
+            logger.info('Creating corpus from grammar.')
             self.tree_corpus: Dict[str, nltk.Tree] = {}
             self.pos_dict: Dict[str, List[str]] = {}  # maps sentence to pos tags
             self.corpus = self.create_corpus()
