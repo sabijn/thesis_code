@@ -51,6 +51,7 @@ for topk in "${topks[@]}"; do
     for version in "${versions[@]}"; do
         echo "Running script for version $version"
         srun python generate_corpora.py --version="$version" \
+                            --top_k="$topk" \
                             --output_dir=/scratch/$USER/results \
                             --data_dir=/scratch/$USER \
                             --corpus_file=/scratch/$USER/corpora/corpus_${topk}_${version}.pt

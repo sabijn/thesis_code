@@ -6,6 +6,8 @@ from transformers import (DataCollatorForLanguageModeling,
 from tokenizer import create_tokenizer
 from data import load_data
 from model import initialize_model
+from argparser import create_arg_parser
+
 from datasets import DatasetDict
 from transformers import (
     DataCollatorForLanguageModeling,
@@ -14,7 +16,6 @@ from transformers import (
     TrainingArguments,
 )
 
-import argparse
 import logging
 
 logger = logging.getLogger(__name__)
@@ -39,19 +40,37 @@ def initialize_trainer(
 
     return trainer
 
-def main():
-    tokenizer = create_tokenizer('corpora/train_1.0.txt', min_freq=5)
-    datasets = load_data(tokenizer, 'corpora')
+def main(args):
+    """
+    Training model
+    """
+    tokenizer = create_tokenizer(f'{args.data_dir}/{args.train_file}', min_freq=5)
+    datasets = load_data(args, tokenizer, args.data_dir)
     data_collator = DataCollatorForLanguageModeling(tokenizer, mlm=True)
 
-    model = initialize_model(
-        tokenizer, 
-        'phueb/BabyBERTa-1', 
-        num_hidden_layers=6, 
-        intermediate_size=64,
-        hidden_size=64,
-        num_attention_heads=8,
-    )
+    if args.base_model == 'phueb/BabyBERTa-1':
+        model = initialize_model(
+            tokenizer, 
+            args.base_model, 
+            is_mlm=True,
+            num_hidden_layers=6, 
+            intermediate_size=64,
+            hidden_size=64,
+            num_attention_heads=8,
+        )
+    elif args.base_model == 'distilgpt2':
+        model = initialize_model(
+            tokenizer, 
+            args.base_model, #'microsoft/deberta-v3-base',  # 'phueb/BabyBERTa-1', 
+            num_hidden_layers=8, 
+            intermediate_size=256,
+            hidden_size=256,
+            num_attention_heads=8,
+            is_mlm=False,
+        )
+    else:
+        logger.critical('Model not implemented')
+        raise NotImplementedError
 
     print('#params', sum(param.numel() for param in model.parameters()))
 
@@ -60,20 +79,28 @@ def main():
         tokenizer, 
         data_collator, 
         datasets, 
-        output_dir='checkpoints', 
-        save_steps=10_000, 
-        eval_steps=100, 
-        logging_steps=100,
-        per_device_train_batch_size=64,
-        per_device_eval_batch_size=64,
-        gradient_accumulation_steps=8,
-        weight_decay=0.1,
-        lr_scheduler_type='cosine',
-        learning_rate=5e-4,
+        output_dir=args.output_dir, 
+        save_steps=args.save_steps, 
+        eval_steps=args.eval_steps, 
+        logging_steps=args.logging_steps,
+        per_device_train_batch_size=args.per_device_train_batch_size,
+        per_device_eval_batch_size=args.per_device_eval_batch_size,
+        gradient_accumulation_steps=args.gradient_accumulation_steps,
+        weight_decay=args.weight_decay,
+        lr_scheduler_type=args.lr_scheduler_type,
+        learning_rate=args.learning_rate,
+        warmup_steps=args.warmup_steps,
+        fp16=args.fp16,
+        max_grad_norm=args.max_grad_norm,
+        group_by_length=args.group_by_length,
+        auto_find_batch_size=args.auto_find_batch_size,
+        do_eval=args.do_eval,
+        evaluation_strategy=args.evaluation_strategy
     )
 
     trainer.train()
+    trainer._save_checkpoint(trainer.model, None)
 
 if __name__ == '__main__':
-    parser.add_argument()
-    main()
+    args = create_arg_parser()
+    main(args)
