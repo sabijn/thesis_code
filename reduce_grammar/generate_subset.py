@@ -102,7 +102,7 @@ def reachable_productions(productions, lhs, parents=tuple(), prods_seen=set(), n
                     productions, 
                     rhs, 
                     parents=new_parents,
-                    prod_seen=prods_seen,
+                    prods_seen=prods_seen,
                     no_recursion=no_recursion,
                 )
 
