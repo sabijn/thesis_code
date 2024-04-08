@@ -1,0 +1,54 @@
+setting up Miniconda...
+activating virtual env...
+current conda environment: basic310
+activating ssh connection...
+Agent pid 2496673
+Identity added: /home/11864265/.ssh/id_ed25519 (11864265@fnwi-h0.science.uva.nl)
+parsing input arguments...
+Branch: feature/retrain_grammar
+fetching and pulling latest changes from remote dir...
+Already up to date.
+running generating corpora...
+Running script for version normal
+2024-04-08 16:55:58 | INFO | fairseq.tasks.text_to_speech | Please install tensorboardX: pip install tensorboardX
+2024-04-08 16:55:59 | INFO | classes.language | Loading corpus from file.
+Running script for version pos
+2024-04-08 16:59:39 | INFO | fairseq.tasks.text_to_speech | Please install tensorboardX: pip install tensorboardX
+2024-04-08 16:59:40 | INFO | classes.language | Loading corpus from file.
+Running script for version normal
+2024-04-08 16:59:49 | INFO | fairseq.tasks.text_to_speech | Please install tensorboardX: pip install tensorboardX
+2024-04-08 16:59:49 | INFO | classes.language | Loading corpus from file.
+Running script for version pos
+2024-04-08 17:04:08 | INFO | fairseq.tasks.text_to_speech | Please install tensorboardX: pip install tensorboardX
+2024-04-08 17:04:09 | INFO | classes.language | Loading corpus from file.
+Running script for version normal
+2024-04-08 17:04:51 | INFO | fairseq.tasks.text_to_speech | Please install tensorboardX: pip install tensorboardX
+2024-04-08 17:04:52 | INFO | classes.language | Loading corpus from file.
+Running script for version pos
+2024-04-08 17:08:49 | INFO | fairseq.tasks.text_to_speech | Please install tensorboardX: pip install tensorboardX
+2024-04-08 17:08:50 | INFO | classes.language | Loading corpus from file.
+Running script for version normal
+2024-04-08 17:14:07 | INFO | fairseq.tasks.text_to_speech | Please install tensorboardX: pip install tensorboardX
+2024-04-08 17:14:08 | INFO | classes.language | Loading corpus from file.
+Running script for version pos
+2024-04-08 17:18:00 | INFO | fairseq.tasks.text_to_speech | Please install tensorboardX: pip install tensorboardX
+2024-04-08 17:18:01 | INFO | classes.language | Loading corpus from file.
+Running script for version normal
+2024-04-08 17:22:53 | INFO | fairseq.tasks.text_to_speech | Please install tensorboardX: pip install tensorboardX
+2024-04-08 17:22:55 | INFO | classes.language | Loading corpus from file.
+Running script for version pos
+2024-04-08 17:26:36 | INFO | fairseq.tasks.text_to_speech | Please install tensorboardX: pip install tensorboardX
+2024-04-08 17:26:37 | INFO | classes.language | Loading corpus from file.
+Running script for version normal
+2024-04-08 17:30:46 | INFO | fairseq.tasks.text_to_speech | Please install tensorboardX: pip install tensorboardX
+2024-04-08 17:30:49 | INFO | classes.language | Loading corpus from file.
+Running script for version pos
+2024-04-08 17:34:33 | INFO | fairseq.tasks.text_to_speech | Please install tensorboardX: pip install tensorboardX
+2024-04-08 17:34:35 | INFO | classes.language | Loading corpus from file.
+Running script for version normal
+2024-04-08 17:38:34 | INFO | fairseq.tasks.text_to_speech | Please install tensorboardX: pip install tensorboardX
+2024-04-08 17:38:40 | INFO | classes.language | Loading corpus from file.
+Running script for version pos
+2024-04-08 17:42:20 | INFO | fairseq.tasks.text_to_speech | Please install tensorboardX: pip install tensorboardX
+2024-04-08 17:42:22 | INFO | classes.language | Loading corpus from file.
+adding, committing, and pushing results to remote dir...
