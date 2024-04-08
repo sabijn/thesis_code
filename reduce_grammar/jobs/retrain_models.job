@@ -52,7 +52,7 @@ for topk in "${topks[@]}"; do
     srun python retrain.py --corpus_file=/scratch/$USER/corpora/corpus_${topk}_${version}.pt \
                         --output_dir=/scratch/$USER/results \
                         --data_dir=/scratch/$USER \
-                        --topk=$topk \
+                        --top_k=$topk \
                         --version=$version
 done
 
