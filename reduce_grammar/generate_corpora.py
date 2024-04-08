@@ -6,39 +6,39 @@ import argparse
 
 
 def main(args):
-    for top_k in [0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8]:
-        grammar_file = f'{args.data_dir}/{args.version}/subset_pcfg_{top_k}.txt'
-        encoder = "transformer"
-        tokenizer_config = TokenizerConfig(
-                add_cls=(encoder == "transformer"),
-                masked_lm=(encoder == "transformer"),
-                unk_threshold=5,
-            )
-
-        config = PCFGConfig(
-            is_binary=False,
-            min_length=args.min_length,
-            max_length=args.max_length,
-            max_depth=args.max_depth,
-            corpus_size=args.corpus_size,
-            grammar_file=grammar_file,
-            start="S_0",
+    grammar_file = f'{args.data_dir}/{args.version}/subset_pcfg_{args.top_k}.txt'
+    encoder = "transformer"
+    tokenizer_config = TokenizerConfig(
+            add_cls=(encoder == "transformer"),
             masked_lm=(encoder == "transformer"),
-            allow_duplicates=True,
-            split_ratio=(0.8,0.1,0.1),
-            use_unk_pos_tags=True,
-            verbose=args.verbose,
-            store_trees=True,
-            output_dir=args.output_dir,
-            top_k=top_k,
-            version=args.version
+            unk_threshold=5,
         )
-        tokenizer = Tokenizer(tokenizer_config)
-        
-        lm_language = PCFG(config, tokenizer)
-        lm_language.save_pcfg()
-        #lm_language.save(f'{args.output_dir}/corpus_{top_k}_{args.version}.pt')
-        
+
+    config = PCFGConfig(
+        is_binary=False,
+        min_length=args.min_length,
+        max_length=args.max_length,
+        max_depth=args.max_depth,
+        corpus_size=args.corpus_size,
+        grammar_file=grammar_file,
+        start="S_0",
+        masked_lm=(encoder == "transformer"),
+        allow_duplicates=True,
+        split_ratio=(0.8,0.1,0.1),
+        use_unk_pos_tags=True,
+        verbose=args.verbose,
+        store_trees=True,
+        output_dir=args.output_dir,
+        top_k=args.top_k,
+        version=args.version,
+        file=args.corpus_file
+    )
+    tokenizer = Tokenizer(tokenizer_config)
+    
+    lm_language = PCFG(config, tokenizer)
+    lm_language.save_pcfg()
+    #lm_language.save(f'{args.output_dir}/corpus_{top_k}_{args.version}.pt')
+    
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Generate corpora')
@@ -53,6 +53,8 @@ if __name__ == '__main__':
     parser.add_argument('--min_length', type=int, default=6)
     parser.add_argument('--max_length', type=int, default=25)
     parser.add_argument('--max_depth', type=int, default=25)
+    parser.add_argument('--corpus_file', type=str, default=None)
+    parser.add_argument('--top_k', type=float, default=0.2)
 
     args = parser.parse_args()
 
