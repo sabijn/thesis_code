@@ -17,3 +17,6 @@ Running script for version 0.2
 2024-04-08 12:27:53 | INFO | classes.language | Loading corpus from file.
 2024-04-08 12:30:33 | INFO | __main__ | Initializing model
 2024-04-08 12:30:44 | INFO | __main__ | Start training
+srun: Job step aborted: Waiting up to 32 seconds for job step to finish.
+  0%|          | 0/50 [00:00<?, ?it/s]slurmstepd: error: *** STEP 3380.0 ON fnwi-cn005 CANCELLED AT 2024-04-08T14:30:58 ***
+slurmstepd: error: *** JOB 3380 ON fnwi-cn005 CANCELLED AT 2024-04-08T14:30:58 ***
