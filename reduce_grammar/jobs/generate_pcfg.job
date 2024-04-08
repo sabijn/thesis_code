@@ -6,7 +6,7 @@
 #SBATCH --ntasks=1
 #SBATCH --gpus=1
 #SBATCH --mem=28000M
-#SBATCH --time=30:00:00
+#SBATCH --time=20:00:00
 #SBATCH --output=slurm_output_%A.out
 
 echo setting up Miniconda...
@@ -47,9 +47,7 @@ git fetch && git pull
 echo running perturbed masking...
 srun python generate_subset.py --pcfg_dir=/scratch/$USER/nltk_pcfg.txt\
                     --output_dir=/scratch/$USER/results \
-                    --save \
-                    --no_recursion \
-                    --lexical
+                    --save
 
 echo adding, committing, and pushing results to remote dir...
 git add $HOME/Documents/thesis_code/reduce_grammar/

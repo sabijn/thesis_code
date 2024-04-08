@@ -216,15 +216,10 @@ def create_subset_pcfg(productions, args, top_k=0.2, no_recursion=False, save=Tr
     subset_pcfg = PCFG(start, final_subset_productions)
     subset_pcfg_pos = PCFG(start, pos_productions)
     
-    if save:
-        if args.lexical:
-            version = '_lexical'
-        else:
-            version = ''
 
-        print('Write subset PCFG to pickle...')
-        write_to_txt(subset_pcfg, f'{args.output_dir}/subset_pcfg_{top_k}{version}.txt')
-        write_to_txt(subset_pcfg_pos, f'{args.output_dir}/subset_pcfg_{top_k}_pos{version}.txt')
+    print('Write subset PCFG to pickle...')
+    write_to_txt(subset_pcfg, f'{args.output_dir}/subset_pcfg_{top_k}.txt')
+    write_to_txt(subset_pcfg_pos, f'{args.output_dir}/subset_pcfg_{top_k}_pos.txt')
 
     print('Done')
     
@@ -253,6 +248,7 @@ if __name__ == '__main__':
     parser.add_argument('--pcfg_dir', type=str, default='grammars/nltk/nltk_pcfg.txt',
                         help='Directory where the full pcfg is stored.')
     parser.add_argument('--output_dir', type=str, default='grammars/nltk')
+    parser.add_argument('--top_k', type=float, default=0.9)
     parser.add_argument('--save', action=argparse.BooleanOptionalAction)
     parser.add_argument('--load', action=argparse.BooleanOptionalAction)
     parser.add_argument('--lexical', action=argparse.BooleanOptionalAction)
@@ -268,11 +264,10 @@ if __name__ == '__main__':
     grammar = create_lookup_probs(grammar)
     prod_productions_v2 = [rule for lhs in grammar._lhs_index.values() for rule in lhs]
 
-    for k in [0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]:
-        PRODS_SEEN = set()  # to prevent recursion
-        subset_pcfg, subset_pcfg_pos = load_subset_pcfg(prod_productions_v2, 
-                                                        args, top_k=k, 
-                                                        save=args.save,
-                                                        load=args.load, 
-                                                        lexical=args.lexical,
-                                                        no_recursion=args.no_recursion)
+    PRODS_SEEN = set()  # to prevent recursion
+    subset_pcfg, subset_pcfg_pos = load_subset_pcfg(prod_productions_v2, 
+                                                    args, top_k=args.top_k, 
+                                                    save=args.save,
+                                                    load=args.load, 
+                                                    lexical=args.lexical,
+                                                    no_recursion=args.no_recursion)
