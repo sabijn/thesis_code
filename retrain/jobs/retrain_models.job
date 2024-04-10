@@ -41,7 +41,7 @@ then
 fi
 
 echo fetching and pulling latest changes from remote dir...
-cd $HOME/Documents/thesis_code/reduce_grammar/
+cd $HOME/Documents/thesis_code/retrain/
 git fetch && git pull
 
 echo retraining the models...
@@ -58,7 +58,7 @@ for topk in "${topks[@]}"; do
 done
 
 echo adding, committing, and pushing results to remote dir...
-git add $HOME/Documents/thesis_code/retrain_grammar/
+git add $HOME/Documents/thesis_code/retrain/
 git commit -m "save results from run (automated commit from Lisa)."
 git push
 
