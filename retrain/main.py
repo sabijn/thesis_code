@@ -36,10 +36,11 @@ def initialize_trainer(
         args=args,
         data_collator=data_collator,
         train_dataset=datasets["train"],
-        eval_dataset=datasets["valid"],
+        eval_dataset=datasets["eval"],
     )
 
     return trainer
+
 
 def main(args):
     """

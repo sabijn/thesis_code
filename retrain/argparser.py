@@ -9,7 +9,7 @@ def create_arg_parser():
     parser = argparse.ArgumentParser()
     parser.add_argument('--output_dir', type=str, default='checkpoints')
     parser.add_argument('--data_dir', type=str, 
-                        default='/Users/sperdijk/Documents/Master/Jaar_3/Thesis/thesis_code/reduce_grammar/corpora/')
+                        default='/Users/sperdijk/Documents/Master/Jaar_3/Thesis/thesis_code/reduce_grammar/corpora/results')
     parser.add_argument('--version', type=str, default='normal', choices=['pos', 'lexical', 'normal'])
     parser.add_argument('--top_k', type=float, default=0.2)
     
