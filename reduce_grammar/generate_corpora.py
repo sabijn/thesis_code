@@ -6,7 +6,7 @@ import argparse
 
 
 def main(args):
-    grammar_file = f'{args.data_dir}/{args.version}/subset_pcfg_{args.top_k}_lexical.txt'
+    grammar_file = f'{args.data_dir}/{args.version}/subset_pcfg_{args.top_k}.txt'
     encoder = "transformer"
     tokenizer_config = TokenizerConfig(
             add_cls=(encoder == "transformer"),
