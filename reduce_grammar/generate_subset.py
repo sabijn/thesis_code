@@ -74,7 +74,49 @@ def create_subset_productions(productions, top_k, lexical=False):
 
 
 
-# def reachable_productions(productions, lhs, parents=tuple(), prods_seen=set(), no_recursion=False):
+def reachable_productions(productions, lhs, parents=tuple(), prods_seen=set(), no_recursion=False):
+    """
+    Create a generator that yields all reachable productions from a given lhs symbol.
+    """
+    # reminder: *(tuple) unpacks the tuple into arguments
+    new_parents = (*parents, lhs)
+    
+    # select productions belonging to the current lhs
+    lhs_productions = [prod for prod in productions if prod.lhs() == lhs]
+    
+    for prod in lhs_productions:
+        # reminder: creates a tuple with one element (unmutable)
+        seen = False
+        if (prod,) in prods_seen:
+            seen = True
+
+        if (prod,) in PRODS_SEEN:
+            seen = True
+        
+        if seen:
+            continue
+
+        PRODS_SEEN.add((prod,))
+        prods_seen.add((prod,))
+        assert PRODS_SEEN == prods_seen
+        
+        # check if the rhs contains a parent symbol    
+        if no_recursion and any([rhs in parents for rhs in prod.rhs()]):
+            continue
+
+        yield prod
+
+        for rhs in prod.rhs():
+            if isinstance(rhs, Nonterminal):
+                yield from reachable_productions(
+                    productions, 
+                    rhs, 
+                    parents=new_parents,
+                    prods_seen=prods_seen,
+                    no_recursion=no_recursion,
+                )
+
+# def reachable_productions(productions, lhs, parents=tuple(), no_recursion=False):
 #     """
 #     Create a generator that yields all reachable productions from a given lhs symbol.
 #     """
@@ -86,9 +128,9 @@ def create_subset_productions(productions, top_k, lexical=False):
     
 #     for prod in lhs_productions:
 #         # reminder: creates a tuple with one element (unmutable)
-#         if (prod,) in prods_seen:
+#         if (prod,) in PRODS_SEEN:
 #             continue
-#         prods_seen.add((prod,))
+#         PRODS_SEEN.add((prod,))
 
 #         # check if the rhs contains a parent symbol    
 #         if no_recursion and any([rhs in parents for rhs in prod.rhs()]):
@@ -102,40 +144,8 @@ def create_subset_productions(productions, top_k, lexical=False):
 #                     productions, 
 #                     rhs, 
 #                     parents=new_parents,
-#                     prods_seen=prods_seen,
 #                     no_recursion=no_recursion,
 #                 )
-
-def reachable_productions(productions, lhs, parents=tuple(), no_recursion=False):
-    """
-    Create a generator that yields all reachable productions from a given lhs symbol.
-    """
-    # reminder: *(tuple) unpacks the tuple into arguments
-    new_parents = (*parents, lhs)
-    
-    # select productions belonging to the current lhs
-    lhs_productions = [prod for prod in productions if prod.lhs() == lhs]
-    
-    for prod in lhs_productions:
-        # reminder: creates a tuple with one element (unmutable)
-        if (prod,) in PRODS_SEEN:
-            continue
-        PRODS_SEEN.add((prod,))
-
-        # check if the rhs contains a parent symbol    
-        if no_recursion and any([rhs in parents for rhs in prod.rhs()]):
-            continue
-
-        yield prod
-
-        for rhs in prod.rhs():
-            if isinstance(rhs, Nonterminal):
-                yield from reachable_productions(
-                    productions, 
-                    rhs, 
-                    parents=new_parents,
-                    no_recursion=no_recursion,
-                )
 
 
 def is_leaf(prod):
