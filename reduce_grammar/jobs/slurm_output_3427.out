@@ -2,20 +2,25 @@ setting up Miniconda...
 activating virtual env...
 current conda environment: basic310
 activating ssh connection...
-Agent pid 2537158
+Agent pid 2537313
 Identity added: /home/11864265/.ssh/id_ed25519 (11864265@fnwi-h0.science.uva.nl)
 parsing input arguments...
 Branch: feature/retrain_grammar
 fetching and pulling latest changes from remote dir...
-Already up to date.
+From github.com:sabijn/thesis_code
+   a7d29d4..e085cea  feature/retrain -> origin/feature/retrain
+Updating a7d29d4..e085cea
+Fast-forward
+ reduce_grammar/generate_corpora.py | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
 running generating corpora...
 Running script for version normal
-2024-04-11 11:58:26 | INFO | fairseq.tasks.text_to_speech | Please install tensorboardX: pip install tensorboardX
-2024-04-11 11:58:36 | INFO | classes.language | Loading corpus from file.
+2024-04-11 12:03:41 | INFO | fairseq.tasks.text_to_speech | Please install tensorboardX: pip install tensorboardX
+2024-04-11 12:03:51 | INFO | classes.language | Loading corpus from file.
 Traceback (most recent call last):
-  File "/home/11864265/Documents/thesis_code/reduce_grammar/generate_corpora.py", line 61, in <module>
+  File "/home/11864265/Documents/thesis_code/reduce_grammar/generate_corpora.py", line 67, in <module>
     main(args)
-  File "/home/11864265/Documents/thesis_code/reduce_grammar/generate_corpora.py", line 38, in main
+  File "/home/11864265/Documents/thesis_code/reduce_grammar/generate_corpora.py", line 44, in main
     lm_language = PCFG(config, tokenizer)
   File "/home/11864265/Documents/thesis_code/reduce_grammar/classes/language.py", line 58, in __init__
     self.corpus, self.tree_corpus, self.pos_dict = torch.load(self.config.file)
@@ -28,22 +33,3 @@ Traceback (most recent call last):
 FileNotFoundError: [Errno 2] No such file or directory: '/scratch/11864265/corpora/corpus_0.9_normal.pt'
 srun: error: fnwi-cn005: task 0: Exited with exit code 1
 adding, committing, and pushing results to remote dir...
-[feature/retrain a7d29d4] save results from run (automated commit from Lisa).
- Committer: Sabijn Perdijk <11864265@fnwi-cn005.localdomain>
-Your name and email address were configured automatically based
-on your username and hostname. Please check that they are accurate.
-You can suppress this message by setting them explicitly. Run the
-following command and follow the instructions in your editor to edit
-your configuration file:
-
-    git config --global --edit
-
-After doing this, you may fix the identity used for this commit with:
-
-    git commit --amend --reset-author
-
- 2 files changed, 50 insertions(+)
- create mode 100644 reduce_grammar/jobs/slurm_output_3426.out
-To github.com:sabijn/thesis_code.git
-   6d55e0a..a7d29d4  feature/retrain -> feature/retrain
-done.
