@@ -62,8 +62,8 @@ class PCFG(Language[PCFGConfig]):
         return grammar
     
     def save_pcfg(self) -> None:
-        with open(f'{self.config.output_dir}/train_sent_{self.config.version}_{self.config.top_k}.txt', 'w') as f:
-            f.write('\n'.join(self.train_corpus))
+        # with open(f'{self.config.output_dir}/train_sent_{self.config.version}_{self.config.top_k}.txt', 'w') as f:
+        #     f.write('\n'.join(self.train_corpus))
         
         if self.config.split_ratio[1] != 0.0:
             with open(f'{self.config.output_dir}/dev_sent_{self.config.version}_{self.config.top_k}.txt', 'w') as f:
