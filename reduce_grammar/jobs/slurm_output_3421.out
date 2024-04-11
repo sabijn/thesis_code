@@ -56,3 +56,23 @@ Running script for version pos
 2024-04-11 10:22:51 | INFO | fairseq.tasks.text_to_speech | Please install tensorboardX: pip install tensorboardX
 2024-04-11 10:22:53 | INFO | classes.language | Loading corpus from file.
 adding, committing, and pushing results to remote dir...
+[feature/retrain 4c111b5] save results from run (automated commit from Lisa).
+ Committer: Sabijn Perdijk <11864265@fnwi-cn005.localdomain>
+Your name and email address were configured automatically based
+on your username and hostname. Please check that they are accurate.
+You can suppress this message by setting them explicitly. Run the
+following command and follow the instructions in your editor to edit
+your configuration file:
+
+    git config --global --edit
+
+After doing this, you may fix the identity used for this commit with:
+
+    git commit --amend --reset-author
+
+ 2 files changed, 77 insertions(+)
+ create mode 100644 reduce_grammar/jobs/slurm_output_3421.out
+To github.com:sabijn/thesis_code.git
+   e01c340..4c111b5  feature/retrain -> feature/retrain
+done.
+slurmstepd: error: Detected 2 oom-kill event(s) in StepId=3421.batch. Some of your processes may have been killed by the cgroup out-of-memory handler.
