@@ -1,0 +1,103 @@
+setting up Miniconda...
+activating virtual env...
+current conda environment: basic310
+activating ssh connection...
+Agent pid 2523120
+Identity added: /home/11864265/.ssh/id_ed25519 (11864265@fnwi-h0.science.uva.nl)
+parsing input arguments...
+Branch: feature/retrain_grammar
+fetching and pulling latest changes from remote dir...
+Already up to date.
+retraining the models...
+Running script for version 0.2
+Downloading and preparing dataset text/default to file:///home/11864265/.cache/huggingface/datasets/text/default-89ea7e02ff6df333/0.0.0/cb1e9bd71a82ad27976be3b12b407850fe2837d80c22c5e03a28949843a8ace2...
+Downloading data files:   0%|          | 0/1 [00:00<?, ?it/s]Downloading data files: 100%|██████████| 1/1 [00:00<00:00, 1648.70it/s]
+Extracting data files:   0%|          | 0/1 [00:00<?, ?it/s]Extracting data files: 100%|██████████| 1/1 [00:00<00:00, 228.15it/s]
+Dataset text downloaded and prepared to file:///home/11864265/.cache/huggingface/datasets/text/default-89ea7e02ff6df333/0.0.0/cb1e9bd71a82ad27976be3b12b407850fe2837d80c22c5e03a28949843a8ace2. Subsequent calls will reuse this data.
+Generating train split: 0 examples [00:00, ? examples/s]Generating train split: 175732 examples [00:00, 306305.03 examples/s]Generating train split: 351478 examples [00:00, 499570.33 examples/s]Generating train split: 527168 examples [00:00, 629880.38 examples/s]Generating train split: 703023 examples [00:01, 718674.02 examples/s]Generating train split: 800000 examples [00:01, 756613.62 examples/s]                                                                     Traceback (most recent call last):
+  File "/home/11864265/Documents/thesis_code/retrain/main.py", line 107, in <module>
+    main(args)
+  File "/home/11864265/Documents/thesis_code/retrain/main.py", line 49, in main
+    datasets = load_data(args, tokenizer, args.data_dir)
+  File "/home/11864265/Documents/thesis_code/retrain/data.py", line 28, in load_data
+    raw_train = load_dataset("text", data_files=os.path.join(data_dir, f"train_sent_{args.version}_{args.top_k}.txt"))[
+  File "/home/11864265/miniconda3/envs/basic310/lib/python3.10/site-packages/datasets/load.py", line 1810, in load_dataset
+    ds = builder_instance.as_dataset(split=split, verification_mode=verification_mode, in_memory=keep_in_memory)
+  File "/home/11864265/miniconda3/envs/basic310/lib/python3.10/site-packages/datasets/builder.py", line 1107, in as_dataset
+    raise NotImplementedError(f"Loading a dataset cached in a {type(self._fs).__name__} is not supported.")
+NotImplementedError: Loading a dataset cached in a LocalFileSystem is not supported.
+srun: error: fnwi-cn005: task 0: Exited with exit code 1
+Running script for version 0.2
+Downloading and preparing dataset text/default to file:///home/11864265/.cache/huggingface/datasets/text/default-d2dbf60a0136a258/0.0.0/cb1e9bd71a82ad27976be3b12b407850fe2837d80c22c5e03a28949843a8ace2...
+Downloading data files:   0%|          | 0/1 [00:00<?, ?it/s]Downloading data files: 100%|██████████| 1/1 [00:00<00:00, 2499.59it/s]
+Extracting data files:   0%|          | 0/1 [00:00<?, ?it/s]Extracting data files: 100%|██████████| 1/1 [00:00<00:00, 344.84it/s]
+Dataset text downloaded and prepared to file:///home/11864265/.cache/huggingface/datasets/text/default-d2dbf60a0136a258/0.0.0/cb1e9bd71a82ad27976be3b12b407850fe2837d80c22c5e03a28949843a8ace2. Subsequent calls will reuse this data.
+Generating train split: 0 examples [00:00, ? examples/s]                                                        Traceback (most recent call last):
+  File "/home/11864265/Documents/thesis_code/retrain/main.py", line 107, in <module>
+    main(args)
+  File "/home/11864265/Documents/thesis_code/retrain/main.py", line 49, in main
+    datasets = load_data(args, tokenizer, args.data_dir)
+  File "/home/11864265/Documents/thesis_code/retrain/data.py", line 28, in load_data
+    raw_train = load_dataset("text", data_files=os.path.join(data_dir, f"train_sent_{args.version}_{args.top_k}.txt"))[
+  File "/home/11864265/miniconda3/envs/basic310/lib/python3.10/site-packages/datasets/load.py", line 1810, in load_dataset
+    ds = builder_instance.as_dataset(split=split, verification_mode=verification_mode, in_memory=keep_in_memory)
+  File "/home/11864265/miniconda3/envs/basic310/lib/python3.10/site-packages/datasets/builder.py", line 1107, in as_dataset
+    raise NotImplementedError(f"Loading a dataset cached in a {type(self._fs).__name__} is not supported.")
+NotImplementedError: Loading a dataset cached in a LocalFileSystem is not supported.
+srun: error: fnwi-cn005: task 0: Exited with exit code 1
+Running script for version 0.3
+Downloading and preparing dataset text/default to file:///home/11864265/.cache/huggingface/datasets/text/default-a7ec69cef3ace130/0.0.0/cb1e9bd71a82ad27976be3b12b407850fe2837d80c22c5e03a28949843a8ace2...
+Downloading data files:   0%|          | 0/1 [00:00<?, ?it/s]Downloading data files: 100%|██████████| 1/1 [00:00<00:00, 2713.00it/s]
+Extracting data files:   0%|          | 0/1 [00:00<?, ?it/s]Extracting data files: 100%|██████████| 1/1 [00:00<00:00, 186.99it/s]
+Dataset text downloaded and prepared to file:///home/11864265/.cache/huggingface/datasets/text/default-a7ec69cef3ace130/0.0.0/cb1e9bd71a82ad27976be3b12b407850fe2837d80c22c5e03a28949843a8ace2. Subsequent calls will reuse this data.
+Generating train split: 0 examples [00:00, ? examples/s]Generating train split: 139170 examples [00:00, 679600.72 examples/s]Generating train split: 278586 examples [00:00, 742137.92 examples/s]Generating train split: 417989 examples [00:00, 765607.10 examples/s]Generating train split: 557347 examples [00:00, 778233.97 examples/s]Generating train split: 696758 examples [00:00, 784381.45 examples/s]Generating train split: 800000 examples [00:01, 781590.82 examples/s]                                                                     Traceback (most recent call last):
+  File "/home/11864265/Documents/thesis_code/retrain/main.py", line 107, in <module>
+    main(args)
+  File "/home/11864265/Documents/thesis_code/retrain/main.py", line 49, in main
+    datasets = load_data(args, tokenizer, args.data_dir)
+  File "/home/11864265/Documents/thesis_code/retrain/data.py", line 28, in load_data
+    raw_train = load_dataset("text", data_files=os.path.join(data_dir, f"train_sent_{args.version}_{args.top_k}.txt"))[
+  File "/home/11864265/miniconda3/envs/basic310/lib/python3.10/site-packages/datasets/load.py", line 1810, in load_dataset
+    ds = builder_instance.as_dataset(split=split, verification_mode=verification_mode, in_memory=keep_in_memory)
+  File "/home/11864265/miniconda3/envs/basic310/lib/python3.10/site-packages/datasets/builder.py", line 1107, in as_dataset
+    raise NotImplementedError(f"Loading a dataset cached in a {type(self._fs).__name__} is not supported.")
+NotImplementedError: Loading a dataset cached in a LocalFileSystem is not supported.
+srun: error: fnwi-cn005: task 0: Exited with exit code 1
+Running script for version 0.3
+Downloading and preparing dataset text/default to file:///home/11864265/.cache/huggingface/datasets/text/default-3abf01f7b6509b48/0.0.0/cb1e9bd71a82ad27976be3b12b407850fe2837d80c22c5e03a28949843a8ace2...
+Downloading data files:   0%|          | 0/1 [00:00<?, ?it/s]Downloading data files: 100%|██████████| 1/1 [00:00<00:00, 2728.89it/s]
+Extracting data files:   0%|          | 0/1 [00:00<?, ?it/s]Extracting data files: 100%|██████████| 1/1 [00:00<00:00, 201.54it/s]
+Dataset text downloaded and prepared to file:///home/11864265/.cache/huggingface/datasets/text/default-3abf01f7b6509b48/0.0.0/cb1e9bd71a82ad27976be3b12b407850fe2837d80c22c5e03a28949843a8ace2. Subsequent calls will reuse this data.
+Generating train split: 0 examples [00:00, ? examples/s]Generating train split: 76507 examples [00:00, 446106.90 examples/s]                                                                    Traceback (most recent call last):
+  File "/home/11864265/Documents/thesis_code/retrain/main.py", line 107, in <module>
+    main(args)
+  File "/home/11864265/Documents/thesis_code/retrain/main.py", line 49, in main
+    datasets = load_data(args, tokenizer, args.data_dir)
+  File "/home/11864265/Documents/thesis_code/retrain/data.py", line 28, in load_data
+    raw_train = load_dataset("text", data_files=os.path.join(data_dir, f"train_sent_{args.version}_{args.top_k}.txt"))[
+  File "/home/11864265/miniconda3/envs/basic310/lib/python3.10/site-packages/datasets/load.py", line 1810, in load_dataset
+    ds = builder_instance.as_dataset(split=split, verification_mode=verification_mode, in_memory=keep_in_memory)
+  File "/home/11864265/miniconda3/envs/basic310/lib/python3.10/site-packages/datasets/builder.py", line 1107, in as_dataset
+    raise NotImplementedError(f"Loading a dataset cached in a {type(self._fs).__name__} is not supported.")
+NotImplementedError: Loading a dataset cached in a LocalFileSystem is not supported.
+srun: error: fnwi-cn005: task 0: Exited with exit code 1
+Running script for version 0.4
+Downloading and preparing dataset text/default to file:///home/11864265/.cache/huggingface/datasets/text/default-a6b4ff91a582c82c/0.0.0/cb1e9bd71a82ad27976be3b12b407850fe2837d80c22c5e03a28949843a8ace2...
+Downloading data files:   0%|          | 0/1 [00:00<?, ?it/s]Downloading data files: 100%|██████████| 1/1 [00:00<00:00, 3432.33it/s]
+Extracting data files:   0%|          | 0/1 [00:00<?, ?it/s]Extracting data files: 100%|██████████| 1/1 [00:00<00:00, 245.58it/s]
+Dataset text downloaded and prepared to file:///home/11864265/.cache/huggingface/datasets/text/default-a6b4ff91a582c82c/0.0.0/cb1e9bd71a82ad27976be3b12b407850fe2837d80c22c5e03a28949843a8ace2. Subsequent calls will reuse this data.
+Generating train split: 0 examples [00:00, ? examples/s]Generating train split: 160299 examples [00:00, 751333.43 examples/s]Generating train split: 320382 examples [00:00, 810419.60 examples/s]Generating train split: 480570 examples [00:00, 833153.16 examples/s]Generating train split: 640767 examples [00:00, 844040.03 examples/s]Generating train split: 800000 examples [00:00, 849216.04 examples/s]                                                                     Traceback (most recent call last):
+  File "/home/11864265/Documents/thesis_code/retrain/main.py", line 107, in <module>
+    main(args)
+  File "/home/11864265/Documents/thesis_code/retrain/main.py", line 49, in main
+    datasets = load_data(args, tokenizer, args.data_dir)
+  File "/home/11864265/Documents/thesis_code/retrain/data.py", line 28, in load_data
+    raw_train = load_dataset("text", data_files=os.path.join(data_dir, f"train_sent_{args.version}_{args.top_k}.txt"))[
+  File "/home/11864265/miniconda3/envs/basic310/lib/python3.10/site-packages/datasets/load.py", line 1810, in load_dataset
+    ds = builder_instance.as_dataset(split=split, verification_mode=verification_mode, in_memory=keep_in_memory)
+  File "/home/11864265/miniconda3/envs/basic310/lib/python3.10/site-packages/datasets/builder.py", line 1107, in as_dataset
+    raise NotImplementedError(f"Loading a dataset cached in a {type(self._fs).__name__} is not supported.")
+NotImplementedError: Loading a dataset cached in a LocalFileSystem is not supported.
+srun: Job step aborted: Waiting up to 32 seconds for job step to finish.
+slurmstepd: error: *** STEP 3416.4 ON fnwi-cn005 CANCELLED AT 2024-04-10T15:13:57 ***
+slurmstepd: error: *** JOB 3416 ON fnwi-cn005 CANCELLED AT 2024-04-10T15:13:57 ***
