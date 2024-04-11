@@ -240,10 +240,10 @@ def concatenate_subtrees(grammar, items, depth):
 def find_non_problematic_prods(productions, probs):
     max_attempts = 10 # Set a maximum number of attempts to avoid infinite loop
     for _ in range(max_attempts):
-        proposed_prod = random.choices(productions, probs, k=1)[0]  # [0] to get the single item
+        proposed_prod = random.choices(productions, probs, k=1)  # [0] to get the single item
         is_problematic = False
         
-        for item in proposed_prod.rhs():
+        for item in proposed_prod[0].rhs():
             if str(item) in PROBLEMATIC_NT:
                 is_problematic = True
                 break  # Exit the inner loop if a problematic item is found
