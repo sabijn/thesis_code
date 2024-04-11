@@ -22,7 +22,7 @@ BinaryCorpus = List[Tuple[Tensor, int]]
 LMCorpus = List[Tensor]
 Corpus = Union[BinaryCorpus, LMCorpus]
 
-PROBLEMATIC_NT = ['PRN_4', 'ATNP_12']
+PROBLEMATIC_NT = ['PRN_4', 'ATNP_12', 'ATVP_22']
 
 
 class PCFGConfig(LanguageConfig):
