@@ -18,6 +18,7 @@ archive.py
 __pycache__/
 *.py[cod]
 *$py.class
+*.ipynb
 
 # C extensions
 *.so
