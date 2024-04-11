@@ -34,7 +34,8 @@ def load_data(
     raw_test = load_dataset("text", data_files=os.path.join(data_dir, f"test_sent_{args.version}_{args.top_k}.txt"))[
         "train"
     ]
-
+    print(f'Generated datasets with the lengths of: {len(raw_train)} (train), {len(raw_dev)}, (dev), and {len(raw_test)} (test)')
+    
     if train_size is not None:
         raw_train = raw_train.shuffle().select(range(train_size))
     if dev_size is not None:
