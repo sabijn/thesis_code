@@ -1,0 +1,30 @@
+setting up Miniconda...
+activating virtual env...
+current conda environment: basic310
+activating ssh connection...
+Agent pid 2537158
+Identity added: /home/11864265/.ssh/id_ed25519 (11864265@fnwi-h0.science.uva.nl)
+parsing input arguments...
+Branch: feature/retrain_grammar
+fetching and pulling latest changes from remote dir...
+Already up to date.
+running generating corpora...
+Running script for version normal
+2024-04-11 11:58:26 | INFO | fairseq.tasks.text_to_speech | Please install tensorboardX: pip install tensorboardX
+2024-04-11 11:58:36 | INFO | classes.language | Loading corpus from file.
+Traceback (most recent call last):
+  File "/home/11864265/Documents/thesis_code/reduce_grammar/generate_corpora.py", line 61, in <module>
+    main(args)
+  File "/home/11864265/Documents/thesis_code/reduce_grammar/generate_corpora.py", line 38, in main
+    lm_language = PCFG(config, tokenizer)
+  File "/home/11864265/Documents/thesis_code/reduce_grammar/classes/language.py", line 58, in __init__
+    self.corpus, self.tree_corpus, self.pos_dict = torch.load(self.config.file)
+  File "/home/11864265/miniconda3/envs/basic310/lib/python3.10/site-packages/torch/serialization.py", line 771, in load
+    with _open_file_like(f, 'rb') as opened_file:
+  File "/home/11864265/miniconda3/envs/basic310/lib/python3.10/site-packages/torch/serialization.py", line 270, in _open_file_like
+    return _open_file(name_or_buffer, mode)
+  File "/home/11864265/miniconda3/envs/basic310/lib/python3.10/site-packages/torch/serialization.py", line 251, in __init__
+    super(_open_file, self).__init__(open(name, mode))
+FileNotFoundError: [Errno 2] No such file or directory: '/scratch/11864265/corpora/corpus_0.9_normal.pt'
+srun: error: fnwi-cn005: task 0: Exited with exit code 1
+adding, committing, and pushing results to remote dir...
