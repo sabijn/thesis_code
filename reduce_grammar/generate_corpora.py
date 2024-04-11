@@ -3,10 +3,16 @@ from classes import (PCFG, PCFGConfig,
 from nltk import PCFG as nltk_PCFG
 import logging
 import argparse
+import os
 
 
 def main(args):
-    grammar_file = f'{args.data_dir}/{args.version}/subset_pcfg_{args.top_k}.txt'
+    # check if grammar_file exist
+    if os.path.exists(f'{args.data_dir}/{args.version}/subset_pcfg_{args.top_k}.txt'):
+        grammar_file = f'{args.data_dir}/{args.version}/subset_pcfg_{args.top_k}.txt'
+    else:
+        grammar_file = None
+        
     encoder = "transformer"
     tokenizer_config = TokenizerConfig(
             add_cls=(encoder == "transformer"),
