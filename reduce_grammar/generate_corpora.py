@@ -7,12 +7,12 @@ import os
 
 
 def main(args):
-    # check if grammar_file exist
-    if os.path.exists(f'{args.data_dir}/{args.version}/subset_pcfg_{args.top_k}.txt'):
-        grammar_file = f'{args.data_dir}/{args.version}/subset_pcfg_{args.top_k}.txt'
-    else:
-        grammar_file = None
-        
+    grammar_file = f'{args.data_dir}/{args.version}/subset_pcfg_{args.top_k}.txt'
+
+    # check if corpus file exist
+    if not os.path.exists(args.corpus_file):
+        args.corpus_file = None
+
     encoder = "transformer"
     tokenizer_config = TokenizerConfig(
             add_cls=(encoder == "transformer"),
