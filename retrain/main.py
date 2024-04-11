@@ -97,7 +97,8 @@ def main(args):
         group_by_length=args.group_by_length,
         auto_find_batch_size=args.auto_find_batch_size,
         do_eval=args.do_eval,
-        evaluation_strategy=args.evaluation_strategy
+        evaluation_strategy=args.evaluation_strategy,
+        num_train_epochs=args.epochs
     )
 
     trainer.train()

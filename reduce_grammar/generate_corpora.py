@@ -37,7 +37,7 @@ def main(args):
     
     lm_language = PCFG(config, tokenizer)
     lm_language.save_pcfg()
-    #lm_language.save(f'{args.output_dir}/corpus_{top_k}_{args.version}.pt')
+    lm_language.save(f'{args.output_dir}/corpus_{args.top_k}_{args.version}.pt')
     
 
 if __name__ == '__main__':

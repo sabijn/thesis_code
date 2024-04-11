@@ -67,11 +67,11 @@ class PCFG(Language[PCFGConfig]):
         
         if self.config.split_ratio[1] != 0.0:
             with open(f'{self.config.output_dir}/dev_sent_{self.config.version}_{self.config.top_k}.txt', 'w') as f:
-                f.write('\n'.join(self.train_corpus))
+                f.write('\n'.join(self.dev_corpus))
         
         if self.config.split_ratio[2] != 0.0:
             with open(f'{self.config.output_dir}/test_sent_{self.config.version}_{self.config.top_k}.txt', 'w') as f:
-                f.write('\n'.join(self.train_corpus))
+                f.write('\n'.join(self.test_corpus))
         
         if self.config.store_trees:
             with open(f'{self.config.output_dir}/all_trees_{self.config.version}_{self.config.top_k}.txt', 'w') as f:

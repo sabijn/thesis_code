@@ -30,6 +30,7 @@ def create_arg_parser():
     parser.add_argument('--auto_find_batch_size', action='store_true')
     parser.add_argument('--do_eval', action='store_false')
     parser.add_argument('--evaluation_strategy', type=str, default='steps', choices=['steps', 'epoch'])
+    parser.add_argument('--epochs', type=float, default=3.0)
     
     args = parser.parse_args()
 
