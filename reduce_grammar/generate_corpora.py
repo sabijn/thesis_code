@@ -27,7 +27,7 @@ def main(args):
         split_ratio=(0.8,0.1,0.1),
         use_unk_pos_tags=True,
         verbose=args.verbose,
-        store_trees=False,
+        store_trees=True,
         output_dir=args.output_dir,
         top_k=args.top_k,
         version=args.version,
