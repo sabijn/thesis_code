@@ -47,7 +47,8 @@ git fetch && git pull
 echo running perturbed masking...
 srun python generate_subset.py --pcfg_dir=/scratch/$USER/nltk_pcfg.txt \
                     --output_dir=/scratch/$USER/results \
-                    --save
+                    --save \
+                    --lexical
 
 echo adding, committing, and pushing results to remote dir...
 git add $HOME/Documents/thesis_code/reduce_grammar/
