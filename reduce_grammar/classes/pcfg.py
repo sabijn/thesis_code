@@ -22,8 +22,6 @@ BinaryCorpus = List[Tuple[Tensor, int]]
 LMCorpus = List[Tensor]
 Corpus = Union[BinaryCorpus, LMCorpus]
 
-PROBLEMATIC_NT = ['PRN_4', 'ATNP_12', 'ATVP_22']
-
 
 class PCFGConfig(LanguageConfig):
     grammar_file: str
@@ -236,26 +234,6 @@ def concatenate_subtrees(grammar, items, depth):
         return " ".join(children)
     else:
         return []
-    
-def find_non_problematic_prods(productions, probs):
-    max_attempts = 10 # Set a maximum number of attempts to avoid infinite loop
-    for _ in range(max_attempts):
-        proposed_prod = random.choices(productions, probs, k=1)  # [0] to get the single item
-        is_problematic = False
-        
-        for item in proposed_prod[0].rhs():
-            if str(item) in PROBLEMATIC_NT:
-                is_problematic = True
-                break  # Exit the inner loop if a problematic item is found
-        
-        if not is_problematic:
-            break  # Exit the loop if the production is not problematic
-
-    if is_problematic:
-        print("Failed to find a non-problematic production within the maximum number of attempts.")
-        raise RecursionError
-    else:
-        return proposed_prod
 
 
 def generate_subtree(grammar, lhs, depth):
@@ -264,8 +242,7 @@ def generate_subtree(grammar, lhs, depth):
             productions = grammar.productions(lhs=lhs)
             probs = grammar._lhs_prob_index[lhs]
 
-            proposed_prod = find_non_problematic_prods(productions, probs)
-            for prod in proposed_prod:
+            for prod in random.choices(productions, probs, k=1):
                 children = concatenate_subtrees(grammar, prod.rhs(), depth - 1)
                 return f"({lhs.symbol()} {children})"
         else:
