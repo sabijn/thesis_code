@@ -25,3 +25,21 @@ Finished cleaning subset (3)
 Write subset PCFG to pickle...
 Done
 adding, committing, and pushing results to remote dir...
+[feature/retrain 3a62a70] save results from run (automated commit from Lisa).
+ Committer: Sabijn Perdijk <11864265@fnwi-cn005.localdomain>
+Your name and email address were configured automatically based
+on your username and hostname. Please check that they are accurate.
+You can suppress this message by setting them explicitly. Run the
+following command and follow the instructions in your editor to edit
+your configuration file:
+
+    git config --global --edit
+
+After doing this, you may fix the identity used for this commit with:
+
+    git commit --amend --reset-author
+
+ 2 files changed, 30 insertions(+)
+To github.com:sabijn/thesis_code.git
+   c70e057..3a62a70  feature/retrain -> feature/retrain
+done.
