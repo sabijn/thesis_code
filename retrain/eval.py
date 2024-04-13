@@ -49,7 +49,7 @@ if __name__ == '__main__':
         args = set_experiment_config(args)
 
         model, tokenizer = load_model_tokenizer(args)
-        datasets = load_data(args, tokenizer, args.data_dir_comp, train_size=0, dev_size=0)
+        datasets = load_data(args, tokenizer, args.data_dir, train_size=0, dev_size=0)
         all_ppls.append(test_corpus_ppl(model, datasets['test']['input_ids']))
     
     with open(f'{args.output_dir}/ppls_{args.model}_{args.version}.pkl', 'wb') as f:

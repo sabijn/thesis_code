@@ -21,9 +21,9 @@ def set_experiment_config(args):
     args.model_file = f'{model_dir}/checkpoint-{highest_config}/'
 
     # Check if data directory exist and construct the directory corresponding to the current version
-    args.data_dir_comp = f'{args.data_dir}/{args.version}'
+    # args.data_dir_comp = f'{args.data_dir}/{args.version}'
 
-    if not os.path.exists(args.data_dir_comp):
+    if not os.path.exists(args.data_dir):
         raise ValueError(f'Data directory {args.data_dir} does not exist.')
 
     return args
