@@ -214,19 +214,24 @@ def create_subset_pcfg(productions, args, top_k=0.2, no_recursion=False, save=Tr
     final_subset_productions = renormalize_probs(final_subset_productions)
     print(f'Finished cleaning subset (2)')
 
-    print('Cleaning subset: (3) adding POS tags...')
-    pos_productions = leaves_to_pos(final_subset_productions)
-    pos_productions = renormalize_probs(pos_productions)
-    print('Finished cleaning subset (3)')
-
-    # subset_pcfg does not contain pos_tags
     subset_pcfg = PCFG(start, final_subset_productions)
-    subset_pcfg_pos = PCFG(start, pos_productions)
     
+    # Lexical productions don't need a pos version of the PCFG
+    # as lexical more lexical information, pos no lexical information
+    if args.lexical:
+        print('Write subset PCFG to pickle...')
+        write_to_txt(subset_pcfg, f'{args.output_dir}/subset_pcfg_{top_k}_lexical.txt')
+    else:
+        print('Cleaning subset: (3) adding POS tags...')
+        pos_productions = leaves_to_pos(final_subset_productions)
+        pos_productions = renormalize_probs(pos_productions)
+        print('Finished cleaning subset (3)')
 
-    print('Write subset PCFG to pickle...')
-    write_to_txt(subset_pcfg, f'{args.output_dir}/subset_pcfg_{top_k}.txt')
-    write_to_txt(subset_pcfg_pos, f'{args.output_dir}/subset_pcfg_{top_k}_pos.txt')
+        subset_pcfg_pos = PCFG(start, pos_productions)
+        
+        print('Write subset PCFG to pickle...')
+        write_to_txt(subset_pcfg, f'{args.output_dir}/subset_pcfg_{top_k}.txt')
+        write_to_txt(subset_pcfg_pos, f'{args.output_dir}/subset_pcfg_{top_k}_pos.txt')
 
     print('Done')
     

@@ -45,10 +45,14 @@ cd $HOME/Documents/thesis_code/reduce_grammar/
 git fetch && git pull
 
 echo running perturbed masking...
-srun python generate_subset.py --pcfg_dir=/scratch/$USER/nltk_pcfg.txt \
-                    --output_dir=/scratch/$USER/results \
-                    --save \
-                    --lexical
+topks=("0.8" "0.9")
+for topk in "${topks[@]}"; do
+    srun python generate_subset.py --pcfg_dir=/scratch/$USER/nltk_pcfg.txt \
+                        --output_dir=/scratch/$USER/results \
+                        --top_k="$topk" \
+                        --save \
+                        --lexical
+done
 
 echo adding, committing, and pushing results to remote dir...
 git add $HOME/Documents/thesis_code/reduce_grammar/
