@@ -74,25 +74,27 @@ def create_subset_productions(productions, top_k, lexical=False):
     return subset_productions
 
 
-
-def reachable_productions(productions, lhs, parents=tuple(), prods_seen=set(), no_recursion=False):
+def reachable_productions(productions, lhs, parents=tuple(), prods_seen=set(), no_recursion=False, depth=0, max_depth=100):
     """
     Create a generator that yields all reachable productions from a given lhs symbol.
+    Adds a recursion depth limit to prevent deep recursion errors.
     """
-    # reminder: *(tuple) unpacks the tuple into arguments
+    # Check if the maximum recursion depth has been reached
+    if depth >= max_depth:
+        return
+
     new_parents = (*parents, lhs)
     
     # select productions belonging to the current lhs
     lhs_productions = [prod for prod in productions if prod.lhs() == lhs]
     
     for prod in lhs_productions:
-        # reminder: creates a tuple with one element (unmutable)
         if (prod,) in prods_seen:
             continue
         prods_seen.add((prod,))
 
         # check if the rhs contains a parent symbol    
-        if no_recursion and any([rhs in parents for rhs in prod.rhs()]):
+        if no_recursion and any(rhs in parents for rhs in prod.rhs()):
             continue
 
         yield prod
@@ -105,6 +107,8 @@ def reachable_productions(productions, lhs, parents=tuple(), prods_seen=set(), n
                     parents=new_parents,
                     prods_seen=prods_seen,
                     no_recursion=no_recursion,
+                    depth=depth + 1,
+                    max_depth=max_depth
                 )
 
 
@@ -210,19 +214,24 @@ def create_subset_pcfg(productions, args, top_k=0.2, no_recursion=False, save=Tr
     final_subset_productions = renormalize_probs(final_subset_productions)
     print(f'Finished cleaning subset (2)')
 
-    print('Cleaning subset: (3) adding POS tags...')
-    pos_productions = leaves_to_pos(final_subset_productions)
-    pos_productions = renormalize_probs(pos_productions)
-    print('Finished cleaning subset (3)')
-
-    # subset_pcfg does not contain pos_tags
     subset_pcfg = PCFG(start, final_subset_productions)
-    subset_pcfg_pos = PCFG(start, pos_productions)
     
+    # Lexical productions don't need a pos version of the PCFG
+    # as lexical more lexical information, pos no lexical information
+    if args.lexical:
+        print('Write subset PCFG to pickle...')
+        write_to_txt(subset_pcfg, f'{args.output_dir}/subset_pcfg_{top_k}_lexical.txt')
+    else:
+        print('Cleaning subset: (3) adding POS tags...')
+        pos_productions = leaves_to_pos(final_subset_productions)
+        pos_productions = renormalize_probs(pos_productions)
+        print('Finished cleaning subset (3)')
 
-    print('Write subset PCFG to pickle...')
-    write_to_txt(subset_pcfg, f'{args.output_dir}/subset_pcfg_{top_k}.txt')
-    write_to_txt(subset_pcfg_pos, f'{args.output_dir}/subset_pcfg_{top_k}_pos.txt')
+        subset_pcfg_pos = PCFG(start, pos_productions)
+        
+        print('Write subset PCFG to pickle...')
+        write_to_txt(subset_pcfg, f'{args.output_dir}/subset_pcfg_{top_k}.txt')
+        write_to_txt(subset_pcfg_pos, f'{args.output_dir}/subset_pcfg_{top_k}_pos.txt')
 
     print('Done')
     
