@@ -9,6 +9,7 @@ span_data/
 test_results/
 grammars/
 treebanks/
+checkpoints/
 
 # personal files
 garbage.py
