@@ -12517,3 +12517,22 @@ Detected kernel version 4.18.0, which is below the recommended minimum of 5.5.0;
 {'eval_loss': 2.6056833267211914, 'eval_runtime': 20.4943, 'eval_samples_per_second': 4879.405, 'eval_steps_per_second': 76.265, 'epoch': 0.96}
 {'train_runtime': 708.4618, 'train_samples_per_second': 1129.207, 'train_steps_per_second': 2.205, 'train_loss': 3.4158824866926167, 'epoch': 1.0}
 adding, committing, and pushing results to remote dir...
+[feature/retrain d063552] save results from run (automated commit from Lisa).
+ Committer: Sabijn Perdijk <11864265@fnwi-cn005.localdomain>
+Your name and email address were configured automatically based
+on your username and hostname. Please check that they are accurate.
+You can suppress this message by setting them explicitly. Run the
+following command and follow the instructions in your editor to edit
+your configuration file:
+
+    git config --global --edit
+
+After doing this, you may fix the identity used for this commit with:
+
+    git commit --amend --reset-author
+
+ 1 file changed, 12519 insertions(+)
+ create mode 100644 retrain/jobs/slurm_output_3456.out
+To github.com:sabijn/thesis_code.git
+   a468223..d063552  feature/retrain -> feature/retrain
+done.
