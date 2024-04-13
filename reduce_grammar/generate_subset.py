@@ -74,25 +74,27 @@ def create_subset_productions(productions, top_k, lexical=False):
     return subset_productions
 
 
-
-def reachable_productions(productions, lhs, parents=tuple(), prods_seen=set(), no_recursion=False):
+def reachable_productions(productions, lhs, parents=tuple(), prods_seen=set(), no_recursion=False, depth=0, max_depth=100):
     """
     Create a generator that yields all reachable productions from a given lhs symbol.
+    Adds a recursion depth limit to prevent deep recursion errors.
     """
-    # reminder: *(tuple) unpacks the tuple into arguments
+    # Check if the maximum recursion depth has been reached
+    if depth >= max_depth:
+        return
+
     new_parents = (*parents, lhs)
     
     # select productions belonging to the current lhs
     lhs_productions = [prod for prod in productions if prod.lhs() == lhs]
     
     for prod in lhs_productions:
-        # reminder: creates a tuple with one element (unmutable)
         if (prod,) in prods_seen:
             continue
         prods_seen.add((prod,))
 
         # check if the rhs contains a parent symbol    
-        if no_recursion and any([rhs in parents for rhs in prod.rhs()]):
+        if no_recursion and any(rhs in parents for rhs in prod.rhs()):
             continue
 
         yield prod
@@ -105,6 +107,8 @@ def reachable_productions(productions, lhs, parents=tuple(), prods_seen=set(), n
                     parents=new_parents,
                     prods_seen=prods_seen,
                     no_recursion=no_recursion,
+                    depth=depth + 1,
+                    max_depth=max_depth
                 )
 
 
