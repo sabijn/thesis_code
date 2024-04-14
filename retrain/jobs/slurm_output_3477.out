@@ -6055,3 +6055,22 @@ Generated datasets with the lengths of: 800000 (train), 100000, (dev), and 10000
 {'eval_loss': 1.9168927669525146, 'eval_runtime': 20.2681, 'eval_samples_per_second': 4933.85, 'eval_steps_per_second': 77.116, 'epoch': 0.96}
 {'train_runtime': 704.4386, 'train_samples_per_second': 1135.656, 'train_steps_per_second': 2.217, 'train_loss': 2.8932302770480303, 'epoch': 1.0}
 adding, committing, and pushing results to remote dir...
+[feature/retrain d5fe144] save results from run (automated commit from Lisa).
+ Committer: Sabijn Perdijk <11864265@fnwi-cn005.localdomain>
+Your name and email address were configured automatically based
+on your username and hostname. Please check that they are accurate.
+You can suppress this message by setting them explicitly. Run the
+following command and follow the instructions in your editor to edit
+your configuration file:
+
+    git config --global --edit
+
+After doing this, you may fix the identity used for this commit with:
+
+    git commit --amend --reset-author
+
+ 2 files changed, 6076 insertions(+)
+ create mode 100644 retrain/jobs/slurm_output_3477.out
+To github.com:sabijn/thesis_code.git
+   f2a906e..d5fe144  feature/retrain -> feature/retrain
+done.
