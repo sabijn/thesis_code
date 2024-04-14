@@ -45,7 +45,7 @@ cd $HOME/Documents/thesis_code/retrain/
 git fetch && git pull
 
 echo retraining the models...
-topks=("0.8" "0.9")
+topks=("0.7")
 versions=("normal" "pos")
 for topk in "${topks[@]}"; do
     for version in "${versions[@]}"; do
