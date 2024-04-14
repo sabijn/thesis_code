@@ -43,14 +43,14 @@ if __name__ == '__main__':
     parser.add_argument('--data_dir', type=str, default='/Users/sperdijk/Documents/Master/Jaar_3/Thesis/thesis_code/reduce_grammar/corpora')
     args = parser.parse_args()
 
-    all_ppls = []
+    all_ppls = {}
     for top_k in [0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]:
         args.top_k = top_k
         args = set_experiment_config(args)
 
         model, tokenizer = load_model_tokenizer(args)
         datasets = load_data(args, tokenizer, args.data_dir, train_size=0, dev_size=0)
-        all_ppls.append(test_corpus_ppl(model, datasets['test']['input_ids']))
+        all_ppls[top_k] = test_corpus_ppl(model, datasets['test']['input_ids'])
     
     with open(f'{args.output_dir}/ppls_{args.model}_{args.version}.pkl', 'wb') as f:
         pickle.dump(all_ppls, f)
