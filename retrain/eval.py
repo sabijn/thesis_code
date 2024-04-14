@@ -44,7 +44,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     all_ppls = []
-    for top_k in [0.2, 0.3, 0.4, 0.5, 0.6, 0.7]:
+    for top_k in [0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]:
         args.top_k = top_k
         args = set_experiment_config(args)
 
