@@ -2,7 +2,7 @@
 
 #SBATCH --partition=illc
 #SBATCH --account=illc
-#SBATCH --job-name=retrain_models
+#SBATCH --job-name=eval
 #SBATCH --ntasks=1
 #SBATCH --gpus=1
 #SBATCH --mem=28000M
@@ -46,7 +46,7 @@ git fetch && git pull
 
 echo retraining the models...
 
-versions=("normal" "pos")
+versions=("pos")
 for version in "${versions[@]}"; do
     echo "Creating output dir"
     outputdir=/scratch/$USER/results
