@@ -55,6 +55,7 @@ def initialize_trainer(
     tokenizer: PreTrainedTokenizerFast,
     data_collator: DataCollatorForLanguageModeling,
     datasets: DatasetDict,
+    compute_metrics,
     **config,
 ):
     args = TrainingArguments(**config)
@@ -66,6 +67,7 @@ def initialize_trainer(
         data_collator=data_collator,
         train_dataset=datasets["train"],
         eval_dataset=datasets["eval"],
+        compute_metrics=compute_metrics,
     )
 
     return trainer
@@ -111,6 +113,7 @@ def main(args):
         tokenizer, 
         data_collator, 
         datasets, 
+        compute_metrics,
         output_dir=args.output_dir, 
         save_steps=args.save_steps, 
         eval_steps=args.eval_steps, 
@@ -129,7 +132,6 @@ def main(args):
         do_eval=args.do_eval,
         evaluation_strategy=args.evaluation_strategy,
         num_train_epochs=args.epochs,
-        compute_metrics=compute_metrics
     )
 
     trainer.train()
