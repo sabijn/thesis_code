@@ -75,7 +75,7 @@ def main(args):
     """
     Training model
     """
-    tokenizer = create_tokenizer(f'{args.data_dir}/{args.version}/train_sent_{args.version}_{args.top_k}.txt', min_freq=5)
+    tokenizer = create_tokenizer(f'{args.data_dir}/train_sent_{args.version}_{args.top_k}.txt', min_freq=5)
 
     datasets = load_data(args, tokenizer, args.data_dir)
     data_collator = DataCollatorForLanguageModeling(tokenizer, mlm=True)
