@@ -74,11 +74,50 @@ def create_subset_productions(productions, top_k, lexical=False):
     return subset_productions
 
 
-def reachable_productions(productions, lhs, parents=tuple(), prods_seen=set(), no_recursion=False, depth=0, max_depth=100):
+# def reachable_productions(productions, lhs, parents=tuple(), prods_seen=set(), no_recursion=False, depth=0, max_depth=100):
+#     """
+#     Create a generator that yields all reachable productions from a given lhs symbol.
+#     Adds a recursion depth limit to prevent deep recursion errors.
+#     """
+#     # Check if the maximum recursion depth has been reached
+#     if depth >= max_depth:
+#         return
+
+#     new_parents = (*parents, lhs)
+    
+#     # select productions belonging to the current lhs
+#     lhs_productions = [prod for prod in productions if prod.lhs() == lhs]
+    
+#     for prod in lhs_productions:
+#         if (prod,) in prods_seen:
+#             continue
+#         prods_seen.add((prod,))
+
+#         # check if the rhs contains a parent symbol    
+#         if no_recursion and any(rhs in parents for rhs in prod.rhs()):
+#             continue
+
+#         yield prod
+
+#         for rhs in prod.rhs():
+#             if isinstance(rhs, Nonterminal):
+#                 yield from reachable_productions(
+#                     productions, 
+#                     rhs, 
+#                     parents=new_parents,
+#                     prods_seen=prods_seen,
+#                     no_recursion=no_recursion,
+#                     depth=depth + 1,
+#                     max_depth=max_depth
+#                 )
+
+def reachable_productions(productions, lhs, parents=tuple(), prods_seen=set(), no_recursion=False, depth=0, max_depth=100, stack=[]):
     """
     Create a generator that yields all reachable productions from a given lhs symbol.
     Adds a recursion depth limit to prevent deep recursion errors.
     """
+    stack.append(1)
+
     # Check if the maximum recursion depth has been reached
     if depth >= max_depth:
         return
@@ -101,6 +140,9 @@ def reachable_productions(productions, lhs, parents=tuple(), prods_seen=set(), n
 
         for rhs in prod.rhs():
             if isinstance(rhs, Nonterminal):
+                if len(stack) == 1:
+                    depth = 0
+
                 yield from reachable_productions(
                     productions, 
                     rhs, 
@@ -108,8 +150,10 @@ def reachable_productions(productions, lhs, parents=tuple(), prods_seen=set(), n
                     prods_seen=prods_seen,
                     no_recursion=no_recursion,
                     depth=depth + 1,
-                    max_depth=max_depth
+                    max_depth=max_depth,
+                    stack=stack
                 )
+                stack.pop()
 
 
 def is_leaf(prod):
@@ -198,6 +242,7 @@ def create_subset_pcfg(productions, args, top_k=0.2, no_recursion=False, save=Tr
             subset_productions, 
             start, 
             no_recursion=no_recursion,
+            max_depth=args.max_depth
         )
     )
 
@@ -218,7 +263,7 @@ def create_subset_pcfg(productions, args, top_k=0.2, no_recursion=False, save=Tr
     
     # Lexical productions don't need a pos version of the PCFG
     # as lexical more lexical information, pos no lexical information
-    if args.lexical:
+    if args.lexical and save:
         print('Write subset PCFG to pickle...')
         write_to_txt(subset_pcfg, f'{args.output_dir}/subset_pcfg_{top_k}_lexical.txt')
 
@@ -231,9 +276,10 @@ def create_subset_pcfg(productions, args, top_k=0.2, no_recursion=False, save=Tr
 
     subset_pcfg_pos = PCFG(start, pos_productions)
     
-    print('Write subset PCFG to pickle...')
-    write_to_txt(subset_pcfg, f'{args.output_dir}/subset_pcfg_{top_k}.txt')
-    write_to_txt(subset_pcfg_pos, f'{args.output_dir}/subset_pcfg_{top_k}_pos.txt')
+    if save:
+        print('Write subset PCFG to pickle...')
+        write_to_txt(subset_pcfg, f'{args.output_dir}/subset_pcfg_{top_k}.txt')
+        write_to_txt(subset_pcfg_pos, f'{args.output_dir}/subset_pcfg_{top_k}_pos.txt')
 
     print('Done')
     
@@ -262,6 +308,7 @@ if __name__ == '__main__':
     parser.add_argument('--pcfg_dir', type=str, default='grammars/nltk/nltk_pcfg.txt',
                         help='Directory where the full pcfg is stored.')
     parser.add_argument('--output_dir', type=str, default='grammars/nltk')
+    parser.add_argument('--max_depth', type=int, default=110)
     parser.add_argument('--top_k', type=float, default=0.9)
     parser.add_argument('--save', action=argparse.BooleanOptionalAction)
     parser.add_argument('--load', action=argparse.BooleanOptionalAction)
