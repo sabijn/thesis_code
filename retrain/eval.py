@@ -31,6 +31,7 @@ def test_corpus_ppl(model, corpus):
     return ppl
 
 
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Evaluate the model')
     parser.add_argument('--model', type=str, default='babyberta', choices=['gpt2', 'babyberta'],
