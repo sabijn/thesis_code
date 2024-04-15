@@ -1,0 +1,220 @@
+setting up Miniconda...
+activating virtual env...
+current conda environment: basic310
+activating ssh connection...
+Agent pid 2589501
+Identity added: /home/11864265/.ssh/id_ed25519 (11864265@fnwi-h0.science.uva.nl)
+parsing input arguments...
+Branch: feature/retrain
+fetching and pulling latest changes from remote dir...
+Already up to date.
+retraining the models...
+Creating output dir
+Running script for version 0.2
+Traceback (most recent call last):
+  File "/home/11864265/Documents/thesis_code/retrain/main.py", line 145, in <module>
+    main(args)
+  File "/home/11864265/Documents/thesis_code/retrain/main.py", line 78, in main
+    tokenizer = create_tokenizer(f'{args.data_dir}/{args.version}/train_sent_{args.version}_{args.top_k}.txt', min_freq=5)
+  File "/home/11864265/Documents/thesis_code/retrain/tokenizer.py", line 12, in create_tokenizer
+    vocab = create_vocab(corpus, unk_token=unk_token, pad_token=pad_token, mask_token=mask_token, min_freq=min_freq)
+  File "/home/11864265/Documents/thesis_code/retrain/tokenizer.py", line 26, in create_vocab
+    with open(corpus) as f:
+FileNotFoundError: [Errno 2] No such file or directory: '/scratch/11864265/results/normal/train_sent_normal_0.2.txt'
+srun: error: fnwi-cn005: task 0: Exited with exit code 1
+Creating output dir
+Running script for version 0.2
+Traceback (most recent call last):
+  File "/home/11864265/Documents/thesis_code/retrain/main.py", line 145, in <module>
+    main(args)
+  File "/home/11864265/Documents/thesis_code/retrain/main.py", line 78, in main
+    tokenizer = create_tokenizer(f'{args.data_dir}/{args.version}/train_sent_{args.version}_{args.top_k}.txt', min_freq=5)
+  File "/home/11864265/Documents/thesis_code/retrain/tokenizer.py", line 12, in create_tokenizer
+    vocab = create_vocab(corpus, unk_token=unk_token, pad_token=pad_token, mask_token=mask_token, min_freq=min_freq)
+  File "/home/11864265/Documents/thesis_code/retrain/tokenizer.py", line 26, in create_vocab
+    with open(corpus) as f:
+FileNotFoundError: [Errno 2] No such file or directory: '/scratch/11864265/results/pos/train_sent_pos_0.2.txt'
+srun: error: fnwi-cn005: task 0: Exited with exit code 1
+Creating output dir
+Running script for version 0.3
+Traceback (most recent call last):
+  File "/home/11864265/Documents/thesis_code/retrain/main.py", line 145, in <module>
+    main(args)
+  File "/home/11864265/Documents/thesis_code/retrain/main.py", line 78, in main
+    tokenizer = create_tokenizer(f'{args.data_dir}/{args.version}/train_sent_{args.version}_{args.top_k}.txt', min_freq=5)
+  File "/home/11864265/Documents/thesis_code/retrain/tokenizer.py", line 12, in create_tokenizer
+    vocab = create_vocab(corpus, unk_token=unk_token, pad_token=pad_token, mask_token=mask_token, min_freq=min_freq)
+  File "/home/11864265/Documents/thesis_code/retrain/tokenizer.py", line 26, in create_vocab
+    with open(corpus) as f:
+FileNotFoundError: [Errno 2] No such file or directory: '/scratch/11864265/results/normal/train_sent_normal_0.3.txt'
+srun: error: fnwi-cn005: task 0: Exited with exit code 1
+Creating output dir
+Running script for version 0.3
+Traceback (most recent call last):
+  File "/home/11864265/Documents/thesis_code/retrain/main.py", line 145, in <module>
+    main(args)
+  File "/home/11864265/Documents/thesis_code/retrain/main.py", line 78, in main
+    tokenizer = create_tokenizer(f'{args.data_dir}/{args.version}/train_sent_{args.version}_{args.top_k}.txt', min_freq=5)
+  File "/home/11864265/Documents/thesis_code/retrain/tokenizer.py", line 12, in create_tokenizer
+    vocab = create_vocab(corpus, unk_token=unk_token, pad_token=pad_token, mask_token=mask_token, min_freq=min_freq)
+  File "/home/11864265/Documents/thesis_code/retrain/tokenizer.py", line 26, in create_vocab
+    with open(corpus) as f:
+FileNotFoundError: [Errno 2] No such file or directory: '/scratch/11864265/results/pos/train_sent_pos_0.3.txt'
+srun: error: fnwi-cn005: task 0: Exited with exit code 1
+Creating output dir
+Running script for version 0.4
+Traceback (most recent call last):
+  File "/home/11864265/Documents/thesis_code/retrain/main.py", line 145, in <module>
+    main(args)
+  File "/home/11864265/Documents/thesis_code/retrain/main.py", line 78, in main
+    tokenizer = create_tokenizer(f'{args.data_dir}/{args.version}/train_sent_{args.version}_{args.top_k}.txt', min_freq=5)
+  File "/home/11864265/Documents/thesis_code/retrain/tokenizer.py", line 12, in create_tokenizer
+    vocab = create_vocab(corpus, unk_token=unk_token, pad_token=pad_token, mask_token=mask_token, min_freq=min_freq)
+  File "/home/11864265/Documents/thesis_code/retrain/tokenizer.py", line 26, in create_vocab
+    with open(corpus) as f:
+FileNotFoundError: [Errno 2] No such file or directory: '/scratch/11864265/results/normal/train_sent_normal_0.4.txt'
+srun: error: fnwi-cn005: task 0: Exited with exit code 1
+Creating output dir
+Running script for version 0.4
+Traceback (most recent call last):
+  File "/home/11864265/Documents/thesis_code/retrain/main.py", line 145, in <module>
+    main(args)
+  File "/home/11864265/Documents/thesis_code/retrain/main.py", line 78, in main
+    tokenizer = create_tokenizer(f'{args.data_dir}/{args.version}/train_sent_{args.version}_{args.top_k}.txt', min_freq=5)
+  File "/home/11864265/Documents/thesis_code/retrain/tokenizer.py", line 12, in create_tokenizer
+    vocab = create_vocab(corpus, unk_token=unk_token, pad_token=pad_token, mask_token=mask_token, min_freq=min_freq)
+  File "/home/11864265/Documents/thesis_code/retrain/tokenizer.py", line 26, in create_vocab
+    with open(corpus) as f:
+FileNotFoundError: [Errno 2] No such file or directory: '/scratch/11864265/results/pos/train_sent_pos_0.4.txt'
+srun: error: fnwi-cn005: task 0: Exited with exit code 1
+Creating output dir
+Running script for version 0.5
+Traceback (most recent call last):
+  File "/home/11864265/Documents/thesis_code/retrain/main.py", line 145, in <module>
+    main(args)
+  File "/home/11864265/Documents/thesis_code/retrain/main.py", line 78, in main
+    tokenizer = create_tokenizer(f'{args.data_dir}/{args.version}/train_sent_{args.version}_{args.top_k}.txt', min_freq=5)
+  File "/home/11864265/Documents/thesis_code/retrain/tokenizer.py", line 12, in create_tokenizer
+    vocab = create_vocab(corpus, unk_token=unk_token, pad_token=pad_token, mask_token=mask_token, min_freq=min_freq)
+  File "/home/11864265/Documents/thesis_code/retrain/tokenizer.py", line 26, in create_vocab
+    with open(corpus) as f:
+FileNotFoundError: [Errno 2] No such file or directory: '/scratch/11864265/results/normal/train_sent_normal_0.5.txt'
+srun: error: fnwi-cn005: task 0: Exited with exit code 1
+Creating output dir
+Running script for version 0.5
+Traceback (most recent call last):
+  File "/home/11864265/Documents/thesis_code/retrain/main.py", line 145, in <module>
+    main(args)
+  File "/home/11864265/Documents/thesis_code/retrain/main.py", line 78, in main
+    tokenizer = create_tokenizer(f'{args.data_dir}/{args.version}/train_sent_{args.version}_{args.top_k}.txt', min_freq=5)
+  File "/home/11864265/Documents/thesis_code/retrain/tokenizer.py", line 12, in create_tokenizer
+    vocab = create_vocab(corpus, unk_token=unk_token, pad_token=pad_token, mask_token=mask_token, min_freq=min_freq)
+  File "/home/11864265/Documents/thesis_code/retrain/tokenizer.py", line 26, in create_vocab
+    with open(corpus) as f:
+FileNotFoundError: [Errno 2] No such file or directory: '/scratch/11864265/results/pos/train_sent_pos_0.5.txt'
+srun: error: fnwi-cn005: task 0: Exited with exit code 1
+Creating output dir
+Running script for version 0.6
+Traceback (most recent call last):
+  File "/home/11864265/Documents/thesis_code/retrain/main.py", line 145, in <module>
+    main(args)
+  File "/home/11864265/Documents/thesis_code/retrain/main.py", line 78, in main
+    tokenizer = create_tokenizer(f'{args.data_dir}/{args.version}/train_sent_{args.version}_{args.top_k}.txt', min_freq=5)
+  File "/home/11864265/Documents/thesis_code/retrain/tokenizer.py", line 12, in create_tokenizer
+    vocab = create_vocab(corpus, unk_token=unk_token, pad_token=pad_token, mask_token=mask_token, min_freq=min_freq)
+  File "/home/11864265/Documents/thesis_code/retrain/tokenizer.py", line 26, in create_vocab
+    with open(corpus) as f:
+FileNotFoundError: [Errno 2] No such file or directory: '/scratch/11864265/results/normal/train_sent_normal_0.6.txt'
+srun: error: fnwi-cn005: task 0: Exited with exit code 1
+Creating output dir
+Running script for version 0.6
+Traceback (most recent call last):
+  File "/home/11864265/Documents/thesis_code/retrain/main.py", line 145, in <module>
+    main(args)
+  File "/home/11864265/Documents/thesis_code/retrain/main.py", line 78, in main
+    tokenizer = create_tokenizer(f'{args.data_dir}/{args.version}/train_sent_{args.version}_{args.top_k}.txt', min_freq=5)
+  File "/home/11864265/Documents/thesis_code/retrain/tokenizer.py", line 12, in create_tokenizer
+    vocab = create_vocab(corpus, unk_token=unk_token, pad_token=pad_token, mask_token=mask_token, min_freq=min_freq)
+  File "/home/11864265/Documents/thesis_code/retrain/tokenizer.py", line 26, in create_vocab
+    with open(corpus) as f:
+FileNotFoundError: [Errno 2] No such file or directory: '/scratch/11864265/results/pos/train_sent_pos_0.6.txt'
+srun: error: fnwi-cn005: task 0: Exited with exit code 1
+Creating output dir
+Running script for version 0.7
+Traceback (most recent call last):
+  File "/home/11864265/Documents/thesis_code/retrain/main.py", line 145, in <module>
+    main(args)
+  File "/home/11864265/Documents/thesis_code/retrain/main.py", line 78, in main
+    tokenizer = create_tokenizer(f'{args.data_dir}/{args.version}/train_sent_{args.version}_{args.top_k}.txt', min_freq=5)
+  File "/home/11864265/Documents/thesis_code/retrain/tokenizer.py", line 12, in create_tokenizer
+    vocab = create_vocab(corpus, unk_token=unk_token, pad_token=pad_token, mask_token=mask_token, min_freq=min_freq)
+  File "/home/11864265/Documents/thesis_code/retrain/tokenizer.py", line 26, in create_vocab
+    with open(corpus) as f:
+FileNotFoundError: [Errno 2] No such file or directory: '/scratch/11864265/results/normal/train_sent_normal_0.7.txt'
+srun: error: fnwi-cn005: task 0: Exited with exit code 1
+Creating output dir
+Running script for version 0.7
+Traceback (most recent call last):
+  File "/home/11864265/Documents/thesis_code/retrain/main.py", line 145, in <module>
+    main(args)
+  File "/home/11864265/Documents/thesis_code/retrain/main.py", line 78, in main
+    tokenizer = create_tokenizer(f'{args.data_dir}/{args.version}/train_sent_{args.version}_{args.top_k}.txt', min_freq=5)
+  File "/home/11864265/Documents/thesis_code/retrain/tokenizer.py", line 12, in create_tokenizer
+    vocab = create_vocab(corpus, unk_token=unk_token, pad_token=pad_token, mask_token=mask_token, min_freq=min_freq)
+  File "/home/11864265/Documents/thesis_code/retrain/tokenizer.py", line 26, in create_vocab
+    with open(corpus) as f:
+FileNotFoundError: [Errno 2] No such file or directory: '/scratch/11864265/results/pos/train_sent_pos_0.7.txt'
+srun: error: fnwi-cn005: task 0: Exited with exit code 1
+Creating output dir
+Running script for version 0.8
+Traceback (most recent call last):
+  File "/home/11864265/Documents/thesis_code/retrain/main.py", line 145, in <module>
+    main(args)
+  File "/home/11864265/Documents/thesis_code/retrain/main.py", line 78, in main
+    tokenizer = create_tokenizer(f'{args.data_dir}/{args.version}/train_sent_{args.version}_{args.top_k}.txt', min_freq=5)
+  File "/home/11864265/Documents/thesis_code/retrain/tokenizer.py", line 12, in create_tokenizer
+    vocab = create_vocab(corpus, unk_token=unk_token, pad_token=pad_token, mask_token=mask_token, min_freq=min_freq)
+  File "/home/11864265/Documents/thesis_code/retrain/tokenizer.py", line 26, in create_vocab
+    with open(corpus) as f:
+FileNotFoundError: [Errno 2] No such file or directory: '/scratch/11864265/results/normal/train_sent_normal_0.8.txt'
+srun: error: fnwi-cn005: task 0: Exited with exit code 1
+Creating output dir
+Running script for version 0.8
+Traceback (most recent call last):
+  File "/home/11864265/Documents/thesis_code/retrain/main.py", line 145, in <module>
+    main(args)
+  File "/home/11864265/Documents/thesis_code/retrain/main.py", line 78, in main
+    tokenizer = create_tokenizer(f'{args.data_dir}/{args.version}/train_sent_{args.version}_{args.top_k}.txt', min_freq=5)
+  File "/home/11864265/Documents/thesis_code/retrain/tokenizer.py", line 12, in create_tokenizer
+    vocab = create_vocab(corpus, unk_token=unk_token, pad_token=pad_token, mask_token=mask_token, min_freq=min_freq)
+  File "/home/11864265/Documents/thesis_code/retrain/tokenizer.py", line 26, in create_vocab
+    with open(corpus) as f:
+FileNotFoundError: [Errno 2] No such file or directory: '/scratch/11864265/results/pos/train_sent_pos_0.8.txt'
+srun: error: fnwi-cn005: task 0: Exited with exit code 1
+Creating output dir
+Running script for version 0.9
+Traceback (most recent call last):
+  File "/home/11864265/Documents/thesis_code/retrain/main.py", line 145, in <module>
+    main(args)
+  File "/home/11864265/Documents/thesis_code/retrain/main.py", line 78, in main
+    tokenizer = create_tokenizer(f'{args.data_dir}/{args.version}/train_sent_{args.version}_{args.top_k}.txt', min_freq=5)
+  File "/home/11864265/Documents/thesis_code/retrain/tokenizer.py", line 12, in create_tokenizer
+    vocab = create_vocab(corpus, unk_token=unk_token, pad_token=pad_token, mask_token=mask_token, min_freq=min_freq)
+  File "/home/11864265/Documents/thesis_code/retrain/tokenizer.py", line 26, in create_vocab
+    with open(corpus) as f:
+FileNotFoundError: [Errno 2] No such file or directory: '/scratch/11864265/results/normal/train_sent_normal_0.9.txt'
+srun: error: fnwi-cn005: task 0: Exited with exit code 1
+Creating output dir
+Running script for version 0.9
+Traceback (most recent call last):
+  File "/home/11864265/Documents/thesis_code/retrain/main.py", line 145, in <module>
+    main(args)
+  File "/home/11864265/Documents/thesis_code/retrain/main.py", line 78, in main
+    tokenizer = create_tokenizer(f'{args.data_dir}/{args.version}/train_sent_{args.version}_{args.top_k}.txt', min_freq=5)
+  File "/home/11864265/Documents/thesis_code/retrain/tokenizer.py", line 12, in create_tokenizer
+    vocab = create_vocab(corpus, unk_token=unk_token, pad_token=pad_token, mask_token=mask_token, min_freq=min_freq)
+  File "/home/11864265/Documents/thesis_code/retrain/tokenizer.py", line 26, in create_vocab
+    with open(corpus) as f:
+FileNotFoundError: [Errno 2] No such file or directory: '/scratch/11864265/results/pos/train_sent_pos_0.9.txt'
+srun: error: fnwi-cn005: task 0: Exited with exit code 1
+adding, committing, and pushing results to remote dir...
