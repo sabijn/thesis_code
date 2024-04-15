@@ -1,6 +1,7 @@
 from transformers import (DataCollatorForLanguageModeling,
     AutoModelForMaskedLM, 
     AutoModelForCausalLM)
+import torch
 
 
 from tokenizer import create_tokenizer
@@ -39,9 +40,19 @@ def compute_metrics(eval_pred: EvalPrediction):
     
     # Calculating perplexity
     # Perplexity can be calculated using cross-entropy; you'll need the log probabilities
-    log_softmax = np.log(np.exp(logits) / np.sum(np.exp(logits), axis=-1, keepdims=True))
-    masked_log_softmax = log_softmax[mask, np.arange(log_softmax.shape[1])]
-    cross_entropy = -np.mean(masked_log_softmax[np.arange(len(labels)), labels])
+    # Flatten logits and labels
+    logits_flat = logits.reshape(-1, logits.shape[-1])
+    labels_flat = labels.flatten()
+
+    # Apply mask
+    valid_logits = logits_flat[mask]
+    valid_labels = labels_flat[mask]
+
+    # Compute softmax and cross-entropy
+    exp_logits = np.exp(valid_logits - np.max(valid_logits, axis=1, keepdims=True))
+    softmax = exp_logits / np.sum(exp_logits, axis=1, keepdims=True)
+    log_softmax = np.log(softmax)
+    cross_entropy = -np.sum(log_softmax[np.arange(len(valid_labels)), valid_labels]) / len(valid_labels)
     perplexity = np.exp(cross_entropy)
     
     return {
@@ -140,6 +151,12 @@ def main(args):
     evaluation_results = trainer.evaluate()
     with open(f'{args.results_dir}/evaluation_{args.model}_{args.top_k}_{args.version}.pkl', 'wb') as f:
         pickle.dump(evaluation_results, f)
+    
+    del datasets
+    del model
+    del tokenizer
+    del trainer
+    torch.cuda.empty_cache()
 
 
 if __name__ == '__main__':
