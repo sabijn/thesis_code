@@ -2,6 +2,7 @@ from transformers import (DataCollatorForLanguageModeling,
     AutoModelForMaskedLM, 
     AutoModelForCausalLM)
 import torch
+import scipy
 
 
 from tokenizer import create_tokenizer
@@ -29,32 +30,26 @@ logger = logging.getLogger(__name__)
 def compute_metrics(eval_pred: EvalPrediction):
     logits, labels = eval_pred
     predictions = np.argmax(logits, axis=-1)
-    
     # Flatten the outputs and labels for accuracy calculation
     mask = labels != 1  # Assuming that -100 is used for masked tokens
-    labels = labels[mask]
+    # labels = labels[mask]
+    masked_labels = labels[mask]
     predictions = predictions[mask]
     
     # Calculating accuracy
-    accuracy = np.sum(predictions == labels) / len(labels)
+    accuracy = np.sum(predictions == masked_labels) / len(masked_labels)
     
     # Calculating perplexity
-    # Perplexity can be calculated using cross-entropy; you'll need the log probabilities
-    # Flatten logits and labels
-    logits_flat = logits.reshape(-1, logits.shape[-1])
-    labels_flat = labels.flatten()
+    log_softmax = logits - scipy.special.logsumexp(logits, axis=-1, keepdims=True)
+    masked_log_softmax = log_softmax[mask]
 
-    # Apply mask
-    valid_logits = logits_flat[mask]
-    valid_labels = labels_flat[mask]
-
-    # Compute softmax and cross-entropy
-    exp_logits = np.exp(valid_logits - np.max(valid_logits, axis=1, keepdims=True))
-    softmax = exp_logits / np.sum(exp_logits, axis=1, keepdims=True)
-    log_softmax = np.log(softmax)
-    cross_entropy = -np.sum(log_softmax[np.arange(len(valid_labels)), valid_labels]) / len(valid_labels)
+    # Gather the correct log probabilities for the gold labels
+    gold_log_probs = masked_log_softmax[np.arange(masked_labels.size), masked_labels]
+    # Calculate cross entropy
+    cross_entropy = -np.mean(gold_log_probs)
+    # Calculate perplexity
     perplexity = np.exp(cross_entropy)
-    
+        
     return {
         "accuracy": accuracy,
         "perplexity": perplexity
@@ -90,7 +85,7 @@ def main(args):
     """
     tokenizer = create_tokenizer(f'{args.data_dir}/train_sent_{args.version}_{args.top_k}.txt', min_freq=5)
 
-    datasets = load_data(args, tokenizer, args.data_dir)
+    datasets = load_data(args, tokenizer, args.data_dir, train_size=args.train_size, dev_size=args.dev_size, test_size=args.test_size)
     data_collator = DataCollatorForLanguageModeling(tokenizer, mlm=True)
 
     if args.base_model == 'phueb/BabyBERTa-1':
@@ -149,7 +144,7 @@ def main(args):
     trainer._save_checkpoint(trainer.model, None)
 
     evaluation_results = trainer.evaluate()
-    with open(f'{args.results_dir}/evaluation_{args.model}_{args.top_k}_{args.version}.pkl', 'wb') as f:
+    with open(f'{args.results_dir}/evaluation_{args.base_model}_{args.top_k}_{args.version}.pkl', 'wb') as f:
         pickle.dump(evaluation_results, f)
     
     del datasets

@@ -25,13 +25,16 @@ def create_arg_parser():
     parser.add_argument('--lr_scheduler_type', type=str, default='cosine')
     parser.add_argument('--learning_rate', type=float, default=5e-4)
     parser.add_argument('--warmup_steps', type=int, default=0)
-    parser.add_argument('--fp16', action='store_false')
+    parser.add_argument('--fp16', action='store_true')
     parser.add_argument('--max_grad_norm', type=float, default=0.5)
     parser.add_argument('--group_by_length', action='store_false')
     parser.add_argument('--auto_find_batch_size', action='store_true')
-    parser.add_argument('--do_eval', action='store_false')
+    parser.add_argument('--do_eval', action='store_true')
     parser.add_argument('--evaluation_strategy', type=str, default='steps', choices=['steps', 'epoch'])
     parser.add_argument('--epochs', type=int, default=1)
+    parser.add_argument('--train_size', type=int, default=None)
+    parser.add_argument('--dev_size', type=int, default=None)
+    parser.add_argument('--test_size', type=int, default=None)
     
     args = parser.parse_args()
 

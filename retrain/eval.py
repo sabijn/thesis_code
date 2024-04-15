@@ -20,7 +20,9 @@ def test_corpus_ppl(model, corpus):
         
         with torch.no_grad():
             all_logits = model(input_ids=all_input_ids).logits
+            print(all_logits.shape)
             all_probs = all_logits.log_softmax(-1)
+            print('log softmax', all_probs.shape)
             
         token_probs = all_probs[range(sen_len), range(sen_len)][range(sen_len), input_ids]
         
@@ -41,17 +43,18 @@ if __name__ == '__main__':
     parser.add_argument('--top_k', type=float, default=0.2, choices=[0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9])
     parser.add_argument('--version', type=str, default='normal', choices=['normal', 'lexical', 'pos'],
                         help='Version of the corpus to evaluate.')
-    parser.add_argument('--data_dir', type=str, default='/Users/sperdijk/Documents/Master/Jaar_3/Thesis/thesis_code/reduce_grammar/corpora')
+    parser.add_argument('--data_dir', type=str, default='/Users/sperdijk/Documents/Master/Jaar_3/Thesis/thesis_code/reduce_grammar/corpora/normal')
     args = parser.parse_args()
 
     all_ppls = {}
-    for top_k in [0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]:
+    # for top_k in [0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]:
+    for top_k in [0.2]:
         args.top_k = top_k
         args = set_experiment_config(args)
 
         model, tokenizer = load_model_tokenizer(args)
-        datasets = load_data(args, tokenizer, args.data_dir, train_size=0, dev_size=0)
+        datasets = load_data(args, tokenizer, args.data_dir, train_size=0, dev_size=0, test_size=10)
         all_ppls[top_k] = test_corpus_ppl(model, datasets['test']['input_ids'])
     
-    with open(f'{args.output_dir}/ppls_{args.model}_{args.version}.pkl', 'wb') as f:
-        pickle.dump(all_ppls, f)
+    # with open(f'{args.output_dir}/ppls_{args.model}_{args.version}.pkl', 'wb') as f:
+    #     pickle.dump(all_ppls, f)
