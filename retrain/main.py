@@ -44,6 +44,7 @@ def compute_metrics(eval_pred: EvalPrediction):
     masked_log_softmax = log_softmax[mask]
 
     # Gather the correct log probabilities for the gold labels
+    print(np.arange(masked_labels.size))
     gold_log_probs = masked_log_softmax[np.arange(masked_labels.size), masked_labels]
     # Calculate cross entropy
     cross_entropy = -np.mean(gold_log_probs)
@@ -83,8 +84,16 @@ def main(args):
     """
     Training model
     """
-    tokenizer = create_tokenizer(f'{args.data_dir}/train_sent_{args.version}_{args.top_k}.txt', min_freq=5)
+    if args.base_model == 'phueb/BabyBERTa-1':
+        model_name =  'babyberta'
+    elif args.base_model == 'distilgpt2':
+        model_name = 'gpt2'
+    else:
+        raise NotImplementedError
 
+    tokenizer = create_tokenizer(f'{args.data_dir}/train_sent_{args.version}_{args.top_k}.txt', min_freq=5)
+    print(tokenizer.mask_token_id)
+    print(tokenizer.pad_token_id)
     datasets = load_data(args, tokenizer, args.data_dir, train_size=args.train_size, dev_size=args.dev_size, test_size=args.test_size)
     data_collator = DataCollatorForLanguageModeling(tokenizer, mlm=True)
 
@@ -143,15 +152,22 @@ def main(args):
     trainer.train()
     trainer._save_checkpoint(trainer.model, None)
 
-    evaluation_results = trainer.evaluate()
-    with open(f'{args.results_dir}/evaluation_{args.base_model}_{args.top_k}_{args.version}.pkl', 'wb') as f:
-        pickle.dump(evaluation_results, f)
+    for name in vars().keys():
+        print(name)
+
+    # evaluation_results = trainer.evaluate()
+    # with open(f'{args.results_dir}/evaluation_{model_name}_{args.top_k}_{args.version}.pkl', 'wb') as f:
+    #     pickle.dump(evaluation_results, f)
     
     del datasets
     del model
     del tokenizer
     del trainer
+    del data_collator
     torch.cuda.empty_cache()
+    print('After deleting...')
+    for name in vars().keys():
+        print(name)
 
 
 if __name__ == '__main__':
