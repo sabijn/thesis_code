@@ -1,0 +1,70 @@
+setting up Miniconda...
+activating virtual env...
+current conda environment: basic310
+activating ssh connection...
+Agent pid 2611031
+Identity added: /home/11864265/.ssh/id_ed25519 (11864265@fnwi-h0.science.uva.nl)
+parsing input arguments...
+Branch: feature/retrain
+fetching and pulling latest changes from remote dir...
+Already up to date.
+running generating corpora...
+Running script for version lexical
+2024-04-16 22:02:45 | INFO | fairseq.tasks.text_to_speech | Please install tensorboardX: pip install tensorboardX
+2024-04-16 22:04:29 | INFO | classes.language | Creating corpus from grammar.
+Traceback (most recent call last):
+  File "/home/11864265/Documents/thesis_code/reduce_grammar/generate_corpora.py", line 67, in <module>
+    main(args)
+  File "/home/11864265/Documents/thesis_code/reduce_grammar/generate_corpora.py", line 44, in main
+    lm_language = PCFG(config, tokenizer)
+  File "/home/11864265/Documents/thesis_code/reduce_grammar/classes/language.py", line 68, in __init__
+    self.corpus = self.create_corpus()
+  File "/home/11864265/Documents/thesis_code/reduce_grammar/classes/pcfg.py", line 45, in create_corpus
+    corpus = self._generate_corpus(self.grammar)
+  File "/home/11864265/Documents/thesis_code/reduce_grammar/classes/pcfg.py", line 96, in _generate_corpus
+    tree = generate_tree(grammar, depth=self.config.max_depth)
+  File "/home/11864265/Documents/thesis_code/reduce_grammar/classes/pcfg.py", line 220, in generate_tree
+    tree_str = concatenate_subtrees(grammar, [start], depth)
+  File "/home/11864265/Documents/thesis_code/reduce_grammar/classes/pcfg.py", line 232, in concatenate_subtrees
+    children.append(generate_subtree(grammar, item, depth))
+  File "/home/11864265/Documents/thesis_code/reduce_grammar/classes/pcfg.py", line 246, in generate_subtree
+    children = concatenate_subtrees(grammar, prod.rhs(), depth - 1)
+  File "/home/11864265/Documents/thesis_code/reduce_grammar/classes/pcfg.py", line 232, in concatenate_subtrees
+    children.append(generate_subtree(grammar, item, depth))
+  File "/home/11864265/Documents/thesis_code/reduce_grammar/classes/pcfg.py", line 246, in generate_subtree
+    children = concatenate_subtrees(grammar, prod.rhs(), depth - 1)
+  File "/home/11864265/Documents/thesis_code/reduce_grammar/classes/pcfg.py", line 232, in concatenate_subtrees
+    children.append(generate_subtree(grammar, item, depth))
+  File "/home/11864265/Documents/thesis_code/reduce_grammar/classes/pcfg.py", line 246, in generate_subtree
+    children = concatenate_subtrees(grammar, prod.rhs(), depth - 1)
+  File "/home/11864265/Documents/thesis_code/reduce_grammar/classes/pcfg.py", line 232, in concatenate_subtrees
+    children.append(generate_subtree(grammar, item, depth))
+  File "/home/11864265/Documents/thesis_code/reduce_grammar/classes/pcfg.py", line 246, in generate_subtree
+    children = concatenate_subtrees(grammar, prod.rhs(), depth - 1)
+  File "/home/11864265/Documents/thesis_code/reduce_grammar/classes/pcfg.py", line 232, in concatenate_subtrees
+    children.append(generate_subtree(grammar, item, depth))
+  File "/home/11864265/Documents/thesis_code/reduce_grammar/classes/pcfg.py", line 246, in generate_subtree
+    children = concatenate_subtrees(grammar, prod.rhs(), depth - 1)
+  File "/home/11864265/Documents/thesis_code/reduce_grammar/classes/pcfg.py", line 232, in concatenate_subtrees
+    children.append(generate_subtree(grammar, item, depth))
+  File "/home/11864265/Documents/thesis_code/reduce_grammar/classes/pcfg.py", line 246, in generate_subtree
+    children = concatenate_subtrees(grammar, prod.rhs(), depth - 1)
+  File "/home/11864265/Documents/thesis_code/reduce_grammar/classes/pcfg.py", line 232, in concatenate_subtrees
+    children.append(generate_subtree(grammar, item, depth))
+  File "/home/11864265/Documents/thesis_code/reduce_grammar/classes/pcfg.py", line 246, in generate_subtree
+    children = concatenate_subtrees(grammar, prod.rhs(), depth - 1)
+  File "/home/11864265/Documents/thesis_code/reduce_grammar/classes/pcfg.py", line 232, in concatenate_subtrees
+    children.append(generate_subtree(grammar, item, depth))
+  File "/home/11864265/Documents/thesis_code/reduce_grammar/classes/pcfg.py", line 246, in generate_subtree
+    children = concatenate_subtrees(grammar, prod.rhs(), depth - 1)
+  File "/home/11864265/Documents/thesis_code/reduce_grammar/classes/pcfg.py", line 232, in concatenate_subtrees
+    children.append(generate_subtree(grammar, item, depth))
+  File "/home/11864265/Documents/thesis_code/reduce_grammar/classes/pcfg.py", line 246, in generate_subtree
+    children = concatenate_subtrees(grammar, prod.rhs(), depth - 1)
+  File "/home/11864265/Documents/thesis_code/reduce_grammar/classes/pcfg.py", line 232, in concatenate_subtrees
+    children.append(generate_subtree(grammar, item, depth))
+  File "/home/11864265/Documents/thesis_code/reduce_grammar/classes/pcfg.py", line 243, in generate_subtree
+    probs = grammar._lhs_prob_index[lhs]
+KeyError: WHNP_0
+srun: error: fnwi-cn005: task 0: Exited with exit code 1
+adding, committing, and pushing results to remote dir...
