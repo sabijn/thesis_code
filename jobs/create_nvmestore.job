@@ -1,12 +1,13 @@
 #!/bin/bash
 
 #SBATCH --partition=illc
-#SBATCH -A=illc
-#SBATCH --job-name=create_nvmestore
+#SBATCH --account=illc
+#SBATCH --job-name=nvmestore
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=3
+#SBATCH --gpus=0
+#SBATCH --mem=28000M
 #SBATCH --time=00:10:00
-#SBATCH --output=logs/slurm_output_%A.out
+#SBATCH --output=slurm_output_%A.out
 
 mkdir /nvmestore/11864265
 cd /nvmestore/11864265
