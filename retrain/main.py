@@ -31,8 +31,7 @@ def compute_metrics(eval_pred: EvalPrediction):
     logits, labels = eval_pred
     predictions = np.argmax(logits, axis=-1)
     # Flatten the outputs and labels for accuracy calculation
-    mask = labels != 1  # Assuming that -100 is used for masked tokens
-    # labels = labels[mask]
+    mask = labels != 1  
     masked_labels = labels[mask]
     predictions = predictions[mask]
     
@@ -107,6 +106,7 @@ def main(args):
             hidden_size=64,
             num_attention_heads=8,
         )
+
     elif args.base_model == 'distilgpt2':
         model = initialize_model(
             tokenizer, 
@@ -117,6 +117,7 @@ def main(args):
             num_attention_heads=8,
             is_mlm=False,
         )
+        
     else:
         logger.critical('Model not implemented')
         raise NotImplementedError
@@ -151,6 +152,8 @@ def main(args):
 
     trainer.train()
     trainer._save_checkpoint(trainer.model, None)
+    evaluation_results = trainer.evaluate()
+    print(evaluation_results)
 
     for name in vars().keys():
         print(name)
