@@ -21,12 +21,17 @@ class Corpus():
                 self.nltk_trees.append(tree)
                 self.sens.append(tree.leaves())
 
-        if self.split:
+        if self.split and type(self.split) == float:
             corpus_size = len(self.sens)
-            _, dev_split, test_split = int(0.9 * corpus_size), corpus_size
+            dev_split, test_split = int(0.9 * corpus_size), corpus_size
             self.sens = self.sens[dev_split:test_split]
             self.trees = self.trees[dev_split:test_split]
             self.nltk_trees = self.nltk_trees[dev_split:test_split]
+        
+        elif self.split and type(self.split) == int:
+            self.sens = self.sens[:self.split]
+            self.trees = self.trees[:self.split]
+            self.nltk_trees = self.nltk_trees[:self.split]
     
     def tree2list(self, tree):
         if isinstance(tree, nltk.Tree):

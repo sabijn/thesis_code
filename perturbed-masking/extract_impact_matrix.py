@@ -175,7 +175,7 @@ def main_impact_matrix(config):
     """
     Main function to run span probing
     """
-    logger.info('Running span probing.')
+    logger.info('Creating impact matrices.')
     logger.info('Loading model...')
     model, tokenizer = load_model(config)
     model.eval()
@@ -193,3 +193,5 @@ def main_impact_matrix(config):
             out[k].extend(one_layer_result)
 
     write_im_to_file(out, config)
+
+    return out

@@ -7,6 +7,7 @@ import pickle
 from utils.ete_utils import *
 from tqdm import tqdm
 import logging
+from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
@@ -87,7 +88,7 @@ def classic_evaluation(args, gold_trees, pred_trees):
         results = pm_constituent_evaluation(pred, gold)
         all_layer_results.append(results)
     
-    result_path = f'results/classic_dist_{args.model}_all_layers_without_punct.pkl' if args.remove_punct else f'results/classic_dist_{args.model}_all_layers.pkl'
+    result_path = args.eval_results_dir / Path(f'classic_dist_{args.model}_all_layers_without_punct.pkl') if args.remove_punct else args.eval_results_dir / Path(f'classic_dist_{args.model}_all_layers.pkl')
     with open(result_path, 'wb') as f:
         pickle.dump(all_layer_results, f)
 
@@ -121,10 +122,13 @@ def calc_spearman(pred_distances, gold_distances):
     return mean, mean_pvalue
     
 
-def spearman_evaluation(args, pred_trees):
+def spearman_evaluation(args, pred_trees, split):
     # Load the gold trees
+    logger.info('Creating gold trees...')
     with open(args.data, 'r') as f:
         gold_trees = [line.strip('\n') for line in f.readlines()]
+    if split:
+        gold_trees = gold_trees[:split]
 
     if args.remove_punct:
         # trees are skipped if they have "'" or "''" as last token
@@ -140,6 +144,7 @@ def spearman_evaluation(args, pred_trees):
         pred_layer = [tree for i, tree in enumerate(pred_trees[l]) if i not in skipped_idx]
 
         assert len(pred_layer) == len(gold_trees), f'Length of pred trees ({len(pred_layer)}) is not the same as the gold trees ({len(gold_trees)}).'
+
         pred_ete_trees = [create_ete3_from_pred(tree) for tree in pred_layer]
         pred_distances = create_distances(pred_ete_trees)
 
@@ -158,7 +163,7 @@ def spearman_evaluation(args, pred_trees):
         print(f'Spearman correlation: {spearman}')
     
     # Save results
-    result_path = f'results/spearman_{args.metric}_{args.model}_without_punct.pkl' if args.remove_punct else f'results/spearman_{args.metric}_{args.model}.pkl'
+    result_path = args.eval_results_dir / Path(f'spearman_{args.metric}_{args.model}_without_punct.pkl') if args.remove_punct else args.eval_results_dir / Path(f'spearman_{args.metric}_{args.model}.pkl')
     with open(result_path, 'wb') as f:
         pickle.dump(results, f)
 

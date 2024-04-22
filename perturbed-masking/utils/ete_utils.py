@@ -25,7 +25,11 @@ class FancyTree(EteTree):
 def create_ete3_from_pred(sentence):
     tree_idx = 1
     newick_str = ''
-    split_sentence = sentence.split(' ')
+    try:
+        split_sentence = sentence.split(' ')
+    except:
+        print(sentence)
+        raise
 
     for i, element in enumerate(split_sentence):
         if element == '(':

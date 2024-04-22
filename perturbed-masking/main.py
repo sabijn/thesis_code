@@ -84,8 +84,13 @@ def get_predicted_trees(config, all_layer_info):
                 raise ValueError(f'Evaluation type {config.evaluation} not supported.')
 
     logger.info('Parse trees loaded.')
+
+    if config.evaluation == 'classic' or config.evaluation == 'labelled':
+        return pred_trees
     
-    return pred_trees
+    elif config.evaluation == 'spearman':
+        return [listtree2str(tree) for tree in trees]
+    
 
 def main(config):
     # 1. Load impact matrices
@@ -101,7 +106,7 @@ def main(config):
     print(config.evaluation, flush=True)
     if config.evaluation == 'spearman':
         logger.info('Started spearman evaluation...')
-        spearman_evaluation(config, pred_trees)
+        spearman_evaluation(config, pred_trees, split=config.split)
     elif config.evaluation == 'classic':
         logger.info('Started classic evaluation...')
         classic_evaluation(config, all_layer_info, pred_trees)
