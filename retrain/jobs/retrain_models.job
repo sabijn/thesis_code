@@ -66,8 +66,8 @@ for topk in "${topks[@]}"; do
                             --per_device_eval_batch_size=48 \
                             --fp16 \
                             --do_eval
-        rm -r ~/.cache/hugginface/datasets
-        rm -r ~/.cache/hugginface/hub
+        rm -r ~/.cache/huggingface/datasets
+        rm -r ~/.cache/huggingface/hub
     done
 done
 
