@@ -72,7 +72,7 @@ for topk in "${topks[@]}"; do
                             --version=$version \
                             --per_device_train_batch_size=16 \
                             --per_device_eval_batch_size=16 \
-                            ---radient_accumulation_steps=4 \
+                            --gradient_accumulation_steps=4 \
                             --fp16 \
                             --do_eval
     done
