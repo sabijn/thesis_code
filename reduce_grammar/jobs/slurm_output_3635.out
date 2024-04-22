@@ -1,0 +1,35 @@
+setting up Miniconda...
+activating virtual env...
+current conda environment: basic310
+activating ssh connection...
+Agent pid 2683678
+Identity added: /home/11864265/.ssh/id_ed25519 (11864265@fnwi-h0.science.uva.nl)
+parsing input arguments...
+Branch: feature/retrain
+fetching and pulling latest changes from remote dir...
+Already up to date.
+running generating corpora...
+Running script for version lexical
+2024-04-22 19:01:22 | INFO | fairseq.tasks.text_to_speech | Please install tensorboardX: pip install tensorboardX
+2024-04-22 19:01:49 | INFO | classes.language | Creating corpus from grammar.
+Running script for version lexical
+2024-04-22 19:55:11 | INFO | fairseq.tasks.text_to_speech | Please install tensorboardX: pip install tensorboardX
+usage: generate_corpora.py [-h] [--version {normal,lexical,pos}]
+                           [--data_dir DATA_DIR] [--output_dir OUTPUT_DIR]
+                           [--verbose | --no-verbose]
+                           [--corpus_size CORPUS_SIZE]
+                           [--min_length MIN_LENGTH] [--max_length MAX_LENGTH]
+                           [--max_depth MAX_DEPTH] [--corpus_file CORPUS_FILE]
+                           [--top_k TOP_K]
+generate_corpora.py: error: argument --top_k: invalid float value: '0.5 0.6'
+srun: error: fnwi-cn005: task 0: Exited with exit code 2
+Running script for version lexical
+2024-04-22 19:55:22 | INFO | fairseq.tasks.text_to_speech | Please install tensorboardX: pip install tensorboardX
+2024-04-22 19:56:38 | INFO | classes.language | Creating corpus from grammar.
+Running script for version lexical
+2024-04-22 20:58:45 | INFO | fairseq.tasks.text_to_speech | Please install tensorboardX: pip install tensorboardX
+2024-04-22 21:00:39 | INFO | classes.language | Creating corpus from grammar.
+Running script for version lexical
+2024-04-22 22:02:25 | INFO | fairseq.tasks.text_to_speech | Please install tensorboardX: pip install tensorboardX
+2024-04-22 22:04:35 | INFO | classes.language | Creating corpus from grammar.
+adding, committing, and pushing results to remote dir...
