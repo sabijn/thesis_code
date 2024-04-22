@@ -15,14 +15,20 @@ set -e
 echo setting up Miniconda...
 source $HOME/miniconda3/etc/profile.d/conda.sh
 
+# Activating virtual environment
 echo activating virtual env...
 conda activate $HOME/miniconda3/envs/basic310
 echo "current conda environment: $CONDA_DEFAULT_ENV"
 
+# Activating ssh connection
 echo activating ssh connection...
 eval "$(ssh-agent -s)"
 ssh-add $HOME/.ssh/id_ed25519
 
+# Setting up cache for transformers & datasets
+export HF_HOME="/nvmestore/11864265/.cache"
+
+# Parsing input arguments
 echo parsing input arguments...
 unset -v BRANCH
 
@@ -43,10 +49,12 @@ then
     exit 1
 fi
 
+# Pulling latest changes from remote dir
 echo fetching and pulling latest changes from remote dir...
 cd $HOME/Documents/thesis_code/retrain/
 git fetch && git pull
 
+# Run the script
 echo retraining the models...
 topks=("0.3" "0.4" "0.5" "0.6" "0.7" "0.8" "0.9")
 versions=("normal" "pos")
@@ -66,11 +74,10 @@ for topk in "${topks[@]}"; do
                             --per_device_eval_batch_size=48 \
                             --fp16 \
                             --do_eval
-        rm -r ~/.cache/huggingface/datasets
-        rm -r ~/.cache/huggingface/hub
     done
 done
 
+# Pushing results to remote dir
 echo adding, committing, and pushing results to remote dir...
 git add $HOME/Documents/thesis_code/retrain/
 git commit -m "save results from run (automated commit from Lisa)."
