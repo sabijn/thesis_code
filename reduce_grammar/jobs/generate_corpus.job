@@ -46,7 +46,7 @@ git fetch && git pull
 
 echo running generating corpora...
 versions=("pos" "normal")
-topks=("0.9")
+topks=("0.2")
 for topk in "${topks[@]}"; do
     for version in "${versions[@]}"; do
         echo "Running script for version $version"
