@@ -74,86 +74,16 @@ def create_subset_productions(productions, top_k, lexical=False):
     return subset_productions
 
 
-# def reachable_productions(productions, lhs, parents=tuple(), prods_seen=set(), no_recursion=False, depth=0, max_depth=100):
-#     """
-#     Create a generator that yields all reachable productions from a given lhs symbol.
-#     Adds a recursion depth limit to prevent deep recursion errors.
-#     """
-#     # Check if the maximum recursion depth has been reached
-#     if depth >= max_depth:
-#         return
+def reachable_productions(productions, lhs):
+    global LHS_SEEN
 
-#     new_parents = (*parents, lhs)
-    
-#     # select productions belonging to the current lhs
-#     lhs_productions = [prod for prod in productions if prod.lhs() == lhs]
-    
-#     for prod in lhs_productions:
-#         if (prod,) in prods_seen:
-#             continue
-#         prods_seen.add((prod,))
+    lhs_productions = [prod for prod in productions if (prod.lhs() == lhs and not is_leaf(prod))]
 
-#         # check if the rhs contains a parent symbol    
-#         if no_recursion and any(rhs in parents for rhs in prod.rhs()):
-#             continue
-
-#         yield prod
-
-#         for rhs in prod.rhs():
-#             if isinstance(rhs, Nonterminal):
-#                 yield from reachable_productions(
-#                     productions, 
-#                     rhs, 
-#                     parents=new_parents,
-#                     prods_seen=prods_seen,
-#                     no_recursion=no_recursion,
-#                     depth=depth + 1,
-#                     max_depth=max_depth
-#                 )
-
-def reachable_productions(productions, lhs, parents=tuple(), prods_seen=set(), no_recursion=False, depth=0, max_depth=100, stack=[]):
-    """
-    Create a generator that yields all reachable productions from a given lhs symbol.
-    Adds a recursion depth limit to prevent deep recursion errors.
-    """
-    stack.append(1)
-
-    # Check if the maximum recursion depth has been reached
-    if depth >= max_depth:
-        return
-
-    new_parents = (*parents, lhs)
-    
-    # select productions belonging to the current lhs
-    lhs_productions = [prod for prod in productions if prod.lhs() == lhs]
-    
     for prod in lhs_productions:
-        if (prod,) in prods_seen:
-            continue
-        prods_seen.add((prod,))
-
-        # check if the rhs contains a parent symbol    
-        if no_recursion and any(rhs in parents for rhs in prod.rhs()):
-            continue
-
-        yield prod
-
-        for rhs in prod.rhs():
-            if isinstance(rhs, Nonterminal):
-                if len(stack) == 1:
-                    depth = 0
-
-                yield from reachable_productions(
-                    productions, 
-                    rhs, 
-                    parents=new_parents,
-                    prods_seen=prods_seen,
-                    no_recursion=no_recursion,
-                    depth=depth + 1,
-                    max_depth=max_depth,
-                    stack=stack
-                )
-                stack.pop()
+        for nt in prod.rhs():
+            if nt not in LHS_SEEN:
+                LHS_SEEN.add(nt)
+                reachable_productions(productions, nt)
 
 
 def is_leaf(prod):
@@ -237,14 +167,11 @@ def create_subset_pcfg(productions, args, top_k=0.2, no_recursion=False, save=Tr
     print(f'Created subset PCFG with a length of {len(subset_productions)} productions.', flush=True)
 
     print('Cleaning subset: (1) removing unreachable productions...')
-    final_subset_productions = set(
-        reachable_productions(
-            subset_productions, 
-            start, 
-            no_recursion=no_recursion,
-            max_depth=args.max_depth
-        )
-    )
+    global LHS_SEEN
+    LHS_SEEN = {Nonterminal('S_0')}
+
+    reachable_productions(subset_productions, start)
+    final_subset_productions = [prod for prod in subset_productions if prod.lhs() in LHS_SEEN]
 
     # update set for removed recursive productions
     reachable_nonterminals = set(prod.lhs() for prod in final_subset_productions)
@@ -300,7 +227,7 @@ def load_subset_pcfg(prob_productions, args, top_k=0.2, save=True, load=True, le
             return subset_pcfg, subset_pcfg_pos
     
     subset_pcfg, subset_pcfg_pos = create_subset_pcfg(prob_productions, args, top_k, save=save, lexical=lexical, no_recursion=no_recursion)
-
+    print(len(subset_pcfg.productions()))
     return subset_pcfg, subset_pcfg_pos
 
 if __name__ == '__main__':
@@ -308,7 +235,6 @@ if __name__ == '__main__':
     parser.add_argument('--pcfg_dir', type=str, default='grammars/nltk/nltk_pcfg.txt',
                         help='Directory where the full pcfg is stored.')
     parser.add_argument('--output_dir', type=str, default='grammars/nltk')
-    parser.add_argument('--max_depth', type=int, default=110)
     parser.add_argument('--top_k', type=float, default=0.9)
     parser.add_argument('--save', action=argparse.BooleanOptionalAction)
     parser.add_argument('--load', action=argparse.BooleanOptionalAction)
@@ -316,9 +242,6 @@ if __name__ == '__main__':
     parser.add_argument('--no_recursion', action=argparse.BooleanOptionalAction)
 
     args = parser.parse_args()
-
-    print('Setting recursion limit on 10.000...', flush=True)
-    sys.setrecursionlimit(10_000)
 
     print('Started to load full PCFG...', flush=True)
     with open(args.pcfg_dir) as f:
