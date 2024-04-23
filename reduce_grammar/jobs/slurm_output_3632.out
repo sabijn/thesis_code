@@ -1,0 +1,23 @@
+setting up Miniconda...
+activating virtual env...
+current conda environment: basic310
+activating ssh connection...
+Agent pid 2681171
+Identity added: /home/11864265/.ssh/id_ed25519 (11864265@fnwi-h0.science.uva.nl)
+parsing input arguments...
+Branch: feature/retrain
+fetching and pulling latest changes from remote dir...
+Already up to date.
+running generating corpora...
+Running script for version lexical
+2024-04-22 16:19:38 | INFO | fairseq.tasks.text_to_speech | Please install tensorboardX: pip install tensorboardX
+2024-04-22 16:19:48 | INFO | classes.language | Creating corpus from grammar.
+Running script for version lexical
+2024-04-22 17:01:41 | INFO | fairseq.tasks.text_to_speech | Please install tensorboardX: pip install tensorboardX
+2024-04-22 17:01:55 | INFO | classes.language | Creating corpus from grammar.
+Running script for version lexical
+2024-04-22 17:55:26 | INFO | fairseq.tasks.text_to_speech | Please install tensorboardX: pip install tensorboardX
+2024-04-22 17:55:54 | INFO | classes.language | Creating corpus from grammar.
+srun: Job step aborted: Waiting up to 32 seconds for job step to finish.
+slurmstepd: error: *** STEP 3632.2 ON fnwi-cn005 CANCELLED AT 2024-04-22T18:19:35 DUE TO TIME LIMIT ***
+slurmstepd: error: *** JOB 3632 ON fnwi-cn005 CANCELLED AT 2024-04-22T18:19:35 DUE TO TIME LIMIT ***
