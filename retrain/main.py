@@ -117,7 +117,7 @@ def main(args):
             num_attention_heads=8,
             is_mlm=False,
         )
-        
+
     else:
         logger.critical('Model not implemented')
         raise NotImplementedError
@@ -152,15 +152,10 @@ def main(args):
 
     trainer.train()
     trainer._save_checkpoint(trainer.model, None)
+
     evaluation_results = trainer.evaluate()
-    print(evaluation_results)
-
-    for name in vars().keys():
-        print(name)
-
-    # evaluation_results = trainer.evaluate()
-    # with open(f'{args.results_dir}/evaluation_{model_name}_{args.top_k}_{args.version}.pkl', 'wb') as f:
-    #     pickle.dump(evaluation_results, f)
+    with open(f'{args.results_dir}/evaluation_{model_name}_{args.top_k}_{args.version}.pkl', 'wb') as f:
+        pickle.dump(evaluation_results, f)
     
     del datasets
     del model
@@ -168,9 +163,6 @@ def main(args):
     del trainer
     del data_collator
     torch.cuda.empty_cache()
-    print('After deleting...')
-    for name in vars().keys():
-        print(name)
 
 
 if __name__ == '__main__':
