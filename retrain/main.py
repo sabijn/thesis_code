@@ -31,7 +31,7 @@ def compute_metrics(eval_pred: EvalPrediction):
     logits, labels = eval_pred
     predictions = np.argmax(logits, axis=-1)
     # Flatten the outputs and labels for accuracy calculation
-    mask = labels != 1  
+    mask = labels != -100  
     masked_labels = labels[mask]
     predictions = predictions[mask]
     
@@ -43,7 +43,8 @@ def compute_metrics(eval_pred: EvalPrediction):
     masked_log_softmax = log_softmax[mask]
 
     # Gather the correct log probabilities for the gold labels
-    print(np.arange(masked_labels.size))
+    print(masked_labels)
+    print(predictions)
     gold_log_probs = masked_log_softmax[np.arange(masked_labels.size), masked_labels]
     # Calculate cross entropy
     cross_entropy = -np.mean(gold_log_probs)
@@ -123,7 +124,7 @@ def main(args):
         raise NotImplementedError
 
     print('#params', sum(param.numel() for param in model.parameters()))
-
+    print(datasets['train']['input_ids'])
     trainer = initialize_trainer(
         model, 
         tokenizer, 
