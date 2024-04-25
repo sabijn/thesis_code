@@ -1,0 +1,23 @@
+setting up Miniconda...
+activating virtual env...
+current conda environment: basic310
+activating ssh connection...
+Agent pid 2722448
+Identity added: /home/11864265/.ssh/id_ed25519 (11864265@fnwi-h0.science.uva.nl)
+parsing input arguments...
+Branch: feature/retrain
+fetching and pulling latest changes from remote dir...
+Already up to date.
+running generating corpora...
+Running script for version pos
+2024-04-25 11:30:09 | INFO | fairseq.tasks.text_to_speech | Please install tensorboardX: pip install tensorboardX
+Traceback (most recent call last):
+  File "/home/11864265/Documents/thesis_code/reduce_grammar/generate_corpora.py", line 67, in <module>
+    main(args)
+  File "/home/11864265/Documents/thesis_code/reduce_grammar/generate_corpora.py", line 13, in main
+    if not os.path.exists(args.corpus_file):
+  File "/home/11864265/miniconda3/envs/basic310/lib/python3.10/genericpath.py", line 19, in exists
+    os.stat(path)
+TypeError: stat: path should be string, bytes, os.PathLike or integer, not NoneType
+srun: error: fnwi-cn005: task 0: Exited with exit code 1
+adding, committing, and pushing results to remote dir...

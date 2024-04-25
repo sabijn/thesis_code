@@ -1,0 +1,24 @@
+setting up Miniconda...
+activating virtual env...
+current conda environment: basic310
+activating ssh connection...
+Agent pid 2722197
+Identity added: /home/11864265/.ssh/id_ed25519 (11864265@fnwi-h0.science.uva.nl)
+parsing input arguments...
+Branch: feature/retrain
+fetching and pulling latest changes from remote dir...
+From github.com:sabijn/thesis_code
+   57d134f..b3aa661  feature/retrain -> origin/feature/retrain
+Updating 57d134f..b3aa661
+Fast-forward
+ reduce_grammar/jobs/generate_lexical_corpus.job |  2 +-
+ retrain/argparser.py                            |  4 ++--
+ retrain/jobs/retrain_models.job                 |  4 ++--
+ retrain/jobs/retrain_models_local.job           | 13 ++++++++-----
+ retrain/main.py                                 |  7 ++++---
+ 5 files changed, 17 insertions(+), 13 deletions(-)
+running generating corpora...
+Running script for version lexical
+srun: Job step aborted: Waiting up to 32 seconds for job step to finish.
+slurmstepd: error: *** STEP 3696.0 ON fnwi-cn005 CANCELLED AT 2024-04-25T11:23:58 ***
+slurmstepd: error: *** JOB 3696 ON fnwi-cn005 CANCELLED AT 2024-04-25T11:23:58 ***
