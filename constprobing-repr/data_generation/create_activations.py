@@ -102,14 +102,15 @@ if __name__ == '__main__':
     Run with: python create_activations.py --checkpoint deberta
     """
     parser = argparse.ArgumentParser()
-    parser.add_argument('--model_type', required=True, choices=['deberta', 'gpt2'])
+    parser.add_argument('--model_type', required=True, choices=['deberta', 'gpt2', 'babyberta'])
+    parser.add_argument('--version', default='normal')
+    parser.add_argument('--top_k', default=1.0)
     parsedargs = parser.parse_args()
 
-
-    if parsedargs.model_type == 'deberta':
-        model_path = Path('pcfg-lm/resources/checkpoints/deberta/')
-    elif parsedargs.model_type == 'gpt2':
-        model_path = Path('pcfg-lm/resources/checkpoints/gpt2/')
+    if parsedargs.top_k == 1.0:
+        model_path = Path(f'pcfg-lm/resources/checkpoints/{parsedargs.model_type}/')
+    else:
+        model_path = Path(f'/Users/sperdijk/Documents/Master/Jaar_3/Thesis/thesis_code/retrain/checkpoints/{}')
 
     if torch.cuda.is_available():
         # For running on snellius
