@@ -12,3 +12,7 @@ running generating corpora...
 Running script for version lexical
 2024-04-25 11:24:33 | INFO | fairseq.tasks.text_to_speech | Please install tensorboardX: pip install tensorboardX
 2024-04-25 11:25:16 | INFO | classes.language | Creating corpus from grammar.
+Running script for version lexical
+2024-04-25 12:21:30 | INFO | fairseq.tasks.text_to_speech | Please install tensorboardX: pip install tensorboardX
+2024-04-25 12:22:24 | INFO | classes.language | Creating corpus from grammar.
+adding, committing, and pushing results to remote dir...
