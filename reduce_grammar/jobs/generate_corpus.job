@@ -53,8 +53,7 @@ for topk in "${topks[@]}"; do
         srun python generate_corpora.py --version="$version" \
                             --top_k="$topk" \
                             --output_dir=/scratch/$USER/results \
-                            --data_dir=/scratch/$USER \
-                            --corpus_file=/scratch/$USER/corpora/corpus_${topk}_${version}.pt
+                            --data_dir=/scratch/$USER
     done
 done
 
