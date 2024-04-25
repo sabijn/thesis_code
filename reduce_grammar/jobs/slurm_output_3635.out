@@ -33,3 +33,31 @@ Running script for version lexical
 2024-04-22 22:02:25 | INFO | fairseq.tasks.text_to_speech | Please install tensorboardX: pip install tensorboardX
 2024-04-22 22:04:35 | INFO | classes.language | Creating corpus from grammar.
 adding, committing, and pushing results to remote dir...
+[feature/retrain 443ee68] save results from run (automated commit from Lisa).
+ Committer: Sabijn Perdijk <11864265@fnwi-cn005.localdomain>
+Your name and email address were configured automatically based
+on your username and hostname. Please check that they are accurate.
+You can suppress this message by setting them explicitly. Run the
+following command and follow the instructions in your editor to edit
+your configuration file:
+
+    git config --global --edit
+
+After doing this, you may fix the identity used for this commit with:
+
+    git commit --amend --reset-author
+
+ 11 files changed, 27813 insertions(+)
+ create mode 100644 reduce_grammar/jobs/slurm_output_3632.out
+ create mode 100644 reduce_grammar/jobs/slurm_output_3635.out
+ create mode 100644 retrain/jobs/slurm_output_3501.out
+ create mode 100644 retrain/jobs/slurm_output_3502.out
+ create mode 100644 retrain/jobs/slurm_output_3625.out
+ create mode 100644 retrain/jobs/slurm_output_3626.out
+ create mode 100644 retrain/jobs/slurm_output_3627.out
+ create mode 100644 retrain/jobs/slurm_output_3628.out
+ create mode 100644 retrain/jobs/slurm_output_3629.out
+ create mode 100644 retrain/jobs/slurm_output_3633.out
+To github.com:sabijn/thesis_code.git
+   d34f4be..443ee68  feature/retrain -> feature/retrain
+done.
