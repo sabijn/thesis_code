@@ -13,3 +13,22 @@ Running script for version pos
 2024-04-25 11:41:22 | INFO | fairseq.tasks.text_to_speech | Please install tensorboardX: pip install tensorboardX
 2024-04-25 11:41:23 | INFO | classes.language | Creating corpus from grammar.
 adding, committing, and pushing results to remote dir...
+[feature/retrain 921980c] save results from run (automated commit from Lisa).
+ Committer: Sabijn Perdijk <11864265@fnwi-cn005.localdomain>
+Your name and email address were configured automatically based
+on your username and hostname. Please check that they are accurate.
+You can suppress this message by setting them explicitly. Run the
+following command and follow the instructions in your editor to edit
+your configuration file:
+
+    git config --global --edit
+
+After doing this, you may fix the identity used for this commit with:
+
+    git commit --amend --reset-author
+
+ 3 files changed, 39 insertions(+)
+ create mode 100644 reduce_grammar/jobs/slurm_output_3708.out
+To github.com:sabijn/thesis_code.git
+   c0426be..921980c  feature/retrain -> feature/retrain
+done.
