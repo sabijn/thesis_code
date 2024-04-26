@@ -28,7 +28,7 @@ eval "$(ssh-agent -s)"
 ssh-add $HOME/.ssh/id_rsa_sabijn
 
 # Setting variables
-DATADIR=/scratch-shared/sabijn/
+DATADIR=/scratch-shared/sabijn
 
 # Parsing input arguments
 echo parsing input arguments...
