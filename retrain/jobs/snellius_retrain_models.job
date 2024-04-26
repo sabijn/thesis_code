@@ -2,7 +2,7 @@
 #SBATCH --partition=gpu
 #SBATCH --cpus-per-task=3
 #SBATCH --job-name=retrain
-#SBATCH --gres=gpu:1
+#SBATCH --gpus=1
 #SBATCH --ntasks=1
 #SBATCH --time 02:00:00
 #SBATCH --mem=32000M
