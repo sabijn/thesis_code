@@ -174,7 +174,7 @@ git push --set-upstream origin <branch_name>
 ```
 When on the branch
 
-## Running remote
+## Running remote (FNWI Cluster)
 
 ### Setting up Git on your remote machine
 1. Generate ssh key (ssh-keygen -t ed25519)
@@ -202,6 +202,17 @@ Unfortunately the FNWI 'former-lisa' cluster does not work like you are used to.
 1. Install conda in your homedirectory. Follow [this tutorial](https://docs.anaconda.com/free/miniconda/#quick-command-line-install) for installation.  
 2. The storage space is limited (10GB)
 3. Option to install environments in /nvmestore (see Whatsapp with Vera). You just did it in your home.
+
+## Running remote (Snellius)
+
+### Errors
+The new version of scp (starting from ssh 9.0.0) uses SFTP protocol for copying.  
+A known problem is that there has to be an empty directory with the same name to copy to.  
+Solution: run with -O argument:  
+```bash
+scp -O -r <dir_to_copy> <username@<domain>:/path/to/file/>
+```
+
 
 ## Explanation per directory
 

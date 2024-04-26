@@ -22,6 +22,11 @@ echo activating virtual env...
 source activate basic310
 echo "current conda environment: $CONDA_DEFAULT_ENV"
 
+# Activating ssh connection
+echo activating ssh connection...
+eval "$(ssh-agent -s)"
+ssh-add $HOME/.ssh/id_rsa_sabijn
+
 # Setting variables
 DATADIR=/scratch-shared/sabijn/
 
