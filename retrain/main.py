@@ -102,9 +102,9 @@ def main(args):
             tokenizer, 
             args.base_model, 
             is_mlm=True,
-            num_hidden_layers=6, 
-            intermediate_size=64,
-            hidden_size=64,
+            num_hidden_layers=8, 
+            intermediate_size=256,
+            hidden_size=256,
             num_attention_heads=8,
         )
 
@@ -123,8 +123,13 @@ def main(args):
         logger.critical('Model not implemented')
         raise NotImplementedError
 
-    print('#params', sum(param.numel() for param in model.parameters()))
+    # for param in model.named_parameters():
+
+    print('#params', list((name, param.numel()) for name, param in model.named_parameters()))
+    print('#params', sum(param.numel() for name, param in model.named_parameters()))
+    #print('#params', list(dir(param) for param in model.parameters()))
     print(datasets['train']['input_ids'])
+    exit()
     trainer = initialize_trainer(
         model, 
         tokenizer, 

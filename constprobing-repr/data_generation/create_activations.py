@@ -9,6 +9,7 @@ import random
 from torch.nn.utils.rnn import pad_sequence
 from collections import defaultdict
 import pickle
+import os
 
 
 def load_model(checkpoint, device):
@@ -109,8 +110,35 @@ if __name__ == '__main__':
 
     if parsedargs.top_k == 1.0:
         model_path = Path(f'pcfg-lm/resources/checkpoints/{parsedargs.model_type}/')
+        with open('corpora/eval_trees_10k.txt') as f:
+            tree_corpus = [nltk.Tree.fromstring(l.strip()) for l in f]
+        
+        output_dir = Path('data')
     else:
-        model_path = Path(f'/Users/sperdijk/Documents/Master/Jaar_3/Thesis/thesis_code/retrain/checkpoints/{}')
+        model_path = Path(f'/Users/sperdijk/Documents/Master/Jaar_3/Thesis/thesis_code/retrain/checkpoints/{parsedargs.model_type}/{parsedargs.version}/{parsedargs.top_k}/')
+
+        # Check if model directory exists and find the correct checkpoint
+        if not os.path.exists(model_path):
+            raise ValueError(f'Model directory {model_path} does not exist.')
+        
+        highest_config = 0
+        for dir_name in os.listdir(model_path):
+            if dir_name.split('-')[0] == 'checkpoint':
+                config = int(dir_name.split('-')[1])
+                if config > highest_config:
+                    highest_config = config
+
+        model_path = f'{model_path}/checkpoint-{highest_config}/'
+
+        # Load data
+        with open(f'/Users/sperdijk/Documents/Master/Jaar_3/Thesis/thesis_code/reduce_grammar/corpora/{parsedargs.version}/all_trees_{parsedargs.version}_{parsedargs.top_k}.txt') as f:
+            trees = [l.strip() for l in f][990_000:]
+            tree_corpus = [nltk.Tree.fromstring(tree) for tree in trees]
+        
+        output_dir = Path(f'data/{parsedargs.version}/{parsedargs.top_k}')
+
+        output_dir.mkdir(parents=True, exist_ok=True)
+
 
     if torch.cuda.is_available():
         # For running on snellius
@@ -124,9 +152,6 @@ if __name__ == '__main__':
         # For running on laptop
         device = torch.device("cpu")
         print('Running on CPU.')
-
-    with open('corpora/eval_trees_10k.txt') as f:
-        tree_corpus = [nltk.Tree.fromstring(l.strip()) for l in f]
 
     all_test_mccs = []
 
@@ -149,7 +174,7 @@ if __name__ == '__main__':
 
     print(all_layer_states.keys())
     # store all_layer_states in pickle
-    with open('data/activations_notconcat.pickle', 'wb') as f:
+    with open(output_dir / 'activations_notconcat.pickle', 'wb') as f:
         pickle.dump(all_layer_states, f)
 
     # for layer_idx, states in tqdm(all_layer_states.items()):

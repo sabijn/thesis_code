@@ -8,8 +8,8 @@ cd /Users/sperdijk/Documents/Master/Jaar_3/Thesis/thesis_code/retrain
 
 # Run the script
 echo retraining the models...
-topks=("0.2")
-versions=("pos")
+topks=("0.9")
+versions=("normal")
 for topk in "${topks[@]}"; do
     for version in "${versions[@]}"; do
         echo "Creating output dir"
@@ -22,6 +22,7 @@ for topk in "${topks[@]}"; do
                             --results_dir=/Users/sperdijk/Documents/Master/Jaar_3/Thesis/thesis_code/retrain/results \
                             --top_k=$topk \
                             --version=$version \
+                            --base_model=distilgpt2 \
                             --per_device_train_batch_size=1 \
                             --per_device_eval_batch_size=1 \
                             --do_eval \

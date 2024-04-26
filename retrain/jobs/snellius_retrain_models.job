@@ -1,32 +1,29 @@
 #!/bin/bash
-
-#SBATCH --partition=illc
-#SBATCH --account=illc
-#SBATCH --job-name=retrain_models
+#SBATCH --cpus-per-task=3
+#SBATCH --job-name=adverbs5
 #SBATCH --ntasks=1
-#SBATCH --gpus=1
+#SBATCH --ntasks-per-node=1
+#SBATCH --time 02:00:00
 #SBATCH --mem=32000M
-#SBATCH --time=20:00:00
 #SBATCH --output=slurm_output_%A.out
+#SBATCH -p gpu_shared
 
 # Exit immediately if any command exits with a non-zero status.
 set -e
 
-echo setting up Miniconda...
-source $HOME/miniconda3/etc/profile.d/conda.sh
+# Loading modules
+echo Loading modules...
+module purge
+module load 2022
+module load Anaconda3/2022.05
 
 # Activating virtual environment
 echo activating virtual env...
-conda activate $HOME/miniconda3/envs/basic310
+source activate basic310
 echo "current conda environment: $CONDA_DEFAULT_ENV"
 
-# Activating ssh connection
-echo activating ssh connection...
-eval "$(ssh-agent -s)"
-ssh-add $HOME/.ssh/id_ed25519
-
-# Setting up cache for transformers & datasets
-export HF_HOME="/nvmestore/11864265/.cache"
+# Setting variables
+DATADIR=/scratch-shared/sabijn/
 
 # Parsing input arguments
 echo parsing input arguments...
@@ -51,7 +48,7 @@ fi
 
 # Pulling latest changes from remote dir
 echo fetching and pulling latest changes from remote dir...
-cd $HOME/Documents/thesis_code/retrain/
+cd $HOME/sabijn/thesis_code/retrain/
 git fetch && git pull
 
 # Run the script
@@ -61,13 +58,13 @@ versions=("normal")
 for topk in "${topks[@]}"; do
     for version in "${versions[@]}"; do
         echo "Creating output dir"
-        outputdir=/scratch/$USER/checkpoints/babyberta/$version/$topk
+        outputdir=$DATADIR/checkpoints/babyberta/$version/$topk
         mkdir -p $outputdir;
         
         echo "Running script for version $topk"
         srun python main.py --output_dir=$outputdir \
-                            --data_dir=/scratch/$USER/results \
-                            --results_dir=/scratch/$USER/results \
+                            --data_dir=$DATADIR/results \
+                            --results_dir=$DATADIR/results \
                             --top_k=$topk \
                             --version=$version \
                             --per_device_train_batch_size=16 \
@@ -80,8 +77,8 @@ done
 
 # Pushing results to remote dir
 echo adding, committing, and pushing results to remote dir...
-git add $HOME/Documents/thesis_code/retrain/
-git commit -m "save results from run (automated commit from Lisa)."
+git add $HOME/sabijn/thesis_code/retrain/
+git commit -m "save results from run (automated commit from Snellius)."
 git push
 
 echo done.
