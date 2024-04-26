@@ -123,13 +123,8 @@ def main(args):
         logger.critical('Model not implemented')
         raise NotImplementedError
 
-    # for param in model.named_parameters():
-
-    print('#params', list((name, param.numel()) for name, param in model.named_parameters()))
     print('#params', sum(param.numel() for name, param in model.named_parameters()))
-    #print('#params', list(dir(param) for param in model.parameters()))
-    print(datasets['train']['input_ids'])
-    exit()
+
     trainer = initialize_trainer(
         model, 
         tokenizer, 
