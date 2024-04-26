@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --partition=gpu_shared_course
+#SBATCH --partition=genoa
 #SBATCH --cpus-per-task=3
 #SBATCH --job-name=retrain
 #SBATCH --gres=gpu:1
