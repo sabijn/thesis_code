@@ -1,0 +1,31 @@
+setting up Miniconda...
+activating virtual env...
+current conda environment: basic310
+activating ssh connection...
+Agent pid 2684177
+Identity added: /home/11864265/.ssh/id_ed25519 (11864265@fnwi-h0.science.uva.nl)
+parsing input arguments...
+Branch: feature/retrain
+fetching and pulling latest changes from remote dir...
+Already up to date.
+retraining the models...
+Creating output dir
+Running script for version 0.3
+usage: main.py [-h] [--output_dir OUTPUT_DIR] [--results_dir RESULTS_DIR]
+               [--data_dir DATA_DIR] [--version {pos,lexical,normal}]
+               [--top_k TOP_K] [--base_model {phueb/BabyBERTa-1,distilgpt2}]
+               [--save_steps SAVE_STEPS] [--eval_steps EVAL_STEPS]
+               [--logging_steps LOGGING_STEPS]
+               [--per_device_train_batch_size PER_DEVICE_TRAIN_BATCH_SIZE]
+               [--per_device_eval_batch_size PER_DEVICE_EVAL_BATCH_SIZE]
+               [--gradient_accumulation_steps GRADIENT_ACCUMULATION_STEPS]
+               [--weight_decay WEIGHT_DECAY]
+               [--lr_scheduler_type LR_SCHEDULER_TYPE]
+               [--learning_rate LEARNING_RATE] [--warmup_steps WARMUP_STEPS]
+               [--fp16] [--max_grad_norm MAX_GRAD_NORM] [--group_by_length]
+               [--auto_find_batch_size] [--do_eval]
+               [--evaluation_strategy {steps,epoch}] [--epochs EPOCHS]
+               [--train_size TRAIN_SIZE] [--dev_size DEV_SIZE]
+               [--test_size TEST_SIZE]
+main.py: error: unrecognized arguments: ---radient_accumulation_steps=4
+srun: error: fnwi-cn005: task 0: Exited with exit code 2
