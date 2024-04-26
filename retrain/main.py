@@ -84,6 +84,10 @@ def main(args):
     """
     Training model
     """
+    print('CUDA available: ', torch.cuda.is_available())
+    print('CUDA backend enabled: ', torch.backends.cudnn.enabled)
+    prin
+
     if args.base_model == 'phueb/BabyBERTa-1':
         model_name =  'babyberta'
     elif args.base_model == 'distilgpt2':
@@ -92,8 +96,7 @@ def main(args):
         raise NotImplementedError
 
     tokenizer = create_tokenizer(f'{args.data_dir}/train_sent_{args.version}_{args.top_k}.txt', min_freq=5)
-    print(tokenizer.mask_token_id)
-    print(tokenizer.pad_token_id)
+
     datasets = load_data(args, tokenizer, args.data_dir, train_size=args.train_size, dev_size=args.dev_size, test_size=args.test_size)
     data_collator = DataCollatorForLanguageModeling(tokenizer, mlm=True)
 
