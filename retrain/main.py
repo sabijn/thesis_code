@@ -86,7 +86,7 @@ def main(args):
     """
     print('CUDA available: ', torch.cuda.is_available())
     print('CUDA backend enabled: ', torch.backends.cudnn.enabled)
-    prin
+    print('Current device: ', torch)
 
     if args.base_model == 'phueb/BabyBERTa-1':
         model_name =  'babyberta'
