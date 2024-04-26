@@ -68,7 +68,7 @@ for topk in "${topks[@]}"; do
         
         echo "Running script for version $topk"
         srun python main.py --output_dir=$outputdir \
-                            --data_dir=$DATADIR/results \
+                            --data_dir=$DATADIR/$version \
                             --results_dir=$DATADIR/results \
                             --top_k=$topk \
                             --version=$version \
