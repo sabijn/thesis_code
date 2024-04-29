@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --partition=gpu
 #SBATCH --cpus-per-task=3
-#SBATCH --job-name=babyberta
+#SBATCH --job-name=gpt2
 #SBATCH --gpus=1
 #SBATCH --ntasks=1
 #SBATCH --time 30:00:00
@@ -64,7 +64,7 @@ versions=("normal")
 for topk in "${topks[@]}"; do
     for version in "${versions[@]}"; do
         echo "Creating output dir"
-        outputdir=$DATADIR/checkpoints/babyberta/$version/$topk
+        outputdir=$DATADIR/checkpoints/gpt2/$version/$topk
         mkdir -p $outputdir;
         
         echo "Running script for version $topk"
@@ -73,9 +73,7 @@ for topk in "${topks[@]}"; do
                             --results_dir=$DATADIR/results \
                             --top_k=$topk \
                             --version=$version \
-                            --per_device_train_batch_size=16 \
-                            --per_device_eval_batch_size=16 \
-                            --gradient_accumulation_steps=4 \
+                            --base_model=distilgpt2 \
                             --fp16 \
                             --do_eval
     done
