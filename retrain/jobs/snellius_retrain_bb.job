@@ -73,6 +73,9 @@ for topk in "${topks[@]}"; do
                             --results_dir=$DATADIR/results \
                             --top_k=$topk \
                             --version=$version \
+                            --per_device_train_batch_size=16 \
+                            --per_device_eval_batch_size=16 \
+                            --gradient_accumulation_steps=4 \
                             --fp16 \
                             --do_eval
     done
