@@ -9,10 +9,6 @@ import os
 def main(args):
     grammar_file = f'{args.data_dir}/{args.version}/subset_pcfg_{args.top_k}.txt'
 
-    # check if corpus file exist
-    if not os.path.exists(args.corpus_file):
-        args.corpus_file = None
-
     encoder = "transformer"
     tokenizer_config = TokenizerConfig(
             add_cls=(encoder == "transformer"),
