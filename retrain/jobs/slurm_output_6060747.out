@@ -1,0 +1,62 @@
+Loading modules...
+============================================================================================== 
+Warning! Mixing Conda and module environments may lead to corruption of the
+user environment. 
+We do not recommend users mixing those two environments unless absolutely
+necessary. Note that 
+SURF does not provide any support for Conda environment.
+For more information, please refer to our software policy page:
+https://servicedesk.surf.nl/wiki/display/WIKI/Software+policy+Snellius#SoftwarepolicySnellius-UseofAnacondaandMinicondaenvironmentsonSnellius 
+
+Remember that many packages have already been installed on the system and can
+be loaded using 
+the 'module load <package__name>' command. If you are uncertain if a package is
+already available 
+on the system, please use 'module avail' or 'module spider' to search for it.
+============================================================================================== 
+activating virtual env...
+current conda environment: basic310
+activating ssh connection...
+Agent pid 3445239
+Identity added: /home/jumelet/.ssh/id_rsa_sabijn (jumelet@int4)
+parsing input arguments...
+Branch: feature/retrain
+fetching and pulling latest changes from remote dir...
+Already up to date.
+retraining the models...
+Creating output dir
+Running script for version 0.2
+/home/jumelet/.conda/envs/basic310/lib/python3.10/site-packages/pandas/core/computation/expressions.py:21: UserWarning: Pandas requires version '2.8.4' or newer of 'numexpr' (version '2.7.3' currently installed).
+  from pandas.core.computation.check import NUMEXPR_INSTALLED
+2
+1
+Generated datasets with the lengths of: 800000 (train), 100000, (dev), and 100000 (test)
+#params 3324898
+Traceback (most recent call last):
+  File "/gpfs/home4/jumelet/sabijn/thesis_code/retrain/main.py", line 171, in <module>
+    main(args)
+  File "/gpfs/home4/jumelet/sabijn/thesis_code/retrain/main.py", line 128, in main
+    trainer = initialize_trainer(
+  File "/gpfs/home4/jumelet/sabijn/thesis_code/retrain/main.py", line 68, in initialize_trainer
+    args = TrainingArguments(**config)
+  File "<string>", line 114, in __init__
+  File "/home/jumelet/.conda/envs/basic310/lib/python3.10/site-packages/transformers/training_args.py", line 1410, in __post_init__
+    raise ValueError(
+ValueError: FP16 Mixed precision training with AMP or APEX (`--fp16`) and FP16 half precision evaluation (`--fp16_full_eval`) can only be used on CUDA or NPU devices.
+srun: error: gcn66: task 0: Exited with exit code 1
+srun: Terminating StepId=6060747.0
+
+JOB STATISTICS
+==============
+Job ID: 6060747
+Cluster: snellius
+User/Group: jumelet/jumelet
+State: RUNNING
+Nodes: 1
+Cores per node: 18
+CPU Utilized: 00:00:07
+CPU Efficiency: 1.56% of 00:07:30 core-walltime
+Job Wall-clock time: 00:00:25
+Memory Utilized: 1.19 MB
+Memory Efficiency: 0.00% of 31.25 GB
+WARNING: Efficiency statistics may be misleading for RUNNING jobs.

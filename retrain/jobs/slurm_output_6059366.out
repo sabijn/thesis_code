@@ -1,0 +1,57 @@
+Loading modules...
+============================================================================================== 
+Warning! Mixing Conda and module environments may lead to corruption of the
+user environment. 
+We do not recommend users mixing those two environments unless absolutely
+necessary. Note that 
+SURF does not provide any support for Conda environment.
+For more information, please refer to our software policy page:
+https://servicedesk.surf.nl/wiki/display/WIKI/Software+policy+Snellius#SoftwarepolicySnellius-UseofAnacondaandMinicondaenvironmentsonSnellius 
+
+Remember that many packages have already been installed on the system and can
+be loaded using 
+the 'module load <package__name>' command. If you are uncertain if a package is
+already available 
+on the system, please use 'module avail' or 'module spider' to search for it.
+============================================================================================== 
+activating virtual env...
+current conda environment: basic310
+activating ssh connection...
+Agent pid 169138
+Identity added: /home/jumelet/.ssh/id_rsa_sabijn (jumelet@int4)
+parsing input arguments...
+Branch: feature/retrain
+fetching and pulling latest changes from remote dir...
+Already up to date.
+retraining the models...
+Creating output dir
+Running script for version 0.2
+/home/jumelet/.conda/envs/basic310/lib/python3.10/site-packages/pandas/core/computation/expressions.py:21: UserWarning: Pandas requires version '2.8.4' or newer of 'numexpr' (version '2.7.3' currently installed).
+  from pandas.core.computation.check import NUMEXPR_INSTALLED
+Traceback (most recent call last):
+  File "/gpfs/home4/jumelet/sabijn/thesis_code/retrain/main.py", line 171, in <module>
+    main(args)
+  File "/gpfs/home4/jumelet/sabijn/thesis_code/retrain/main.py", line 94, in main
+    tokenizer = create_tokenizer(f'{args.data_dir}/train_sent_{args.version}_{args.top_k}.txt', min_freq=5)
+  File "/gpfs/home4/jumelet/sabijn/thesis_code/retrain/tokenizer.py", line 12, in create_tokenizer
+    vocab = create_vocab(corpus, unk_token=unk_token, pad_token=pad_token, mask_token=mask_token, min_freq=min_freq)
+  File "/gpfs/home4/jumelet/sabijn/thesis_code/retrain/tokenizer.py", line 26, in create_vocab
+    with open(corpus) as f:
+FileNotFoundError: [Errno 2] No such file or directory: '/scratch-shared/sabijn/results/train_sent_normal_0.2.txt'
+srun: error: gcn43: task 0: Exited with exit code 1
+srun: Terminating StepId=6059366.0
+
+JOB STATISTICS
+==============
+Job ID: 6059366
+Cluster: snellius
+User/Group: jumelet/jumelet
+State: RUNNING
+Nodes: 1
+Cores per node: 18
+CPU Utilized: 00:00:03
+CPU Efficiency: 0.93% of 00:05:24 core-walltime
+Job Wall-clock time: 00:00:18
+Memory Utilized: 1.18 MB
+Memory Efficiency: 0.00% of 31.25 GB
+WARNING: Efficiency statistics may be misleading for RUNNING jobs.

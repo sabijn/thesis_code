@@ -1,0 +1,51 @@
+Loading modules...
+============================================================================================== 
+Warning! Mixing Conda and module environments may lead to corruption of the
+user environment. 
+We do not recommend users mixing those two environments unless absolutely
+necessary. Note that 
+SURF does not provide any support for Conda environment.
+For more information, please refer to our software policy page:
+https://servicedesk.surf.nl/wiki/display/WIKI/Software+policy+Snellius#SoftwarepolicySnellius-UseofAnacondaandMinicondaenvironmentsonSnellius 
+
+Remember that many packages have already been installed on the system and can
+be loaded using 
+the 'module load <package__name>' command. If you are uncertain if a package is
+already available 
+on the system, please use 'module avail' or 'module spider' to search for it.
+============================================================================================== 
+activating virtual env...
+current conda environment: basic310
+activating ssh connection...
+Agent pid 2820163
+Identity added: /home/jumelet/.ssh/id_rsa_sabijn (jumelet@int4)
+parsing input arguments...
+Branch: feature/retrain
+fetching and pulling latest changes from remote dir...
+Already up to date.
+retraining the models...
+Creating output dir
+Running script for version 0.2
+/home/jumelet/.conda/envs/basic310/lib/python3.10/site-packages/pandas/core/computation/expressions.py:21: UserWarning: Pandas requires version '2.8.4' or newer of 'numexpr' (version '2.7.3' currently installed).
+  from pandas.core.computation.check import NUMEXPR_INSTALLED
+/home/jumelet/.conda/envs/basic310/lib/python3.10/site-packages/accelerate/accelerator.py:436: FutureWarning: Passing the following arguments to `Accelerator` is deprecated and will be removed in version 1.0 of Accelerate: dict_keys(['dispatch_batches']). Please pass an `accelerate.DataLoaderConfiguration` instead: 
+dataloader_config = DataLoaderConfiguration(dispatch_batches=None)
+  warnings.warn(
+Detected kernel version 4.18.0, which is below the recommended minimum of 5.5.0; this can cause the process to hang. It is recommended to upgrade the kernel to the minimum version or higher.
+srun: Job step aborted: Waiting up to 32 seconds for job step to finish.
+slurmstepd: error: *** STEP 6101556.0 ON gcn32 CANCELLED AT 2024-04-29T22:56:28 ***
+slurmstepd: error: *** JOB 6101556 ON gcn32 CANCELLED AT 2024-04-29T22:56:28 ***
+
+JOB STATISTICS
+==============
+Job ID: 6101556
+Cluster: snellius
+User/Group: jumelet/jumelet
+State: CANCELLED (exit code 0)
+Nodes: 1
+Cores per node: 18
+CPU Utilized: 00:00:19
+CPU Efficiency: 2.93% of 00:10:48 core-walltime
+Job Wall-clock time: 00:00:36
+Memory Utilized: 1.20 MB
+Memory Efficiency: 0.00% of 31.25 GB
