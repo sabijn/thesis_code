@@ -38,22 +38,19 @@ def compute_metrics(eval_pred: EvalPrediction):
     # Calculating accuracy
     accuracy = np.sum(predictions == masked_labels) / len(masked_labels)
     
-    # Calculating perplexity
-    log_softmax = logits - scipy.special.logsumexp(logits, axis=-1, keepdims=True)
-    masked_log_softmax = log_softmax[mask]
+    # # Calculating perplexity
+    # log_softmax = logits - scipy.special.logsumexp(logits, axis=-1, keepdims=True)
+    # masked_log_softmax = log_softmax[mask]
 
-    # Gather the correct log probabilities for the gold labels
-    print(masked_labels)
-    print(predictions)
-    gold_log_probs = masked_log_softmax[np.arange(masked_labels.size), masked_labels]
-    # Calculate cross entropy
-    cross_entropy = -np.mean(gold_log_probs)
-    # Calculate perplexity
-    perplexity = np.exp(cross_entropy)
+    # # Gather the correct log probabilities for the gold labels
+    # gold_log_probs = masked_log_softmax[np.arange(masked_labels.size), masked_labels]
+    # # Calculate cross entropy
+    # cross_entropy = -np.mean(gold_log_probs)
+    # # Calculate perplexity
+    # perplexity = np.exp(cross_entropy)
         
     return {
-        "accuracy": accuracy,
-        "perplexity": perplexity
+        "accuracy": accuracy
     }
 
 
