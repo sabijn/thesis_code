@@ -3,35 +3,67 @@ from tqdm import tqdm
 import torch
 
 from utils import set_experiment_config, load_model_tokenizer
-from data import load_data
+from data import load_eval_data
 import numpy as np
 import pickle
 
 
-def test_corpus_ppl(model, corpus):
+# def test_corpus_ppl(model, corpus):
+#     model.eval()
+
+#     all_token_probs = []
+
+#     for input_ids in tqdm(corpus):
+#         sen_len = len(input_ids)
+#         all_input_ids = torch.tensor(input_ids).repeat(sen_len, 1)
+#         all_input_ids.fill_diagonal_(tokenizer.mask_token_id)
+        
+#         with torch.no_grad():
+#             all_logits = model(input_ids=all_input_ids).logits
+#             all_probs = all_logits.log_softmax(-1)
+            
+#         token_probs = all_probs[range(sen_len), range(sen_len)][range(sen_len), input_ids]
+        
+#         all_token_probs.extend(token_probs.tolist())
+
+#     ppl = np.exp(-np.sum(all_token_probs)/len(all_token_probs))
+    
+#     return ppl
+
+import torch
+import numpy as np
+from tqdm import tqdm
+
+def test_corpus_ppl_and_accuracy(model, corpus, tokenizer):
     model.eval()
 
     all_token_probs = []
+    correct_predictions = 0
+    total_predictions = 0
 
     for input_ids in tqdm(corpus):
         sen_len = len(input_ids)
-        all_input_ids = torch.tensor(input_ids).repeat(sen_len, 1)
-        all_input_ids.fill_diagonal_(tokenizer.mask_token_id)
+        all_input_ids = torch.tensor(input_ids).unsqueeze(0).repeat(sen_len, 1)
+        all_input_ids = all_input_ids.clone()  # to ensure we are not modifying in place
+        all_input_ids[range(sen_len), range(sen_len)] = tokenizer.mask_token_id
         
         with torch.no_grad():
             all_logits = model(input_ids=all_input_ids).logits
-            print(all_logits.shape)
             all_probs = all_logits.log_softmax(-1)
-            print('log softmax', all_probs.shape)
-            
-        token_probs = all_probs[range(sen_len), range(sen_len)][range(sen_len), input_ids]
+            predictions = all_probs.argmax(dim=-1)
         
+        # Calculate token probabilities for perplexity
+        token_probs = all_probs[range(sen_len), range(sen_len), input_ids]
         all_token_probs.extend(token_probs.tolist())
 
-    ppl = np.exp(-np.sum(all_token_probs)/len(all_token_probs))
-    
-    return ppl
+        # Calculate accuracy
+        correct_predictions += (predictions[range(sen_len), range(sen_len)] == torch.tensor(input_ids)).sum().item()
+        total_predictions += sen_len
 
+    ppl = np.exp(-np.sum(all_token_probs) / len(all_token_probs))
+    accuracy = correct_predictions / total_predictions
+
+    return ppl, accuracy
 
 
 if __name__ == '__main__':
@@ -53,8 +85,8 @@ if __name__ == '__main__':
         args = set_experiment_config(args)
 
         model, tokenizer = load_model_tokenizer(args)
-        datasets = load_data(args, tokenizer, args.data_dir, train_size=0, dev_size=0, test_size=10)
-        all_ppls[top_k] = test_corpus_ppl(model, datasets['test']['input_ids'])
+        datasets = load_eval_data(args, tokenizer, args.data_dir, train_size=0, dev_size=0, test_size=10)
+        all_ppls[top_k] = test_corpus_ppl_and_accuracy(model, datasets['test']['input_ids'])
     
-    # with open(f'{args.output_dir}/ppls_{args.model}_{args.version}.pkl', 'wb') as f:
-    #     pickle.dump(all_ppls, f)
+    with open(f'{args.output_dir}/evalution_{args.model}_{args.version}.pkl', 'wb') as f:
+        pickle.dump(all_ppls, f)

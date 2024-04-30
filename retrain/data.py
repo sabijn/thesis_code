@@ -58,3 +58,31 @@ def load_data(
     )
 
     return tokenized_datasets
+
+
+def load_eval_data(
+    args,
+    tokenizer: PreTrainedTokenizerFast,
+    data_dir: str,
+    test_size: Optional[int] = None,
+) -> DatasetDict:
+    raw_test = load_dataset("text", data_files=os.path.join(data_dir, f"test_sent_{args.version}_{args.top_k}.txt"))[
+        "train"
+    ]
+    print(f'Generated datasets with the lengths of: {len(raw_test)} (test)')
+    
+    if test_size is not None:
+        raw_test = raw_test.shuffle().select(range(test_size))
+
+    raw_datasets = DatasetDict(
+        {
+            "test": raw_test
+        }
+    )
+
+    tokenized_datasets = raw_datasets.map(
+        tokenize_wrapper(tokenizer),
+        batched=True,
+    )
+
+    return tokenized_datasets
