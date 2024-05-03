@@ -4,7 +4,7 @@
 set -e
 
 versions=("normal")
-topks=("0.5" "0.6")
+topks=("0.9")
 for topk in "${topks[@]}"; do
     for version in "${versions[@]}"; do
         echo "Running topk: $topk, version: $version"

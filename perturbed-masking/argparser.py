@@ -109,10 +109,6 @@ def create_arg_parser():
         model_path = model_path / Path(f'{config.version}/{config.top_k}/')
         model_path = set_experiment_config(config, model_path)
 
-        if config.model == 'deberta':
-            # you accidentaly run this one with 6 layers...
-            layers = 6
-
     if config.embedding_layer:
         layers += 1
     

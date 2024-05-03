@@ -88,7 +88,7 @@ def classic_evaluation(args, gold_trees, pred_trees):
         results = pm_constituent_evaluation(pred, gold)
         all_layer_results.append(results)
     
-    result_path = args.eval_results_dir / Path(f'classic_dist_{args.model}_all_layers_without_punct.pkl') if args.remove_punct else args.eval_results_dir / Path(f'classic_dist_{args.model}_all_layers.pkl')
+    result_path = args.eval_results_dir / Path(f'classic_dist_{args.model}_without_punct.pkl') if args.remove_punct else args.eval_results_dir / Path(f'classic_dist_{args.model}_all_layers.pkl')
     with open(result_path, 'wb') as f:
         pickle.dump(all_layer_results, f)
 
