@@ -4,7 +4,7 @@
 #SBATCH --job-name=gpt2
 #SBATCH --gpus=1
 #SBATCH --ntasks=1
-#SBATCH --time 30:00:00
+#SBATCH --time 10:00:00
 #SBATCH --mem=32000M
 #SBATCH --output=slurm_output_%A.out
 
@@ -59,7 +59,7 @@ git fetch && git pull
 
 # Run the script
 echo retraining the models...
-topks=("0.2" "0.3" "0.4" "0.5" "0.6" "0.7" "0.8" "0.9")
+topks=("0.8" "0.9")
 versions=("lexical")
 for topk in "${topks[@]}"; do
     for version in "${versions[@]}"; do
