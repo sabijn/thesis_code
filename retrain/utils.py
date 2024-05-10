@@ -1,6 +1,9 @@
 import json
 from transformers import AutoModelForMaskedLM, AutoModelForCausalLM
 import os
+from collections import defaultdict
+import numpy as np
+import pickle
 
 from tokenizer import create_tf_tokenizer_from_vocab
 
@@ -44,3 +47,131 @@ def load_model_tokenizer(args):
     tokenizer = create_tf_tokenizer_from_vocab(vocab)
 
     return model, tokenizer
+
+def get_model_prob_dict(fn):
+    with open(fn) as f:
+        lines = f.read().split('\n')
+
+    sen2lm_probs = defaultdict(list)
+    cur_sen = None
+
+    for line in lines:
+        if len(line) == 0:
+            continue
+        if not line[-1].isnumeric():
+            cur_sen = line
+        else:
+            sen2lm_probs[cur_sen].append(float(line))
+
+    return sen2lm_probs
+
+
+def get_pcfg_prob_dict(filename='lm_training/eval_sens_probs.txt'):
+    with open(filename) as f:
+        lines = f.read().split('\n')
+
+    sen2pcfg_probs = defaultdict(list)
+    cur_sen = None
+
+    for line in lines:
+        if len(line) == 0:
+            continue
+        if line.startswith('Token:'):
+            continue
+        elif not line[-1].isnumeric():
+            cur_sen = line
+        else:
+            sen2pcfg_probs[cur_sen].append(float(line))
+            
+    return sen2pcfg_probs
+
+
+def store_model_probs(all_token_probs, datasets, fn: str):
+    lines = []
+    cur_idx = 0
+
+    for sen in datasets['test']['text'][:]:
+        lines.append(sen)
+        sen_len = len(sen.split(' '))
+
+        for prob in all_token_probs[cur_idx:cur_idx+sen_len]:
+            lines.append(str(prob))
+
+        cur_idx += sen_len
+
+    with open(fn, 'w') as f:
+        f.write('\n'.join(lines))
+
+
+# def get_probs(datasets, tokenizer, sen2lm_probs, sen2pcfg_probs):
+#     lm_probs = []
+#     pcfg_probs = []
+#     all_tokens = []
+    
+#     skip_tokens = {tokenizer.unk_token_id}
+
+#     for sen, input_ids in zip(datasets['test']['text'], datasets['test']['input_ids']):
+#         pcfg_sen = sen.replace("<apostrophe>", "'")
+
+#         sen_pcfg_probs = sen2pcfg_probs[pcfg_sen]
+#         sen_lm_probs = sen2lm_probs[sen]
+
+#         assert len(sen_pcfg_probs) == len(sen_lm_probs), f"{sen}\n{len(sen_pcfg_probs)},{len(sen_lm_probs)}"
+
+#         iterator = zip(input_ids, sen_lm_probs, sen_pcfg_probs)
+#         for idx, (input_id, lm_prob, pcfg_prob) in enumerate(iterator):
+#             if input_id not in skip_tokens:
+#                 lm_probs.append(np.exp(lm_prob))
+#                 pcfg_probs.append(pcfg_prob)
+#                 all_tokens.append(f"{idx}__{sen}")
+
+
+#     lm_probs = np.array(lm_probs)
+#     pcfg_probs = np.array(pcfg_probs)
+
+#     lm_probs = np.log(lm_probs)
+#     pcfg_probs = np.log(pcfg_probs)
+
+#     return lm_probs, pcfg_probs, all_tokens
+
+def get_probs(datasets, tokenizer, sen2lm_probs):
+    lm_probs = []
+    all_tokens = []
+    
+    skip_tokens = {tokenizer.unk_token_id}
+
+    for sen, input_ids in zip(datasets['test']['text'], datasets['test']['input_ids']):
+        pcfg_sen = sen.replace("<apostrophe>", "'")
+        sen_lm_probs = sen2lm_probs[sen]
+
+        iterator = zip(input_ids, sen_lm_probs)
+        for idx, (input_id, lm_prob) in enumerate(iterator):
+            if input_id not in skip_tokens:
+                lm_probs.append(np.exp(lm_prob))
+                all_tokens.append(f"{idx}__{sen}")
+
+    lm_probs = np.array(lm_probs)
+
+    lm_probs = np.log(lm_probs)
+
+    return lm_probs, all_tokens
+
+
+def get_causal_lm_pcfg_probs(pcfg_dict_fn, all_sen_probs, corpus, tokenizer):
+    with open(pcfg_dict_fn, "rb") as f:
+        pcfg_dict = pickle.load(f)
+
+    pcfg_probs = []
+    lm_probs = []
+
+    for sen, pcfg_sen_probs in pcfg_dict.items():
+        sen_idx = corpus.index(sen)
+        lm_sen_probs = all_sen_probs[sen_idx]
+
+        lm_probs.extend(lm_sen_probs)
+
+        # for idx, (w, prob) in enumerate(zip(sen.split(), pcfg_sen_probs)):
+        #     if idx > 0 and w in tokenizer.vocab:
+        #         pcfg_probs.append(-prob)
+                
+    return lm_probs

@@ -66,9 +66,11 @@ def load_eval_data(
     data_dir: str,
     test_size: Optional[int] = None,
 ) -> DatasetDict:
+    
+    # select the first 10k sentences from the test set
     raw_test = load_dataset("text", data_files=os.path.join(data_dir, f"test_sent_{args.version}_{args.top_k}.txt"))[
         "train"
-    ]
+    ].select(range(test_size))
     print(f'Generated datasets with the lengths of: {len(raw_test)} (test)')
     
     if test_size is not None:
