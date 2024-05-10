@@ -70,7 +70,6 @@ for topk in "${topks[@]}"; do
                             --top_k $topk \
                             --output_dir /scratch-shared/sabijn/results \
                             --data_dir /scratch-shared/sabijn \
-                            --results_dir \
                             --size 10_000
     done
 done
