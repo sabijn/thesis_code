@@ -152,16 +152,11 @@ if __name__ == '__main__':
         else:
             raise NotImplementedError(f"Model {args.model} not implemented")
 
-    
-        print(f"Spearman {spearmanr(lm_probs, pcfg_probs)[0]:.3f}")
-        print(f"R2 {r2_score(lm_probs, pcfg_probs):.3f}")
         print(f"LM-PPL {np.exp(-np.mean(lm_probs)):.1f}")
         
         with open(f'{args.output_dir}/results_{args.model}_{args.version}_{args.top_k}.json', 'r'):
             json.dump({
-                'spearman': spearmanr(lm_probs, pcfg_probs)[0],
-                'r2': r2_score(lm_probs, pcfg_probs),
-                'lm_ppl': np.exp(-np.mean(lm_probs)),
+                'lm_ppl': np.exp(-np.mean(lm_probs))
             })
         
         del tokenizer
