@@ -1,0 +1,63 @@
+Loading modules...
+============================================================================================== 
+Warning! Mixing Conda and module environments may lead to corruption of the
+user environment. 
+We do not recommend users mixing those two environments unless absolutely
+necessary. Note that 
+SURF does not provide any support for Conda environment.
+For more information, please refer to our software policy page:
+https://servicedesk.surf.nl/wiki/display/WIKI/Software+policy+Snellius#SoftwarepolicySnellius-UseofAnacondaandMinicondaenvironmentsonSnellius 
+
+Remember that many packages have already been installed on the system and can
+be loaded using 
+the 'module load <package__name>' command. If you are uncertain if a package is
+already available 
+on the system, please use 'module avail' or 'module spider' to search for it.
+============================================================================================== 
+activating virtual env...
+current conda environment: basic310
+activating ssh connection...
+Agent pid 2308184
+Identity added: /home/jumelet/.ssh/id_rsa_sabijn (jumelet@int4)
+parsing input arguments...
+Branch: feature/retrain
+fetching and pulling latest changes from remote dir...
+Already up to date.
+retraining the models...
+Creating output dir
+Running script for version 0.8
+Traceback (most recent call last):
+  File "/gpfs/home4/jumelet/sabijn/thesis_code/retrain/main.py", line 9, in <module>
+    from data import load_data
+  File "/gpfs/home4/jumelet/sabijn/thesis_code/retrain/data.py", line 4, in <module>
+    from datasets import DatasetDict, load_dataset
+  File "/home/jumelet/.conda/envs/basic310/lib/python3.10/site-packages/datasets/__init__.py", line 43, in <module>
+    from .arrow_dataset import Dataset
+  File "/home/jumelet/.conda/envs/basic310/lib/python3.10/site-packages/datasets/arrow_dataset.py", line 65, in <module>
+    from .arrow_reader import ArrowReader
+  File "/home/jumelet/.conda/envs/basic310/lib/python3.10/site-packages/datasets/arrow_reader.py", line 28, in <module>
+    import pyarrow.parquet as pq
+  File "/home/jumelet/.conda/envs/basic310/lib/python3.10/site-packages/pyarrow/parquet/__init__.py", line 20, in <module>
+    from .core import *
+  File "/home/jumelet/.conda/envs/basic310/lib/python3.10/site-packages/pyarrow/parquet/core.py", line 45, in <module>
+    from pyarrow.fs import (LocalFileSystem, FileSystem, FileType,
+  File "/home/jumelet/.conda/envs/basic310/lib/python3.10/site-packages/pyarrow/fs.py", line 49, in <module>
+    from pyarrow._gcsfs import GcsFileSystem  # noqa
+  File "pyarrow/_gcsfs.pyx", line 1, in init pyarrow._gcsfs
+ValueError: pyarrow.lib.IpcWriteOptions size changed, may indicate binary incompatibility. Expected 88 from C header, got 72 from PyObject
+srun: error: gcn24: task 0: Exited with exit code 1
+srun: Terminating StepId=6158728.0
+
+JOB STATISTICS
+==============
+Job ID: 6158728
+Cluster: snellius
+User/Group: jumelet/jumelet
+State: FAILED (exit code 1)
+Nodes: 1
+Cores per node: 18
+CPU Utilized: 00:00:04
+CPU Efficiency: 0.79% of 00:08:24 core-walltime
+Job Wall-clock time: 00:00:28
+Memory Utilized: 1.19 MB
+Memory Efficiency: 0.00% of 31.25 GB
