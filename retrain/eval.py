@@ -154,7 +154,7 @@ if __name__ == '__main__':
 
         print(f"LM-PPL {np.exp(-np.mean(lm_probs)):.1f}")
         
-        with open(f'{args.output_dir}/results_{args.model}_{args.version}_{args.top_k}.json', 'r'):
+        with open(f'{args.output_dir}/results_{args.model}_{args.version}_{args.top_k}.json', 'w'):
             json.dump({
                 'lm_ppl': np.exp(-np.mean(lm_probs))
             })
