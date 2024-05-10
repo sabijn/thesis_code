@@ -113,6 +113,8 @@ if __name__ == '__main__':
         args = set_experiment_config(args)
 
         model, tokenizer = load_model_tokenizer(args)
+        model.to(device)
+        tokenizer.to(device)
         datasets = load_eval_data(args, tokenizer, args.data_dir, test_size=args.size)
 
         if args.model == 'babyberta':
