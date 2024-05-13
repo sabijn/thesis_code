@@ -4,7 +4,7 @@
 #SBATCH --job-name=babyberta
 #SBATCH --gpus=1
 #SBATCH --ntasks=1
-#SBATCH --time :00:00
+#SBATCH --time 10:00:00
 #SBATCH --mem=32000M
 #SBATCH --output=slurm_output_%A.out
 
