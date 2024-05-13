@@ -241,7 +241,7 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    language, tokenizer = load_language(args, args.top_k, args.version, encoder="transformer", corpus_size=args.corpus_size)
+    language, tokenizer = load_language(args, encoder="transformer", corpus_size=args.corpus_size)
     add_special_token(language.grammar)
     prod2prob = create_prod2prob_dict(language.grammar)
 
