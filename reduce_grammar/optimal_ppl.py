@@ -237,6 +237,7 @@ if __name__ == '__main__':
     parser.add_argument('--parse_method', type=str, default='all_parses', choices= ['all_parses', 'sen_parses', 'current_parse']) 
     parser.add_argument('--max_parse_time', type=int, default=10)
     parser.add_argument('--hardware', type=str, default='local', choices=['snellius', 'local'])
+    parser.add_argument('--model', type=str, default='babyberta', choices=['gpt2', 'babyberta'])
 
     args = parser.parse_args()
 
