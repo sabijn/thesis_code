@@ -54,7 +54,7 @@ fi
 
 # Pulling latest changes from remote dir
 echo fetching and pulling latest changes from remote dir...
-cd $HOME/sabijn/thesis_code/retrain/
+cd $HOME/sabijn/thesis_code/reduce_grammar/
 git fetch && git pull
 
 # Run the script
@@ -76,7 +76,7 @@ done
 
 # Pushing results to remote dir
 echo adding, committing, and pushing results to remote dir...
-git add $HOME/sabijn/thesis_code/retrain/
+git add $HOME/sabijn/thesis_code/reduce_grammar/
 git commit -m "save results from run (automated commit from Snellius)."
 git push
 
