@@ -107,57 +107,56 @@ if __name__ == '__main__':
 
     all_ppls = {}
     all_acc = {}
-    for top_k in [0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]:
-        logger.info('Evaluating top_k: %s' % top_k)
-        args.top_k = top_k
-        args = set_experiment_config(args)
 
-        model, tokenizer = load_model_tokenizer(args)
-        model.to(device)
+    logger.info('Evaluating top_k: %s' % args.top_k)
+    args = set_experiment_config(args)
 
-        datasets = load_eval_data(args, tokenizer, args.data_dir, test_size=args.size)
+    model, tokenizer = load_model_tokenizer(args)
+    model.to(device)
 
-        if args.model == 'babyberta':
-            # perplexity methods for mlms
-            ppl, all_token_probs, all_hidden_states = masked_ppl(
-                model,
-                datasets['test']['input_ids'], 
-                device,
-                mask_token_id=tokenizer.mask_token_id, 
-                skip_tokens={},
-                batch_size=128,
-                return_hidden=True,
-            )
+    datasets = load_eval_data(args, tokenizer, args.data_dir, test_size=args.size)
 
-            store_model_probs(all_token_probs, datasets, f'token_probs_eval_{args.model}_{args.version}_{args.top_k}.txt')
-            bert_prob_dict = get_model_prob_dict(f'token_probs_eval_{args.model}_{args.version}_{args.top_k}.txt')
-            lm_probs, all_tokens = get_probs(datasets, tokenizer, bert_prob_dict)
+    if args.model == 'babyberta':
+        # perplexity methods for mlms
+        ppl, all_token_probs, all_hidden_states = masked_ppl(
+            model,
+            datasets['test']['input_ids'], 
+            device,
+            mask_token_id=tokenizer.mask_token_id, 
+            skip_tokens={},
+            batch_size=128,
+            return_hidden=True,
+        )
 
-            
-        elif args.model == 'gpt2':
-            # perplexity methods for clms
-            ppl, _, all_sen_probs = causal_ppl(
-                model,
-                datasets['test'][:100], 
-                skip_tokens={tokenizer.unk_token_id},
-            )
-            
-            pcfg_probs, lm_probs = get_causal_lm_pcfg_probs(
-                "lm_training/earleyx_pcfg_dict.pickle", 
-                all_sen_probs, 
-                datasets['eval'][:100]['text'],
-                tokenizer,
-            )
+        store_model_probs(all_token_probs, datasets, f'token_probs_eval_{args.model}_{args.version}_{args.top_k}.txt')
+        bert_prob_dict = get_model_prob_dict(f'token_probs_eval_{args.model}_{args.version}_{args.top_k}.txt')
+        lm_probs, all_tokens = get_probs(datasets, tokenizer, bert_prob_dict)
 
-        else:
-            raise NotImplementedError(f"Model {args.model} not implemented")
-
-        print(f"LM-PPL {np.exp(-np.mean(lm_probs)):.1f}")
         
-        with open(f'{args.output_dir}/results_{args.model}_{args.version}_{args.top_k}.json', 'w') as f:
-            json.dump({
-                'lm_ppl': np.exp(-np.mean(lm_probs))
-            }, f)
+    elif args.model == 'gpt2':
+        # perplexity methods for clms
+        ppl, _, all_sen_probs = causal_ppl(
+            model,
+            datasets['test'][:100], 
+            skip_tokens={tokenizer.unk_token_id},
+        )
         
-        del tokenizer
-        del model
+        pcfg_probs, lm_probs = get_causal_lm_pcfg_probs(
+            "lm_training/earleyx_pcfg_dict.pickle", 
+            all_sen_probs, 
+            datasets['eval'][:100]['text'],
+            tokenizer,
+        )
+
+    else:
+        raise NotImplementedError(f"Model {args.model} not implemented")
+
+    print(f"LM-PPL {np.exp(-np.mean(lm_probs)):.1f}")
+    
+    with open(f'{args.output_dir}/results_{args.model}_{args.version}_{args.top_k}.json', 'w') as f:
+        json.dump({
+            'lm_ppl': np.exp(-np.mean(lm_probs))
+        }, f)
+    
+    del tokenizer
+    del model
