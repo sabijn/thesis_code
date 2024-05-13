@@ -9,12 +9,13 @@ from classes import (TokenizerConfig,
 
 from collections import defaultdict
 from typing import Dict
-from tqdm import tqdm_notebook
+from tqdm import tqdm
 import numpy as np
 import signal
 import time
 import pickle
 import torch
+import argparse
 
 REPLACEMENTS = [
     ('``', 'TICK'),
@@ -40,7 +41,19 @@ def format_line(line):
 INT2NT = ['ROOT', 'S^g', '@S^g', 'NP^g', 'NNP', 'VP^g', 'VBD', ',', 'CC', 'DT', 'NN', '.', 'PRP', 'MD', '@VP^g', 'VB', 'ADVP^g', 'RB', 'PP^g', 'IN', 'NNS', ':', 'VBN', 'INTJ^g', 'UH', 'ADJP^g', '@ADJP^g', 'JJ', 'SBAR^g', 'EX', '@NP^g', 'TO', 'WHNP^g', 'WP', 'POS', 'PRP$', 'JJR', 'VBG', 'RRC^g', 'JJS', 'CD', 'PRT^g', 'RP', '@PP^g', '@ADVP^g', '``', 'VBP', 'VBZ', "''", 'WHADVP^g', 'WRB', 'WDT', 'FRAG^g', 'PDT', '@SBAR^g', 'RBR', 'QP^g', '@QP^g', 'NNPS', 'RBS', 'NX^g', '@NX^g', 'PRN^g', '@PRN^g', '@FRAG^g', '@INTJ^g', 'CONJP^g', '@CONJP^g', 'SQ^g', '@SQ^g', 'SBARQ^g', '@SBARQ^g', 'SINV^g', '@SINV^g', 'UCP^g', '@UCP^g', '@WHNP^g', 'WHADJP^g', 'X^g', 'SYM', 'FW', 'WP$', 'WHPP^g', '-LRB-', '-RRB-', '$', '@PRT^g', 'NAC^g', '@NAC^g', '@WHADJP^g', 'LS', '@WHADVP^g', 'LST^g', '@X^g', '@LST^g', '#', '@RRC^g']
 INT2NT = [format_line(nt) for nt in INT2NT]
 
-def load_language(top_k, version, encoder="transformer", corpus_size=200_000):
+def load_language(args, encoder="transformer", corpus_size=200_000):
+    if args.hardware == 'snellius':
+        grammar_file = f'/scratch_shared/sabijn/{args.version}'
+        corpus_file = f'/scratch_shared/sabijn/{args.version}'
+    
+    elif args.hardware == 'local':
+        grammar_file = f'grammars/nltk/{args.version}/subset_pcfg_{args.top_k}.txt'
+        corpus_file = f'corpora/{args.version}/corpus_{args.top_k}_{args.version}.pt'
+    
+    else:
+        raise NotImplementedError(args.hardware)
+
+
     tokenizer_config = TokenizerConfig(
             add_cls=(encoder == "transformer"),
             masked_lm=(encoder == "transformer"),
@@ -54,8 +67,8 @@ def load_language(top_k, version, encoder="transformer", corpus_size=200_000):
         min_length=6,
         max_length=25,
         max_depth=25,
-        corpus_size=1_000_000,
-        grammar_file=f'grammars/nltk/{version}/subset_pcfg_{top_k}.txt',
+        corpus_size=args.corpus_size,
+        grammar_file=grammar_file,
         start="S_0",
         masked_lm=(encoder == "transformer"),
         allow_duplicates=True,
@@ -64,14 +77,15 @@ def load_language(top_k, version, encoder="transformer", corpus_size=200_000):
         verbose=True,
         store_trees=True,
         output_dir='.',
-        top_k=top_k,
-        version=version,
-        file=f'corpora/{version}/corpus_{top_k}_{version}.pt'
+        top_k=args.top_k,
+        version=args.version,
+        file=corpus_file
     )
 
     language = PCFG(config, tokenizer)
 
     return language, tokenizer
+
 
 def add_special_token(grammar):
     leaf_prod_lhs = set(prod.lhs() for prod in grammar.productions() if isinstance(prod.rhs()[0], str))
@@ -120,7 +134,7 @@ def pcfg_perplexity(lm_language, method, prod2prob, max_parse_time=10, corpus_si
     
     chart_parser = Parser(lm_language.grammar)
     corpus = lm_language.test_corpus[:corpus_size]  
-    iterator = tqdm_notebook(corpus) if verbose else corpus
+    iterator = tqdm(corpus) if verbose else corpus
     
     for sen_idx, sen in enumerate(iterator):
         if sen_ids_filter is not None and sen_idx not in sen_ids_filter:
@@ -166,7 +180,6 @@ def pcfg_perplexity(lm_language, method, prod2prob, max_parse_time=10, corpus_si
 
             sen_ids.append(sen_idx)
             num_parses.append(num_sen_parses)
-            print(np.sum(weighted_leaf_probs))
             all_probs.append(np.sum(weighted_leaf_probs))  
                   
         elif method == 'sen_parses':
@@ -216,28 +229,27 @@ def pcfg_perplexity(lm_language, method, prod2prob, max_parse_time=10, corpus_si
     return avg_ppl, all_probs, num_parses, sen_lens, sen_ids
 
 if __name__ == '__main__':
-    top_k = 0.2
-    VERSION = 'normal'
-    output = {}
-    corpus_size = 10
-    output_file = f'perplexities/optimal_ppls_{VERSION}.pkl'
+    parser = argparse.ArgumentParser(description='Calculate the optimal perplexity')
+    parser.add_argument('--top_k', type=float, default=0.2)
+    parser.add_argument('--version', type=str, default='normal')
+    parser.add_argument('--output_file', type=str, default='perplexities/optimal_ppls.pkl')
+    parser.add_argument('--corpus_size', type=int, default=None) 
+    parser.add_argument('--parse_method', type=str, default='all_parses', choices= ['all_parses', 'sen_parses', 'current_parse']) 
+    parser.add_argument('--max_parse_time', type=int, default=10)
+    parser.add_argument('--hardware', type=str, default='local', choices=['snellius', 'local'])
 
+    args = parser.parse_args()
 
-    language, tokenizer = load_language(top_k, VERSION, encoder="transformer", corpus_size=corpus_size)
+    language, tokenizer = load_language(args, args.top_k, args.version, encoder="transformer", corpus_size=args.corpus_size)
     add_special_token(language.grammar)
     prod2prob = create_prod2prob_dict(language.grammar)
 
     avg_ppl, all_probs, num_parses, sen_lens, sen_ids = pcfg_perplexity(
-        language, 'current_parse', prod2prob, max_parse_time=1, corpus_size=corpus_size, 
+        language, args.parse_method, prod2prob, max_parse_time=args.max_parse_time, corpus_size=args.corpus_size, 
     )
-    print('probs', all_probs)
-    print('ids', sen_ids)
-    print('lens', sen_lens)
-    print('All probs: ', len(all_probs))
 
-    output[top_k] = avg_ppl
-    print(f'The optimal perplexity of {VERSION} {top_k}: {avg_ppl}')
-    assert len(all_probs) == len(language.test_corpus)
+    with open(f'{args.output_file}/optimal_ppl_{args.model}_{args.version}_{args.top_k}.pkl', 'wb') as f:
+        pickle.dump((avg_ppl, all_probs, num_parses, sen_lens, sen_ids), f)
 
     del language
     del tokenizer
