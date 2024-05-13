@@ -24,6 +24,10 @@ logger = logging.getLogger(__name__)
 def main(config):
     """
     Main function to run span probing
+
+    Edit for different top k models
+    - Load model different
+    - Paths different
     """
     logger.info('Running span probing.')
     logger.info('Loading model...')

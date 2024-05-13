@@ -70,7 +70,8 @@ for topk in "${topks[@]}"; do
                             --parse_method all_parses \
                             --max_parse_time 10 \
                             --corpus_size 10_000 \
-                            --model babyberta
+                            --model babyberta \
+                            --hardware snellius
     done
 done
 

@@ -21,7 +21,7 @@ def create_arg_parser():
                             help='Number of epochs')
     argparser.add_argument('--lr', type=float, default=10e-3, 
                            help='Learning rate')
-    argparser.add_argument('--model', type=str, default='deberta',
+    argparser.add_argument('--model', type=str, default='deberta', choices=['deberta', 'babyberta', 'gpt2'],
                            help='Model type')
     argparser.add_argument('--seed', type=int, default=42,
                            help='Random seed')
@@ -57,6 +57,10 @@ def create_arg_parser():
                             help='Path to span ids')
     argparser.add_argument('--tokenized_labels_path', type=Path, default=Path('/Users/sperdijk/Documents/Master/Jaar_3/Thesis/thesis_code/chart-parsing/data/tokenized_labels.pkl'),
                             help='Path to tokenized labels')
+    
+    # ADJUSTED GRAMMARS
+    argparser.add_argument('--version', type=str, default='normal', choices=['lexical', 'normal', 'pos'])
+    argparser.add_argument('--top_k', type=float, default=1.0, choices=[0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0])
     
     config = argparser.parse_args()
 
