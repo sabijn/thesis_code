@@ -4,22 +4,25 @@
 set -e
 
 # Set the path to the edge probing repository.
-EDGE_PROBING_DIR=/Users/sperdijk/Documents/Master/Jaar_3/Thesis/thesis_code/edge-probing
 MODEL=babyberta
-DATA_DIR=/Users/sperdijk/Documents/Master/Jaar_3/Thesis/thesis_code/reduce_grammar/
+EDGE_PROBING_DIR=/Users/sperdijk/Documents/Master/Jaar_3/Thesis/thesis_code/edge-probing
+DATA_DIR=/Users/sperdijk/Documents/Master/Jaar_3/Thesis/thesis_code/reduce_grammar/corpora
+MODEL_DIR=/Users/sperdijk/Documents/Master/Jaar_3/Thesis/thesis_code/retrain/checkpoints/${MODEL}
+OUTPUT_DIR=/Users/sperdijk/Documents/Master/Jaar_3/Thesis/thesis_code/edge-probing/results
 
-topks=("0.2" "0.3" "0.4" "0.5" "0.6" "0.7" "0.8" "0.9")
-versions=("normal" "lexical")
+topks=("0.2")
+versions=("normal")
 for topk in "${topks[@]}"; do
     for version in "${versions[@]}"; do
         echo "Running edge probing for topk=${topk} and version=${version}"
         python main.py --version ${version} \
-                          --topk ${topk} \
+                          --top_k ${topk} \
                           --model ${MODEL} \
                           --created_states_path ${EDGE_PROBING_DIR}/data/${MODEL}/${version}/${topk} \
-                          --data 
-
-
-                          --output_dir ${EDGE_PROBING_DIR}/output \
-                          --data_dir ${EDGE_PROBING_DIR}/data \
-                          --model_dir ${EDGE_PROBING_DIR}/models
+                          --data ${DATA_DIR}/${version}/test_sent_${version}_${topk}.txt \
+                          --home_model_path ${MODEL_DIR}/${version}/${topk}/ \
+                          --output_path ${OUTPUT_DIR}/${MODEL}/${version}/${topk} \
+                          --span_ids_path ${EDGE_PROBING_DIR}/data/${MODEL}/${version}/${topk}/span_ids.pkl \
+                          --tokenized_labels_path ${EDGE_PROBING_DIR}/data/${MODEL}/${version}/${topk}/tokenized_labels.pkl
+    done
+done

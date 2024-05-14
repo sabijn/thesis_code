@@ -49,7 +49,7 @@ def create_arg_parser():
                         help='Path to data')
     argparser.add_argument('--home_model_path', type=Path, default=Path('/Users/sperdijk/Documents/Master/Jaar_3/Thesis/thesis_code/pcfg-lm/resources/checkpoints/'),
                         help='Path to directory were the differen models are stored.')
-    argparser.add_argument('--label_vocab_path', type=Path, default=Path('/Users/sperdijk/Documents/Master/Jaar_3/Thesis/thesis_code/chart-parsing/data/label_vocab.json'),
+    argparser.add_argument('--label_vocab_path', type=Path, default=Path('/Users/sperdijk/Documents/Master/Jaar_3/Thesis/thesis_code/edge-probing/data/label_vocab.json'),
                             help='Path to label vocabulary')
     argparser.add_argument('--output_path', type=Path, default=Path('/Users/sperdijk/Documents/Master/Jaar_3/Thesis/thesis_code/chart-parsing/results/'),
                         help='Path to output')
@@ -82,11 +82,14 @@ def create_arg_parser():
 
     config.device = device
 
-    if config.model == 'deberta':
-        model_path = config.home_model_path / Path('deberta/')
-    elif config.model == 'gpt2':
-        model_path = config.home_model_path / Path('gpt2/')
-    
+    if config.top_k == 1.0:
+        if config.model == 'deberta':
+            model_path = config.home_model_path / Path('deberta/')
+        elif config.model == 'gpt2':
+            model_path = config.home_model_path / Path('gpt2/')
+    else:
+        model_path = config.home_model_path
+
     config.model_path = model_path
 
     return config

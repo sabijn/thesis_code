@@ -58,7 +58,7 @@ cd $HOME/sabijn/thesis_code/reduce_grammar/
 git fetch && git pull
 
 # Run the script
-echo calculate model perplexity...
+echo calculate optimal perplexity...
 topks=("0.2" "0.3" "0.4" "0.5" "0.6" "0.7" "0.8" "0.9")
 versions=("normal" "pos" "lexical")
 for topk in "${topks[@]}"; do

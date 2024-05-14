@@ -10,7 +10,7 @@ from pathlib import Path
 import pprint
 
 from argparser import create_arg_parser
-from utils import load_model
+from utils import load_model_tokenizer, set_experiment_config
 from model import ProbeConfig
 from data import extract_span_labels, create_states
 from train import probe_loop
@@ -31,7 +31,8 @@ def main(config):
     """
     logger.info('Running span probing.')
     logger.info('Loading model...')
-    model, tokenizer = load_model(config.model_path, config.device)
+    config = set_experiment_config(config)
+    model, tokenizer = load_model_tokenizer(config)
     model.eval()
     logger.info('Model loaded.')
 
