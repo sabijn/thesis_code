@@ -43,8 +43,8 @@ INT2NT = [format_line(nt) for nt in INT2NT]
 
 def load_language(args, encoder="transformer", corpus_size=200_000):
     if args.hardware == 'snellius':
-        grammar_file = f'/scratch_shared/sabijn/{args.version}/subset_pcfg_{args.top_k}.txt'
-        corpus_file = f'/scratch_shared/sabijn/{args.version}/corpus_{args.top_k}_{args.version}.pt'
+        grammar_file = f'/scratch-shared/sabijn/{args.version}/subset_pcfg_{args.top_k}.txt'
+        corpus_file = f'/scratch-shared/sabijn/{args.version}/corpus_{args.top_k}_{args.version}.pt'
     
     elif args.hardware == 'local':
         grammar_file = f'grammars/nltk/{args.version}/subset_pcfg_{args.top_k}.txt'
