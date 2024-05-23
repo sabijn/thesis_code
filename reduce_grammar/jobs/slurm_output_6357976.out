@@ -1,0 +1,32 @@
+Loading modules...
+============================================================================================== 
+Warning! Mixing Conda and module environments may lead to corruption of the
+user environment. 
+We do not recommend users mixing those two environments unless absolutely
+necessary. Note that 
+SURF does not provide any support for Conda environment.
+For more information, please refer to our software policy page:
+https://servicedesk.surf.nl/wiki/display/WIKI/Software+policy+Snellius#SoftwarepolicySnellius-UseofAnacondaandMinicondaenvironmentsonSnellius 
+
+Remember that many packages have already been installed on the system and can
+be loaded using 
+the 'module load <package__name>' command. If you are uncertain if a package is
+already available 
+on the system, please use 'module avail' or 'module spider' to search for it.
+============================================================================================== 
+activating virtual env...
+current conda environment: basic310
+activating ssh connection...
+Agent pid 899669
+Identity added: /home/jumelet/.ssh/id_rsa_sabijn (jumelet@int4)
+parsing input arguments...
+Branch: feature/retrain
+fetching and pulling latest changes from remote dir...
+Already up to date.
+calculate optimal perplexity...
+Running script for version 0.9
+2024-05-23 07:58:54 | INFO | fairseq.tasks.text_to_speech | Please install tensorboardX: pip install tensorboardX
+2024-05-23 07:59:13 | INFO | classes.language | Loading corpus from file.
+/gpfs/home4/jumelet/sabijn/thesis_code/reduce_grammar/optimal_ppl.py:227: RuntimeWarning: invalid value encountered in scalar divide
+  avg_ppl = np.exp(-np.sum(all_probs)/np.sum(sen_lens))
+adding, committing, and pushing results to remote dir...
