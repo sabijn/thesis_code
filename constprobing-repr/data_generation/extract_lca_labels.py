@@ -1,4 +1,4 @@
-from data_generation.treetoolbox import find_node, load_ptb, np_regex, vp_regex, tr_leaf_regex, find_end_indices, find_xps_above_i, address_is_xp, find_label, find_tracing_alignment, find_trace_ix, preprocess, lowest_phrase_above_leaf_i
+from treetoolbox import find_node, load_ptb, np_regex, vp_regex, tr_leaf_regex, find_end_indices, find_xps_above_i, address_is_xp, find_label, find_tracing_alignment, find_trace_ix, preprocess, lowest_phrase_above_leaf_i
 # during test: from data_prep.treetoolbox
 import sys
 import argparse
@@ -7,9 +7,12 @@ import random
 import numpy as np
 import nltk
 from tqdm import tqdm
-from main import load_model
 from pathlib import Path
 import torch
+from utils import load_model, load_model_tokenizer, set_experiment_config
+import logging
+
+logger = logging.getLogger(__name__)
 
 punct_regex = re.compile(r"[^\w][^\w]?")
 
@@ -144,18 +147,22 @@ if __name__=='__main__':
     """
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('-data')
-    parser.add_argument('-text_toks') 
-    parser.add_argument('-rel_toks')
-    parser.add_argument('-rel_labels') 
-    parser.add_argument('-max_span_const')
-    parser.add_argument('-cutoff')
-    parser.add_argument('-max_sent_length')
-    parser.add_argument('-np_embed', action='store_true', default=False)
-    parser.add_argument('-next', action='store_true', default=False) # run in experiments
-    parser.add_argument('-shared_levels', default=None) # run in experiments
-    parser.add_argument('-unary', default=None) # run in experiments
-    parser.add_argument('-tree_out', default=None, help="optional file where all trees are printed that are processed (and not skipped)")
+    parser.add_argument('--data_dir', type=Path, default='pcfg-lm/src/lm_training/corpora/eval_trees_10k.txt')
+    parser.add_argument('--text_toks', type=Path, default='data/train_text.txt') 
+    parser.add_argument('--rel_toks', type=Path, default='data/train_rel_toks.txt')
+    parser.add_argument('--rel_labels', type=Path, default='data/train_rel_labels.txt') 
+    parser.add_argument('--max_span_const')
+    parser.add_argument('--cutoff')
+    parser.add_argument('--max_sent_length', type=int, default=31)
+    parser.add_argument('--np_embed', action='store_true', default=False)
+    parser.add_argument('--next', action='store_true', default=False) # run in experiments
+    parser.add_argument('--shared_levels', type=Path, default='data/train_shared_levels.txt') # run in experiments
+    parser.add_argument('--unary', type=Path, default='data/train_unaries.txt') # run in experiments
+    parser.add_argument('--tree_out', default=None, help="optional file where all trees are printed that are processed (and not skipped)")
+    parser.add_argument('--version', type=str, default='normal', choices=['normal', 'pos', 'lexical'])
+    parser.add_argument('--top_k', type=float, default=0.2)
+    parser.add_argument('--model_type', type=str, default='babyberta', choices=['deberta', 'babyberta', 'gpt2'])
+    parser.add_argument('--model_path', type=Path, default='pcfg-lm/resources/checkpoints/deberta/')
     parsedargs = parser.parse_args()
 
     ignored_sents = [] # added if not length: 3 < length < 31
@@ -174,8 +181,14 @@ if __name__=='__main__':
         device = torch.device("cpu")
         print('Running on CPU.')
 
-    model_path = Path('pcfg-lm/resources/checkpoints/deberta/')
-    _, tokenizer = load_model(model_path, device)
+    logger.info('Loading model...')
+    if parsedargs.top_k == 1.0:
+        model, tokenizer = load_model(parsedargs.model_path, device)
+    else:
+        parsedargs = set_experiment_config(parsedargs)
+        model, tokenizer = load_model_tokenizer(parsedargs)
+        model.eval()
+    logger.info('Model loaded.')
 
     # Set thresholds
     cutoff = np.inf
@@ -186,10 +199,14 @@ if __name__=='__main__':
         max_sent_length = int(parsedargs.max_sent_length)
 
     # Reading in input trees
-    with open(parsedargs.data) as f:
+    with open(parsedargs.data_dir) as f:
         tree_corpus = [nltk.Tree.fromstring(l.strip()) for l in f]
 
     # Open output files
+    parsedargs.text_toks.parent.mkdir(parents=True, exist_ok=True)
+    parsedargs.rel_toks.parent.mkdir(parents=True, exist_ok=True)
+    parsedargs.rel_labels.parent.mkdir(parents=True, exist_ok=True)
+
     text_toks_file = open(parsedargs.text_toks, 'w')
     rel_toks_file = open(parsedargs.rel_toks, 'w')
     rel_labels_file = open(parsedargs.rel_labels, 'w')
@@ -197,8 +214,10 @@ if __name__=='__main__':
     if parsedargs.max_span_const is not None:
         max_span_file = open(parsedargs.max_span_const, 'w')
     if parsedargs.shared_levels is not None:
+        parsedargs.shared_levels.parent.mkdir(parents=True, exist_ok=True)
         shared_levels_file = open(parsedargs.shared_levels, 'w')
     if parsedargs.unary is not None:
+        parsedargs.unary.parent.mkdir(parents=True, exist_ok=True)
         unary_file = open(parsedargs.unary, 'w')
     if parsedargs.tree_out is not None:
         tree_out_file = open(parsedargs.tree_out, 'w') 

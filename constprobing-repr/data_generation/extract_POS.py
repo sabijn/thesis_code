@@ -38,15 +38,16 @@ def format_and_write(pos_corpus, output_file):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--model_type', default='babyberta', choices=['deberta', 'gpt2', 'babyberta'])
-    parser.add_argument('--data', default=Path('corpora/eval_trees_10k.txt'))
-    parser.add_argument('--output_file', default=Path('data/train_POS_v1.txt'))
+    parser.add_argument('--data_dir', default=Path('corpora/eval_trees_10k.txt'))
+    parser.add_argument('--output_dir', type=Path, default=Path('data/train_POS_v1.txt'))
     parser.add_argument('--version', default='normal')
     parser.add_argument('--top_k', default=1.0)
     args = parser.parse_args()
 
     home = Path('/Users/sperdijk/Documents/Master/Jaar_3/Thesis/thesis_code')
+
     if args.top_k == 1.0:
-        with open(home / args.data, 'r') as f:
+        with open(home / args.data_dir, 'r') as f:
             tree_corpus = [nltk.tree.Tree.fromstring(l.strip()) for l in f]
 
         model_path = Path('/Users/sperdijk/Documents/Master/Jaar_3/Thesis/thesis_code/pcfg-lm/resources/checkpoints/deberta/')
@@ -67,14 +68,13 @@ if __name__ == '__main__':
         model_path = f'{model_path}/checkpoint-{highest_config}/'
 
         # Load data
-        with open(f'/Users/sperdijk/Documents/Master/Jaar_3/Thesis/thesis_code/reduce_grammar/corpora/{args.version}/all_trees_{args.version}_{args.top_k}.txt') as f:
-            trees = [l.strip() for l in f][990_000:]
-            tree_corpus = [nltk.Tree.fromstring(tree) for tree in trees]
+        with open(args.data_dir) as f:
+            tree_corpus = [nltk.Tree.fromstring(l.strip()) for l in f]
             
     device = torch.device("cpu")
     model, tokenizer = load_model(model_path, device)
     
     POS_tags = extract_POS(tree_corpus)
-    format_and_write(POS_tags, home / args.output_file)
+    format_and_write(POS_tags, args.output_dir / 'train_POS_labels.txt')
 
     

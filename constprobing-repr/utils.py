@@ -1,8 +1,9 @@
 import numpy as np
 from typing import List, Dict
 
-from transformers import AutoModelForMaskedLM
+from transformers import AutoModelForMaskedLM, AutoModelForCausalLM
 from tokenizer import *
+import os
 import logging
 
 logger = logging.getLogger(__name__)
@@ -55,3 +56,38 @@ def load_model(checkpoint, device):
     tokenizer = create_tf_tokenizer_from_vocab(vocab)
 
     return model, tokenizer
+
+def load_model_tokenizer(config_dict):
+    if config_dict['model']['model_type'] == 'gpt2':
+        automodel = AutoModelForCausalLM
+    elif config_dict['model']['model_type'] == 'babyberta':
+        automodel = AutoModelForMaskedLM
+    else:
+        raise ValueError(f'Model not supported.')
+    
+    model = automodel.from_pretrained(config_dict['model']['model_file'])
+
+    with open(f"{config_dict['model']['model_file']}added_tokens.json") as f:
+        vocab = json.load(f)
+
+    tokenizer = create_tf_tokenizer_from_vocab(vocab)
+
+    return model, tokenizer
+
+
+def set_experiment_config(args):
+    # Check if model directory exists and find the correct checkpoint
+    if not os.path.exists(args['model']['model_file']):
+        raise ValueError(f"Model directory {args['model']['model_file']} does not exist.")
+    
+    highest_config = 0
+    print(args['model']['model_file'])
+    for dir_name in os.listdir(args['model']['model_file']):
+        if dir_name.split('-')[0] == 'checkpoint':
+            config = int(dir_name.split('-')[1])
+            if config > highest_config:
+                highest_config = config
+
+    args['model']['model_file'] = f"{args['model']['model_file']}/checkpoint-{highest_config}/"
+
+    return args

@@ -57,6 +57,7 @@ def create_arg_parser():
                             help='Path to span ids')
     argparser.add_argument('--tokenized_labels_path', type=Path, default=Path('/Users/sperdijk/Documents/Master/Jaar_3/Thesis/thesis_code/chart-parsing/data/tokenized_labels.pkl'),
                             help='Path to tokenized labels')
+    argparser.add_argument('--test_data', type=Path, default=None)
     
     # ADJUSTED GRAMMARS
     argparser.add_argument('--version', type=str, default='normal', choices=['lexical', 'normal', 'pos'])
@@ -91,5 +92,11 @@ def create_arg_parser():
         model_path = config.home_model_path
 
     config.model_path = model_path
+
+    config.output_path.mkdir(parents=True, exist_ok=True)
+    config.span_ids_path.parent.mkdir(parents=True, exist_ok=True)
+    config.tokenized_labels_path.parent.mkdir(parents=True, exist_ok=True)
+    config.label_vocab_path.parent.mkdir(parents=True, exist_ok=True)
+    config.created_states_path.mkdir(parents=True, exist_ok=True)
 
     return config

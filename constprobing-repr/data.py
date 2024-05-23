@@ -84,8 +84,9 @@ class ExperimentManager():
 
         X_test = states[test_ids]
         y_test = self.labels[test_ids]
-
-        self.rel_toks_test = [self.rel_toks[idx] for idx in test_ids]
+        
+        if self.name in ['lca_tree', 'shared_levels']:
+            self.rel_toks_test = [self.rel_toks[idx] for idx in test_ids]
 
         return X_train, y_train, X_dev, y_dev, X_test, y_test
 
@@ -95,37 +96,42 @@ class ExperimentManager():
         2. Activations concatenated into one
         3. Sampled activations
         """
-        if self.name in ['chuncking', 'lca', 'ii']:
-            logging.info(f'Loading activations for {self.name}')
-            if Path('data/activations.pickle').exists():
-                with open('data/activations.pickle', 'rb') as f:
-                    activations = pickle.load(f)
-            else:
-                logging.critical("Activations not found, please run create_activations.py first.")
-                raise ValueError("Activations not found, please run create_activations.py first.")
+        failed = False
+        
+        logging.info(f'Loading activations for {self.name}')
+        if self.name == 'chunking':
+            activations_path = self.config_dict['activations']['output_dir'] / 'activations_concat_layers.pickle'
+        
+        elif self.name == 'lca':
+            activations_path = self.config_dict['activations']['output_dir'] / 'activations_combined_concat.pickle'
             
         elif self.name in ['lca_tree', 'shared_levels', 'unary']:
-            logging.info(f'Loading activations for {self.name} without sampling')
-            if Path(f"data/activations_concat_layers.pickle").exists():
-                with open(f"data/activations_concat_layers.pickle", 'rb') as f:
-                    activations = pickle.load(f)
-
-                if self.config_dict['data']['sampling']:
-                    for layer_idx, layer_states in activations.items():
-                        activations[layer_idx] = torch.index_select(torch.concat(layer_states), 0, torch.LongTensor(self.indices))
-                else:
-                    for layer_idx, layer_states in activations.items():
-                        activations[layer_idx] = torch.concat(layer_states)
-            else:
-                logging.critical("Activations not found, please run create_activations.py first.")
-                raise ValueError("Activations not found, please check your spelling or run create_activations.py first.")
+            activations_path = self.config_dict['activations']['output_dir'] / 'activations_layers_combined.pickle'
             
         else:
-            logging.critical("This experiment is not supported yet.")
-            raise ValueError('This experiment is not supported yet.')
+            logging.critical(f"This experiment is not supported yet: {self.name}.")
+            failed = True
+
+        if activations_path.exists():
+            with open(activations_path, 'rb') as f:
+                activations = pickle.load(f)
+        else:
+            logging.critical(f"Loading of activations failed, check path or generate with create_activations.py or combine_activations.py")
+            failed = True
+        
+        if failed:
+            raise ValueError
 
         assert len(self.labels) == len(activations[0]), \
-                f"Length of labels ({len(self.labels)}) does not match length of activations ({len(activations[0])})"
+        f"Length of labels ({len(self.labels)}) does not match length of activations ({len(activations[0])})"
+
+        if self.name in ['lca_tree', 'shared_levels', 'unary'] and not self.config_dict['data']['sampling']:
+            for layer_idx, layer_states in activations.items():
+                activations[layer_idx] = torch.concat(layer_states)
+        
+        elif self.name in ['lca_tree', 'shared_levels', 'unary'] and self.config_dict['data']['sampling']:
+            for layer_idx, layer_states in activations.items():
+                activations[layer_idx] = torch.index_select(torch.concat(layer_states), 0, torch.LongTensor(self.indices))
 
         return activations
 
@@ -138,23 +144,23 @@ class ExperimentManager():
     def _set_label_path(self):
         if self.name == 'chunking':
             logging.info('Running chunking experiments')
-            label_path = 'data/train_bies_labels.txt'
+            label_path = self.config_dict['data']['data_dir'] / 'train_bies_labels.txt'
         elif self.name == 'lca':
             logging.info('Running lca experiments')
-            label_path = 'data/train_rel_labels.txt'
+            label_path = self.config_dict['data']['data_dir'] / 'train_rel_labels.txt'
         elif self.name == 'lca_tree':
             logging.info('Running lca for full reconstructing (this means, concatenated layers!)')
-            label_path = 'data/train_rel_labels.txt'
+            label_path = self.config_dict['data']['data_dir'] / 'train_rel_labels.txt'
         elif self.name == 'shared_levels':
             if self.config_dict['data']['sampling']:
                 logging.info('Running shared levels for full reconstructing with sampling (this means, concatenated layers!)')
-                label_path = 'data/train_shared_balanced.txt'
+                label_path = self.config_dict['data']['data_dir'] / 'train_shared_balanced.txt'
             else:
                 logging.info('Running shared levels for full reconstructing WITHOUT sampling (this means, concatenated layers!)')
-                label_path = 'data/train_shared_levels.txt'
+                label_path = self.config_dict['data']['data_dir'] / 'train_shared_levels.txt'
         elif self.name == 'unary':
             logging.info('Running unary experiments for full reconstruction.')
-            label_path = 'data/train_unaries.txt'
+            label_path = self.config_dict['data']['data_dir'] / 'train_unaries.txt'
         else:
             logging.critical("This experiment is not supported yet.")
             raise ValueError('This experiment is not supported yet.')
@@ -163,14 +169,16 @@ class ExperimentManager():
 
     def _set_results_file(self):
         if self.config_dict['experiments']['control_task']:
-            self.results_file = open(f'results/{self.name}/results_control{self.config_dict["experiments"]["control_task"]}.txt', 'w')
-            self.test_results_file = f'results/{self.name}/test_results_control{self.config_dict["experiments"]["control_task"]}.pickle'
-            self.val_results_file = f'results/{self.name}/val_results_control{self.config_dict["experiments"]["control_task"]}.pickle'
+            self.results_file = open(self.config_dict['data']['output_dir'] /f'{self.name}/results_control{self.config_dict["experiments"]["control_task"]}.txt', 'w')
+            self.test_results_file = self.config_dict['data']['output_dir'] /f'{self.name}/test_results_control{self.config_dict["experiments"]["control_task"]}.pickle'
+            self.val_results_file = self.config_dict['data']['output_dir'] /f'{self.name}/val_results_control{self.config_dict["experiments"]["control_task"]}.pickle'
             self.base_name = f'{self.name}/best_model_control_{self.name}'
         else:
-            self.results_file = open(f'results/{self.name}/results_default_{self.config_dict["data"]["sampling_size"]}.txt', 'w')
-            self.test_results_file = f'results/{self.name}/test_results_default_{self.config_dict["data"]["sampling_size"]}.pickle'
-            self.val_results_file = f'results/{self.name}/val_results_default_{self.config_dict["data"]["sampling_size"]}.pickle'
+            results_dir = self.config_dict['data']['output_dir'] / f'{self.name}'
+            results_dir.mkdir(parents=True, exist_ok=True)
+            self.results_file = open(results_dir / f'results_default_{self.config_dict["data"]["sampling_size"]}.txt', 'w')
+            self.test_results_file = self.config_dict['data']['output_dir'] /f'{self.name}/test_results_default_{self.config_dict["data"]["sampling_size"]}.pickle'
+            self.val_results_file = self.config_dict['data']['output_dir'] /f'{self.name}/val_results_default_{self.config_dict["data"]["sampling_size"]}.pickle'
             self.base_name = f'{self.name}/best_model_default_{self.name}'
     
     def _sample_data(self, labels):

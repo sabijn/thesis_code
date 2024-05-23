@@ -1,7 +1,7 @@
 from pathlib import Path
 from argparser import create_config_dict
 from data import ExperimentManager
-from utils import format_predictions, swap_labels, load_model
+from utils import format_predictions, swap_labels, load_model, load_model_tokenizer, set_experiment_config
 from model import DiagModule
 
 import pytorch_lightning as pl
@@ -26,17 +26,6 @@ def main():
     config_dict = create_config_dict()
     pprint(config_dict)
 
-    home_dir = Path('/Users/sperdijk/Documents/Master/Jaar_3/Thesis/thesis_code/')
-    if home_dir.exists():
-        logger.debug("Home directory exists!")
-    else:
-        exit("Home directory does not exist!")
-
-    if config_dict['model']['model_type'] == 'deberta':
-        model_path = home_dir / Path('pcfg-lm/resources/checkpoints/deberta/')
-    elif config_dict['model']['model_type'] == 'gpt2':
-        model_path = home_dir / Path('pcfg-lm/resources/checkpoints/gpt2/')
-
     if config_dict['trainer']['device'] is None:
         if torch.cuda.is_available():
             # For running on snellius
@@ -53,10 +42,29 @@ def main():
     else:
         device = torch.device(config_dict['trainer']['device'])
 
-    # Load model
-    logger.info('Loading model...')
-    OGmodel, tokenizer = load_model(model_path, device)
-    OGmodel.eval()
+    home_dir = Path('/Users/sperdijk/Documents/Master/Jaar_3/Thesis/thesis_code/')
+    if home_dir.exists():
+        logger.debug("Home directory exists!")
+    else:
+        exit("Home directory does not exist!")
+
+    if config_dict['experiments']['top_k'] == 1.0:
+        # Original experiments with the big grammar
+        if config_dict['model']['model_type'] == 'deberta':
+            model_path = home_dir / Path('pcfg-lm/resources/checkpoints/deberta/')
+        elif config_dict['model']['model_type'] == 'gpt2':
+            model_path = home_dir / Path('pcfg-lm/resources/checkpoints/gpt2/')
+
+        # Load model
+        logger.info('Loading model...')
+        OGmodel, tokenizer = load_model(model_path, device)
+        OGmodel.eval()
+    else:
+        # Experiments with the smaller grammars
+        config_dict = set_experiment_config(config_dict)
+        OGmodel, tokenizer = load_model_tokenizer(config_dict)
+        OGmodel.to(device)
+        OGmodel.eval()
 
     # Initiate experiments
     CurrentExperiment = ExperimentManager(config_dict)
@@ -101,6 +109,7 @@ def main():
                                     # multiprocessing_context='fork' if torch.backends.mps.is_available() else None)
 
         logging.info("Started training...")
+        config_dict['experiments']['checkpoint_path'].mkdir(parents=True, exist_ok=True)
         trainer = pl.Trainer(default_root_dir=os.path.join(config_dict['experiments']['checkpoint_path'], save_name),                          
                                 accelerator='mps' if device == 'mps' else 'cpu', 
                                 devices=1,                                            
@@ -121,12 +130,13 @@ def main():
 
         # save confusion matrix
         if config_dict['results']['confusion_matrix']:
-            np.save(f'results/{CurrentExperiment.name}/confusion_matrix_{layer_idx}.npy', model.final_confusion_matrix)
+            np.save(f'{config_dict["data"]["output_dir"]}/{CurrentExperiment.name}/confusion_matrix_{layer_idx}.npy', model.final_confusion_matrix)
         
         # save predictions
-        predictions = format_predictions(model.predictions, CurrentExperiment.idx2class, CurrentExperiment.rel_toks_test)
-        with open(f'results/{CurrentExperiment.name}/predictions_{CurrentExperiment.name}.txt', 'wb') as f:
-            f.write(predictions.encode('utf-8'))
+        if CurrentExperiment.name in ['lca_tree', 'shared_levels']:
+            predictions = format_predictions(model.predictions, CurrentExperiment.idx2class, CurrentExperiment.rel_toks_test)
+            with open(f'{config_dict["data"]["output_dir"]}/{CurrentExperiment.name}/predictions_{CurrentExperiment.name}.txt', 'wb') as f:
+                f.write(predictions.encode('utf-8'))
 
     CurrentExperiment.results_file.close()
 

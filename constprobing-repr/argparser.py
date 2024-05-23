@@ -42,14 +42,16 @@ def _create_arg_parser() -> ArgumentParser:
     parser = ArgumentParser()
 
     # MODEL
-    parser.add_argument("--model.model_type", required=True, choices=['deberta', 'gpt2'])
+    parser.add_argument("--model.model_type", required=True, choices=['deberta', 'gpt2', 'babyberta'])
+    parser.add_argument("--model.model_file", type=Path, required=True)
 
     # DATA
     parser.add_argument("--data.data_dir", type=Path, required=True)
-    parser.add_argument("--data.train_file", type=Path, default="train.txt")
-    parser.add_argument("--data.dev_file", type=Path, default="dev.txt")
-    parser.add_argument("--data.test_file", type=Path, default="test.txt")
-    parser.add_argument("--data.eval_file", type=Path, default="eval.txt")
+    parser.add_argument('--data.output_dir', type=Path, required=True)
+    # parser.add_argument("--data.train_file", type=Path, default="train.txt")
+    # parser.add_argument("--data.dev_file", type=Path, default="dev.txt")
+    # parser.add_argument("--data.test_file", type=Path, default="test.txt")
+    # parser.add_argument("--data.eval_file", type=Path, default="eval.txt")
     parser.add_argument("--data.train_size", type=int)
     parser.add_argument("--data.dev_size", type=int)
     parser.add_argument("--data.test_size", type=int)
@@ -58,7 +60,7 @@ def _create_arg_parser() -> ArgumentParser:
     parser.add_argument("--data.rel_toks", type=Path, default="data/train_rel_toks.txt")
 
     # EXTRACT ACTIVATIONS
-    parser.add_argument("--activations.output_dir", default='data',
+    parser.add_argument("--activations.output_dir", type=Path, default='data',
                         help='Directory where the activations are stored.')
     parser.add_argument('--activations.dtype', default='float32', choices=["float16", "float32"], 
                         help="Data type of the activations")
@@ -67,8 +69,10 @@ def _create_arg_parser() -> ArgumentParser:
 
     # EXPERIMENTS
     parser.add_argument("--experiments.type", default='chunking', choices=['chunking', 'lca', 'lca_tree', 'shared_levels', 'unary'])
-    parser.add_argument("--experiments.checkpoint_path", default='models/')
+    parser.add_argument("--experiments.checkpoint_path", type=Path, default='models/')
     parser.add_argument("--experiments.control_task", action=argparse.BooleanOptionalAction)
+    parser.add_argument("--experiments.version", default='normal', choices=['lexical', 'normal', 'pos'])
+    parser.add_argument('--experiments.top_k', type=float, default=0.2)
 
     # RESULTS
     parser.add_argument("--results.confusion_matrix", action=argparse.BooleanOptionalAction)

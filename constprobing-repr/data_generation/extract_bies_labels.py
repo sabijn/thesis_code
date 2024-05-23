@@ -6,10 +6,12 @@ import re
 import numpy as np
 import nltk
 from tqdm import tqdm
-from utils import load_model
+from utils import load_model, load_model_tokenizer, set_experiment_config
 import torch
 from pathlib import Path
+import logging
 
+logger = logging.getLogger(__name__)
 
 
 punct_regex = re.compile(r"[^\w][^\w]?")
@@ -121,12 +123,16 @@ if __name__=='__main__':
     """
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('-data')
-    parser.add_argument('-text_toks') 
-    parser.add_argument('-bies_labels') 
-    parser.add_argument('-cutoff')
-    parser.add_argument('-max_sent_length')
-    parser.add_argument('-with_phrase_labels', action='store_true')
+    parser.add_argument('--data_dir', type=Path, default='/Users/sperdijk/Documents/Master/"Jaar_3"/Thesis/thesis_code/pcfg-lm/src/lm_training/corpora/eval_trees_10k.txt')
+    parser.add_argument('--text_toks', type=Path, default='/Users/sperdijk/Documents/Master/"Jaar_3"/Thesis/thesis_code/data/train_text_bies.txt') 
+    parser.add_argument('--bies_labels', type=Path, default=' /Users/sperdijk/Documents/Master/"Jaar_3"/Thesis/thesis_code/data/train_bies_labels.txt') 
+    parser.add_argument('--cutoff')
+    parser.add_argument('--model_type', type=str, default='babyberta', choices=['deberta', 'babyberta', 'gpt2'])
+    parser.add_argument('--model_path', type=Path, default='/Users/sperdijk/Documents/Master/Jaar_3/Thesis/thesis_code/pcfg-lm/resources/checkpoints/deberta/')
+    parser.add_argument('--max_sent_length', type=int, default=31)
+    parser.add_argument('--top_k', type=float, default=0.2)
+    parser.add_argument('--version', type=str, default='normal', choices=['normal', 'pos', 'lexical'])
+    parser.add_argument('--with_phrase_labels', action='store_true')
     parsedargs = parser.parse_args()
 
     ignored_sents = []
@@ -145,9 +151,14 @@ if __name__=='__main__':
         device = torch.device("cpu")
         print('Running on CPU.')
     
-    model_path = Path('/Users/sperdijk/Documents/Master/Jaar_3/Thesis/thesis_code/pcfg-lm/resources/checkpoints/deberta/')
-
-    model, tokenizer = load_model(model_path, device)
+    logger.info('Loading model...')
+    if parsedargs.top_k == 1.0:
+        model, tokenizer = load_model(parsedargs.model_path, device)
+    else:
+        parsedargs = set_experiment_config(parsedargs)
+        model, tokenizer = load_model_tokenizer(parsedargs)
+        model.eval()
+    logger.info('Model loaded.')
 
     # Probably used during development with a lower cutoff
     cutoff = np.inf
@@ -158,8 +169,11 @@ if __name__=='__main__':
         max_sent_length = int(parsedargs.max_sent_length)
     
     # Reading in input trees
-    with open(parsedargs.data) as f:
+    with open(parsedargs.data_dir) as f:
         tree_corpus = [nltk.Tree.fromstring(l.strip()) for l in f]
+
+    parsedargs.text_toks.parent.mkdir(parents=True, exist_ok=True)
+    parsedargs.bies_labels.parent.mkdir(parents=True, exist_ok=True)
 
     text_toks_file = open(parsedargs.text_toks, 'w')
     bies_labels_file = open(parsedargs.bies_labels, 'w')

@@ -10,6 +10,9 @@ from torch.nn.utils.rnn import pad_sequence
 from collections import defaultdict
 import pickle
 import os
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def load_model(checkpoint, device):
@@ -60,12 +63,11 @@ def create_states(
 
     if num_items is not None:
         all_sens = random.sample(all_sens, num_items)
-    print(len(all_sens))
+
     lengths = [len(sen) for sen in all_sens]
     sen_tensor = pad_sequence(all_sens, padding_value=pad_idx, batch_first=True).to(device)
 
     batch_size = int(1e9 / num_parameters)
-    print(batch_size)
     states = defaultdict(list) if all_layers else []
     iterator = range(0, len(all_sens), batch_size)
     if verbose:
@@ -103,17 +105,20 @@ if __name__ == '__main__':
     Run with: python create_activations.py --checkpoint deberta
     """
     parser = argparse.ArgumentParser()
+    parser.add_argument('--data_dir', type=Path, default='data')
+    parser.add_argument('--output_dir', type=Path, default='data')
     parser.add_argument('--model_type', required=True, choices=['deberta', 'gpt2', 'babyberta'])
     parser.add_argument('--version', default='normal')
     parser.add_argument('--top_k', default=1.0)
+    parser.add_argument('--concat', action=argparse.BooleanOptionalAction)
     parsedargs = parser.parse_args()
 
     if parsedargs.top_k == 1.0:
         model_path = Path(f'pcfg-lm/resources/checkpoints/{parsedargs.model_type}/')
-        with open('corpora/eval_trees_10k.txt') as f:
+        with open(parsedargs.data_dir) as f:
             tree_corpus = [nltk.Tree.fromstring(l.strip()) for l in f]
         
-        output_dir = Path('data')
+        parsedargs.output_dir = Path('data')
     else:
         model_path = Path(f'/Users/sperdijk/Documents/Master/Jaar_3/Thesis/thesis_code/retrain/checkpoints/{parsedargs.model_type}/{parsedargs.version}/{parsedargs.top_k}/')
 
@@ -131,14 +136,11 @@ if __name__ == '__main__':
         model_path = f'{model_path}/checkpoint-{highest_config}/'
 
         # Load data
-        with open(f'/Users/sperdijk/Documents/Master/Jaar_3/Thesis/thesis_code/reduce_grammar/corpora/{parsedargs.version}/all_trees_{parsedargs.version}_{parsedargs.top_k}.txt') as f:
-            trees = [l.strip() for l in f][990_000:]
-            tree_corpus = [nltk.Tree.fromstring(tree) for tree in trees]
-        
-        output_dir = Path(f'data/{parsedargs.version}/{parsedargs.top_k}')
-
-        output_dir.mkdir(parents=True, exist_ok=True)
-
+        # Reading in input trees
+        with open(parsedargs.data_dir) as f:
+            tree_corpus = [nltk.Tree.fromstring(l.strip()) for l in f][:5]
+    
+        parsedargs.output_dir.mkdir(parents=True, exist_ok=True)
 
     if torch.cuda.is_available():
         # For running on snellius
@@ -165,17 +167,21 @@ if __name__ == '__main__':
         tree_corpus, 
         model, 
         device,
-        concat=False, 
+        concat=parsedargs.concat, 
         skip_cls=False, 
         verbose=True, 
         all_layers=True, 
         skip_unk_tokens=True
     )
+    exit(1)
 
-    print(all_layer_states.keys())
     # store all_layer_states in pickle
-    with open(output_dir / 'activations_notconcat.pickle', 'wb') as f:
-        pickle.dump(all_layer_states, f)
+    # if parsedargs.concat:
+    #     with open(parsedargs.output_dir / 'activations_concat_layers.pickle', 'wb') as f:
+    #         pickle.dump(all_layer_states, f)
+    # else:
+    #     with open(parsedargs.output_dir / 'activations.pickle', 'wb') as f:
+    #         pickle.dump(all_layer_states, f)
 
     # for layer_idx, states in tqdm(all_layer_states.items()):
     #     if layer_idx < 8:

@@ -8,6 +8,8 @@ import pickle
 import json
 from pathlib import Path
 import pprint
+import os
+import chardet
 
 from argparser import create_arg_parser
 from utils import load_model_tokenizer, set_experiment_config
@@ -37,8 +39,21 @@ def main(config):
     logger.info('Model loaded.')
 
     logger.info('Loading data...')
-    with open(config.data) as f:
-        tree_corpus = [nltk.Tree.fromstring(l.strip()) for l in f]
+    if os.path.exists(config.test_data):
+        logger.info('Loading trees from test file.')
+
+        with open(config.test_data) as f:
+            tree_corpus = [nltk.Tree.fromstring(l.strip()) for l in f]
+    else:
+        logger.info('Loading trees from torch file.')
+
+        corpus = torch.load(config.data)
+        test_corpus = corpus[0][990_000:]
+        tree_corpus = [corpus[1][l] for l in test_corpus]
+
+        with open(config.test_data, 'w') as f:
+            f.write('\n'.join(tree._pformat_flat("", "()", False) for tree in tree_corpus))
+
     logger.info('Data loaded.')
 
     logger.info('Extracting span labels...')
@@ -58,6 +73,7 @@ def main(config):
             merge_at=True,
             skip_labels=config.skip_labels,
         )
+
         pickle.dump(all_span_ids, open(config.span_ids_path, 'wb'))
         pickle.dump(all_tokenized_labels, open(config.tokenized_labels_path, 'wb'))
         json.dump(span_label_vocab, open(config.label_vocab_path, 'w'))
@@ -108,6 +124,7 @@ def main(config):
         
         layer_f1.append(test_merged_f1)
         layer_predictions.append(test_preds)
+    
     
     with open(config.output_path / 'results_f1_all_layers.pkl', 'wb') as f:
         pickle.dump(layer_f1, f)

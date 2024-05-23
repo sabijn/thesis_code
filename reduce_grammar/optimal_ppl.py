@@ -232,7 +232,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Calculate the optimal perplexity')
     parser.add_argument('--top_k', type=float, default=0.2)
     parser.add_argument('--version', type=str, default='normal')
-    parser.add_argument('--output_file', type=str, default='perplexities/optimal_ppls.pkl')
+    parser.add_argument('--output_file', type=str, default='perplexities')
     parser.add_argument('--corpus_size', type=int, default=None) 
     parser.add_argument('--parse_method', type=str, default='all_parses', choices= ['all_parses', 'sen_parses', 'current_parse']) 
     parser.add_argument('--max_parse_time', type=int, default=10)
@@ -249,7 +249,7 @@ if __name__ == '__main__':
         language, args.parse_method, prod2prob, max_parse_time=args.max_parse_time, corpus_size=args.corpus_size, 
     )
 
-    with open(f'{args.output_file}/optimal_ppl_{args.model}_{args.version}_{args.top_k}.pkl', 'wb') as f:
+    with open(f'{args.output_file}/optimal_ppl_mlm_{args.version}_{args.top_k}_size{args.corpus_size}.pkl', 'wb') as f:
         pickle.dump((avg_ppl, all_probs, num_parses, sen_lens, sen_ids), f)
 
     del language

@@ -1,0 +1,20 @@
+#!/bin/bash
+
+# Exit immediately if any command exits with a non-zero status.
+set -e
+
+# Set the path to the edge probing repository.
+topks=("0.2" "0.3" "0.4" "0.5" "0.6" "0.7" "0.8" "0.9")
+versions=("normal")
+for version in "${versions[@]}"; do
+    for topk in "${topks[@]}"; do
+        echo "Running probing experiments for topk=${topk} and version=${version}"
+        python optimal_ppl.py --version $version \
+                            --top_k $topk \
+                            --parse_method all_parses \
+                            --max_parse_time 10 \
+                            --corpus_size 10_000 \
+                            --model babyberta \
+                            --hardware local
+    done
+done
