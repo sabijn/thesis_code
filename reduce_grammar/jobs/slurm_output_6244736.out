@@ -1,0 +1,54 @@
+Loading modules...
+============================================================================================== 
+Warning! Mixing Conda and module environments may lead to corruption of the
+user environment. 
+We do not recommend users mixing those two environments unless absolutely
+necessary. Note that 
+SURF does not provide any support for Conda environment.
+For more information, please refer to our software policy page:
+https://servicedesk.surf.nl/wiki/display/WIKI/Software+policy+Snellius#SoftwarepolicySnellius-UseofAnacondaandMinicondaenvironmentsonSnellius 
+
+Remember that many packages have already been installed on the system and can
+be loaded using 
+the 'module load <package__name>' command. If you are uncertain if a package is
+already available 
+on the system, please use 'module avail' or 'module spider' to search for it.
+============================================================================================== 
+activating virtual env...
+current conda environment: basic310
+activating ssh connection...
+Agent pid 628223
+Identity added: /home/jumelet/.ssh/id_rsa_sabijn (jumelet@int4)
+parsing input arguments...
+Branch: feature/retrain
+fetching and pulling latest changes from remote dir...
+Already up to date.
+calculate model perplexity...
+Running script for version 0.2
+2024-05-13 14:31:19 | INFO | fairseq.tasks.text_to_speech | Please install tensorboardX: pip install tensorboardX
+Traceback (most recent call last):
+  File "/gpfs/home4/jumelet/sabijn/thesis_code/reduce_grammar/optimal_ppl.py", line 244, in <module>
+    language, tokenizer = load_language(args, encoder="transformer", corpus_size=args.corpus_size)
+  File "/gpfs/home4/jumelet/sabijn/thesis_code/reduce_grammar/optimal_ppl.py", line 85, in load_language
+    language = PCFG(config, tokenizer)
+  File "/gpfs/home4/jumelet/sabijn/thesis_code/reduce_grammar/classes/language.py", line 54, in __init__
+    self.grammar = self.create_grammar()
+  File "/gpfs/home4/jumelet/sabijn/thesis_code/reduce_grammar/classes/pcfg.py", line 50, in create_grammar
+    with open(self.config.grammar_file) as f:
+FileNotFoundError: [Errno 2] No such file or directory: 'grammars/nltk/normal/subset_pcfg_0.2.txt'
+srun: error: gcn13: task 0: Exited with exit code 1
+srun: Terminating StepId=6244736.0
+
+JOB STATISTICS
+==============
+Job ID: 6244736
+Cluster: snellius
+User/Group: jumelet/jumelet
+State: FAILED (exit code 1)
+Nodes: 1
+Cores per node: 18
+CPU Utilized: 00:00:06
+CPU Efficiency: 1.52% of 00:06:36 core-walltime
+Job Wall-clock time: 00:00:22
+Memory Utilized: 1.19 MB
+Memory Efficiency: 0.00% of 31.25 GB
