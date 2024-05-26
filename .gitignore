@@ -10,6 +10,7 @@ test_results/
 grammars/
 treebanks/
 checkpoints/
+perplexities/
 
 # personal files
 garbage.py
