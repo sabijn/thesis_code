@@ -84,8 +84,8 @@ class ExperimentManager():
 
         X_test = states[test_ids]
         y_test = self.labels[test_ids]
-        
-        if self.name in ['lca_tree', 'shared_levels']:
+
+        if self.name in ['lca_tree', 'shared_levels', 'unary']:
             self.rel_toks_test = [self.rel_toks[idx] for idx in test_ids]
 
         return X_train, y_train, X_dev, y_dev, X_test, y_test
@@ -103,7 +103,7 @@ class ExperimentManager():
             activations_path = self.config_dict['activations']['output_dir'] / 'activations_concat_layers.pickle'
         
         elif self.name == 'lca':
-            activations_path = self.config_dict['activations']['output_dir'] / 'activations_combined_concat.pickle'
+            activations_path = self.config_dict['activations']['output_dir'] / 'activations_combined.pickle'
             
         elif self.name in ['lca_tree', 'shared_levels', 'unary']:
             activations_path = self.config_dict['activations']['output_dir'] / 'activations_layers_combined.pickle'
@@ -122,16 +122,16 @@ class ExperimentManager():
         if failed:
             raise ValueError
 
-        assert len(self.labels) == len(activations[0]), \
-        f"Length of labels ({len(self.labels)}) does not match length of activations ({len(activations[0])})"
-
-        if self.name in ['lca_tree', 'shared_levels', 'unary'] and not self.config_dict['data']['sampling']:
+        if self.name in ['lca', 'lca_tree', 'shared_levels', 'unary'] and not self.config_dict['data']['sampling']:
             for layer_idx, layer_states in activations.items():
                 activations[layer_idx] = torch.concat(layer_states)
         
-        elif self.name in ['lca_tree', 'shared_levels', 'unary'] and self.config_dict['data']['sampling']:
+        elif self.name in ['lca', 'lca_tree', 'shared_levels', 'unary'] and self.config_dict['data']['sampling']:
             for layer_idx, layer_states in activations.items():
                 activations[layer_idx] = torch.index_select(torch.concat(layer_states), 0, torch.LongTensor(self.indices))
+        
+        assert len(self.labels) == len(activations[0]), \
+        f"Length of labels ({len(self.labels)}) does not match length of activations ({len(activations[0])})"
 
         return activations
 

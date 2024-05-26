@@ -82,14 +82,13 @@ def sequence_to_parenthesis(sentences,labels,join_char="~", split_char="@"):
 def main():
     parser = argparse.ArgumentParser()
     # parser.add_argument('-text')
-    parser.add_argument('-lca')
-    parser.add_argument('-levels')
-    parser.add_argument('-out')
-    parser.add_argument('-pos_text')
-    parser.add_argument('-unary')
+    parser.add_argument('--lca')
+    parser.add_argument('--levels')
+    parser.add_argument('--out')
+    parser.add_argument('--pos_text')
+    parser.add_argument('--unary')
     parsedargs = parser.parse_args()
     
-
     postextfile = parsedargs.pos_text
     lca_preds = parsedargs.lca
     level_preds = parsedargs.levels
@@ -139,9 +138,9 @@ def main():
     
     # output
     ### You should add this again! just for testing purposes now
-    # with open(parsedargs.out, 'w') as f:
-    #     f.writelines('\n'.join(res))
-    # print('done')
+    with open(parsedargs.out, 'w') as f:
+        f.writelines('\n'.join(res))
+    print('done')
 
 if __name__=='__main__':
     main()

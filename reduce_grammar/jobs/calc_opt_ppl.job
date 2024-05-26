@@ -4,7 +4,7 @@
 #SBATCH --job-name=babyberta
 #SBATCH --gpus=1
 #SBATCH --ntasks=1
-#SBATCH --time 10:00:00
+#SBATCH --time 62:00:00
 #SBATCH --mem=32000M
 #SBATCH --output=slurm_output_%A.out
 
@@ -59,17 +59,17 @@ git fetch && git pull
 
 # Run the script
 echo calculate optimal perplexity...
-topks=("0.9")
-versions=("normal")
-for topk in "${topks[@]}"; do
-    for version in "${versions[@]}"; do
+topks=("0.8" "0.9")
+max_parse_times=("30 60 120 300 600")
+for max_parse_time in "${max_parse_times[@]}"; do
+    for topk in "${topks[@]}"; do
         echo "Running script for version $topk"
-        srun python optimal_ppl.py --version $version \
+        srun python optimal_ppl.py --version normal \
                             --top_k $topk \
                             --output_file /scratch-shared/sabijn/results \
                             --parse_method all_parses \
-                            --max_parse_time 10 \
-                            --corpus_size 10_000 \
+                            --max_parse_time $max_parse_time \
+                            --corpus_size 1000 \
                             --model babyberta \
                             --hardware snellius
     done

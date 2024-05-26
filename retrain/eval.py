@@ -79,6 +79,7 @@ if __name__ == '__main__':
                         help='Model to evaluate')
     parser.add_argument('--model_dir', type=str, default='checkpoints')
     parser.add_argument('--output_dir', type=str, default='/Users/sperdijk/Documents/Master/Jaar_3/Thesis/thesis_code/retrain/results')
+    parser.add_argument('--grammar_dir', type=str, default='/Users/sperdijk/Documents/Master/Jaar_3/Thesis/thesis_code/reduce_grammar/perplexities')
     parser.add_argument('--top_k', type=float, default=0.2, choices=[0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9])
     parser.add_argument('--version', type=str, default='normal', choices=['normal', 'lexical', 'pos'],
                         help='Version of the corpus to evaluate.')
@@ -135,16 +136,19 @@ if __name__ == '__main__':
         
     elif args.model == 'gpt2':
         # perplexity methods for clms
+        print(datasets['test'][0])
         ppl, _, all_sen_probs = causal_ppl(
             model,
-            datasets['test'][:100], 
+            datasets['test']['input_ids'][:100], 
+            device,
             skip_tokens={tokenizer.unk_token_id},
         )
         
+        grammar_file = f'{args.grammar_dir}/{args.model}/{args.version}/{args.top_k}/earleyx_pcfg_probs_{top_k}.json'
         pcfg_probs, lm_probs = get_causal_lm_pcfg_probs(
-            "lm_training/earleyx_pcfg_dict.pickle", 
+            grammar_file, 
             all_sen_probs, 
-            datasets['eval'][:100]['text'],
+            datasets['test']['input_ids'][:100],
             tokenizer,
         )
 
@@ -153,9 +157,10 @@ if __name__ == '__main__':
 
     print(f"LM-PPL {np.exp(-np.mean(lm_probs)):.1f}")
     
-    with open(f'{args.output_dir}/results_{args.model}_{args.version}_{args.top_k}.json', 'w') as f:
+    with open(f'{args.output_dir}/{args.model}/{args.version}/{args.top_k}/results_{args.model}_{args.version}_{args.top_k}.json', 'w') as f:
         json.dump({
-            'lm_ppl': np.exp(-np.mean(lm_probs))
+            'lm_ppl': np.exp(-np.mean(lm_probs)),
+            'pcfg_ppl': np.exp(-np.mean(pcfg_probs))
         }, f)
     
     del tokenizer

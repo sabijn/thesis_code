@@ -8,9 +8,9 @@ from tqdm import tqdm
 def combine_activations_np(sentarray, mode='avg', round_to=-1):
     if mode in ['avg', 'max']:
         combined_arr = torch.zeros((sentarray.shape[0] - 1, sentarray.shape[1]))
-    if mode=='concat':
-        combined_arr = torch.zeros((sentarray.shape[0] - 1, sentarray.shape[1]*2))
 
+    elif mode == 'concat':
+        combined_arr = torch.zeros((sentarray.shape[0] - 1, sentarray.shape[1]*2))
 
     for i in range(sentarray.shape[0] - 1):
         i_repr = sentarray[i,:][None,:]
@@ -50,6 +50,7 @@ def extract_from_pickle(infilename, outfilename, reltoksfilename, mode='avg', ro
     output_dict = {}
     for (layer, activations) in tqdm(sent_activations.items()):
         output_dict[layer] = []
+
         for i, sent_act in enumerate(tqdm(activations, leave=False)): 
             output_act = combine_activations_np(sent_act, mode=mode, round_to=round_to)
             output_dict[layer].append(output_act)

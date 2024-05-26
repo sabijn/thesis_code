@@ -89,7 +89,7 @@ def masked_ppl(model, corpus, device, mask_token_id=None, skip_tokens=None, batc
         return ppl, all_token_probs
 
 
-def causal_ppl(model, corpus, skip_tokens):
+def causal_ppl(model, corpus, device, skip_tokens):
     model.eval()
     
     all_token_probs = []

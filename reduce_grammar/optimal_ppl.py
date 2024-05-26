@@ -133,9 +133,9 @@ def pcfg_perplexity(lm_language, method, prod2prob, max_parse_time=10, corpus_si
     sen_ids = []
     
     chart_parser = Parser(lm_language.grammar)
-    corpus = lm_language.test_corpus[:corpus_size]  
+    corpus = lm_language.test_corpus
     iterator = tqdm(corpus) if verbose else corpus
-    
+
     for sen_idx, sen in enumerate(iterator):
         if sen_ids_filter is not None and sen_idx not in sen_ids_filter:
             continue
@@ -249,7 +249,7 @@ if __name__ == '__main__':
         language, args.parse_method, prod2prob, max_parse_time=args.max_parse_time, corpus_size=args.corpus_size, 
     )
 
-    with open(f'{args.output_file}/optimal_ppl_mlm_{args.version}_{args.top_k}_size{args.corpus_size}.pkl', 'wb') as f:
+    with open(f'{args.output_file}/optimal_ppl_mlm_{args.version}_{args.top_k}_size_{args.corpus_size}_timeout_{args.max_parse_time}.pkl', 'wb') as f:
         pickle.dump((avg_ppl, all_probs, num_parses, sen_lens, sen_ids), f)
 
     del language

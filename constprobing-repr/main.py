@@ -133,7 +133,7 @@ def main():
             np.save(f'{config_dict["data"]["output_dir"]}/{CurrentExperiment.name}/confusion_matrix_{layer_idx}.npy', model.final_confusion_matrix)
         
         # save predictions
-        if CurrentExperiment.name in ['lca_tree', 'shared_levels']:
+        if CurrentExperiment.name in ['lca_tree', 'shared_levels', 'unary']:
             predictions = format_predictions(model.predictions, CurrentExperiment.idx2class, CurrentExperiment.rel_toks_test)
             with open(f'{config_dict["data"]["output_dir"]}/{CurrentExperiment.name}/predictions_{CurrentExperiment.name}.txt', 'wb') as f:
                 f.write(predictions.encode('utf-8'))

@@ -25,7 +25,7 @@ for version in "${versions[@]}"; do
                           --data.output_dir ${OUTPUT_DIR}/${MODEL}/${version}/${topk} \
                           --experiments.checkpoint_path ${PROBING_DIR}/models/${MODEL}/${version}/${topk} \
                           --activations.output_dir ${DATA_DIR}/${MODEL}/${version}/${topk}/ \
-                          --experiments.type chunking \
+                          --experiments.type unary \
                           --results.confusion_matrix
     done
 done
