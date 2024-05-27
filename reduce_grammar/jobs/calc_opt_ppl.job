@@ -4,7 +4,7 @@
 #SBATCH --job-name=babyberta
 #SBATCH --gpus=1
 #SBATCH --ntasks=1
-#SBATCH --time 62:00:00
+#SBATCH --time 30:00:00
 #SBATCH --mem=32000M
 #SBATCH --output=slurm_output_%A.out
 
@@ -60,7 +60,7 @@ git fetch && git pull
 # Run the script
 echo calculate optimal perplexity...
 topks=("0.8" "0.9")
-max_parse_times=("30" "60" "120" "300" "600")
+max_parse_times=("300" "600")
 for max_parse_time in "${max_parse_times[@]}"; do
     for topk in "${topks[@]}"; do
         echo "Running script for version $topk"
