@@ -7,11 +7,11 @@ resultsdir="results/"
 echo "STEP: model "$model
 
 echo "STEP: Reconstruct trees from lca, level, unary predictions-"
-python3 reconstruct_tree/predictions_to_trees.py -pos_text $datadir/test_POS.txt \
-                    -lca $resultsdir/lca_tree/predictions_lca_tree.txt \
-                    -levels $resultsdir/shared_levels/predictions_shared_levels.txt \
-                    -unary $resultsdir/unary/predictions_unary.txt \
-                    -out $resultsdir/full_tree/concat_test_trees.txt
+python3 reconstruct_tree/predictions_to_trees.py --pos_text $datadir/test_POS_labels.txt \
+                    --lca $resultsdir/lca_tree/predictions_lca_tree.txt \
+                    --levels $resultsdir/shared_levels/predictions_shared_levels.txt \
+                    --unary $resultsdir/unary/predictions_unary.txt \
+                    --out $resultsdir/full_tree/concat_test_trees.txt
 
 # echo "STEP: evaluate trees"
 

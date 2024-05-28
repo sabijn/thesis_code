@@ -4,6 +4,7 @@ import pickle
 from pathlib import Path
 import logging
 from collections import Counter
+import json
 
 logger = logging.getLogger(__name__)
 
@@ -18,6 +19,7 @@ class ExperimentManager():
         self.name = config_dict['experiments']['type']
         self.device = config_dict['trainer']['device']
         self.rel_toks = self._read_rel_toks()
+        self.sentences = self._read_sentences()
         self.label_path = self._set_label_path()
         self.labels, self.label_vocab, self.indices = self._create_labels()
         self.idx2class = self._create_idx2class()
@@ -88,6 +90,16 @@ class ExperimentManager():
         if self.name in ['lca_tree', 'shared_levels', 'unary']:
             self.rel_toks_test = [self.rel_toks[idx] for idx in test_ids]
 
+        if self.config_dict['data']['generate_test_data']:
+            sent_idx, word_idx, _ = map(int, self.rel_toks_test[0].split('_'))
+
+            with open(self.config_dict['data']['data_dir'] / f'test_start_idx.json', 'w') as f:
+                json.dump({
+                    'sent_idx': sent_idx,
+                    'word_idx': word_idx
+                }, f)
+            exit(0)
+
         return X_train, y_train, X_dev, y_dev, X_test, y_test
 
     def _load_activations(self):
@@ -140,6 +152,14 @@ class ExperimentManager():
             rel_toks = f.readlines()
         
         return [tok.strip('\n') for sent in rel_toks for tok in sent.split(' ')]
+
+    
+    def _read_sentences(self):
+        with open(self.config_dict['data']['data_dir'] / 'train_text.txt', 'r') as f:
+            sentences = f.readlines()
+        
+        return [sent.strip('\n') for sent in sentences]
+    
 
     def _set_label_path(self):
         if self.name == 'chunking':

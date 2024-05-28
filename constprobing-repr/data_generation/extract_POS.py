@@ -4,6 +4,7 @@ import argparse
 from pathlib import Path
 from utils import load_model
 import torch
+import json
 
 def extract_POS(tree_corpus):
     """
@@ -19,7 +20,7 @@ def extract_POS(tree_corpus):
 
     return pos_corpus
 
-def format_and_write(pos_corpus, output_file):
+def format_and_write(pos_corpus, tokenizer, output_file, word_idx=None):
     """
     Format pos_corpus and write to output_file
     Input:
@@ -27,13 +28,19 @@ def format_and_write(pos_corpus, output_file):
         output_file: str
     """
     with open(output_file, 'w') as f:
-        for sentence in pos_corpus:
-            for word, pos in sentence:
-                # if word not in tokenizer.vocab:
-                #     print('Skipping word not in tokenizer vocab: ', word)
-                #     continue
+        for i, sentence in enumerate(pos_corpus):
+            for j, (word, pos) in enumerate(sentence):
+                if word not in tokenizer.vocab:
+                    print('Skipping word not in tokenizer vocab: ', word)
+                    continue
+                
+                if i == 0 and word_idx != None:
+                    if j < word_idx:
+                        continue
+
                 f.write(f'{word} {pos.split("_")[0]}\n')
             f.write('\n')
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -42,6 +49,7 @@ if __name__ == '__main__':
     parser.add_argument('--output_dir', type=Path, default=Path('data/train_POS_v1.txt'))
     parser.add_argument('--version', default='normal')
     parser.add_argument('--top_k', default=1.0)
+    parser.add_argument('--specific_start', action=argparse.BooleanOptionalAction)
     args = parser.parse_args()
 
     home = Path('/Users/sperdijk/Documents/Master/Jaar_3/Thesis/thesis_code')
@@ -68,13 +76,23 @@ if __name__ == '__main__':
         model_path = f'{model_path}/checkpoint-{highest_config}/'
 
         # Load data
+        with open(args.output_dir / 'test_start_idx.json', 'r') as f:
+            idx = json.load(f)
+            sent_idx, word_idx = idx['sent_idx'], idx['word_idx']
+
         with open(args.data_dir) as f:
-            tree_corpus = [nltk.Tree.fromstring(l.strip()) for l in f]
+            corpus = [l.strip() for l in f][sent_idx:]
+
+        tree_corpus = [nltk.tree.Tree.fromstring(l) for l in corpus]
+
+        with open(args.output_dir / 'test_gold_trees.txt', 'w') as f:
+            f.write('\n'.join(tree._pformat_flat("", "()", False) for tree in list(tree_corpus)))
+        exit(0)
             
     device = torch.device("cpu")
     model, tokenizer = load_model(model_path, device)
     
     POS_tags = extract_POS(tree_corpus)
-    format_and_write(POS_tags, args.output_dir / 'train_POS_labels.txt')
+    format_and_write(POS_tags, tokenizer, args.output_dir / 'test_POS_labels.txt', word_idx)
 
     

@@ -58,6 +58,7 @@ def _create_arg_parser() -> ArgumentParser:
     parser.add_argument("--data.sampling", action=argparse.BooleanOptionalAction)
     parser.add_argument("--data.sampling_size", type=int, default=0)
     parser.add_argument("--data.rel_toks", type=Path, default="data/train_rel_toks.txt")
+    parser.add_argument("--data.generate_test_data", action=argparse.BooleanOptionalAction)
 
     # EXTRACT ACTIVATIONS
     parser.add_argument("--activations.output_dir", type=Path, default='data',

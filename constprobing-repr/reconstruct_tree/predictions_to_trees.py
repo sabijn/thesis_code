@@ -119,7 +119,13 @@ def main():
 
     assert len(wordsandpos) == len(labels) == len(levels) == len(unaries), f'{len(wordsandpos)} {len(labels)} {len(levels)} {len(unaries)}'
     assert all([len(l2) == len(l3) == len(l4) for l2,l3,l4 in zip(labels,levels,unaries)])
-    assert all([len(l1) == (len(l2)+3) == (len(l3)+3) == len(l4)+3 for l1,l2,l3,l4 in zip(wordsandpos,labels,levels,unaries)])
+    i = -1
+    for l1, l2, l3, l4 in zip(wordsandpos, labels, levels, unaries):
+        i += 1
+        assert len(l1) == len(l2)+3 == len(l3)+3 == len(l4)+3, \
+        f'Wordsandpos: {len(l1)}, labels {len(l2)}, levels {len(l3)}, unaries {len(l4)} ({i})'
+
+    # assert all([len(l1) == (len(l2)+3) == (len(l3)+3) == len(l4)+3 for l1,l2,l3,l4 in zip(wordsandpos,labels,levels,unaries)])
 
     predseqs =  []
     for levs,lcas,uns in zip(levels,labels,unaries):
