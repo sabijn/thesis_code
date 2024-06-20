@@ -1,0 +1,46 @@
+Loading modules...
+============================================================================================== 
+Warning! Mixing Conda and module environments may lead to corruption of the
+user environment. 
+We do not recommend users mixing those two environments unless absolutely
+necessary. Note that 
+SURF does not provide any support for Conda environment.
+For more information, please refer to our software policy page:
+https://servicedesk.surf.nl/wiki/display/WIKI/Software+policy+Snellius#SoftwarepolicySnellius-UseofAnacondaandMinicondaenvironmentsonSnellius 
+
+Remember that many packages have already been installed on the system and can
+be loaded using 
+the 'module load <package__name>' command. If you are uncertain if a package is
+already available 
+on the system, please use 'module avail' or 'module spider' to search for it.
+============================================================================================== 
+activating virtual env...
+current conda environment: basic310
+activating ssh connection...
+Agent pid 2593641
+Identity added: /home/jumelet/.ssh/id_rsa_sabijn (jumelet@int4)
+parsing input arguments...
+Branch: feature/interventions
+fetching and pulling latest changes from remote dir...
+Already up to date.
+retraining the models...
+Creating output dir
+Running script for version 0.4
+Namespace(output_dir='/scratch-shared/sabijn/checkpoints_v2/babyberta/normal/0.4', results_dir='/scratch-shared/sabijn/results', data_dir='/scratch-shared/sabijn/normal', version='normal', top_k=0.4, base_model='phueb/BabyBERTa-1', save_steps=100, eval_steps=100, logging_steps=100, per_device_train_batch_size=64, per_device_eval_batch_size=64, gradient_accumulation_steps=8, weight_decay=0.1, lr_scheduler_type='cosine', learning_rate=0.0005, warmup_steps=0, fp16=True, max_grad_norm=0.5, group_by_length=True, auto_find_batch_size=False, do_eval=True, evaluation_strategy='steps', epochs=1, train_size=None, dev_size=None, test_size=None)
+srun: error: gcn38: task 0: Exited with exit code 1
+srun: Terminating StepId=6702548.0
+
+JOB STATISTICS
+==============
+Job ID: 6702548
+Cluster: snellius
+User/Group: jumelet/jumelet
+State: RUNNING
+Nodes: 1
+Cores per node: 18
+CPU Utilized: 00:00:03
+CPU Efficiency: 0.72% of 00:06:54 core-walltime
+Job Wall-clock time: 00:00:23
+Memory Utilized: 1.20 MB
+Memory Efficiency: 0.00% of 31.25 GB
+WARNING: Efficiency statistics may be misleading for RUNNING jobs.
