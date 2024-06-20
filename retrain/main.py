@@ -169,5 +169,4 @@ def main(args):
 if __name__ == '__main__':
     args = create_arg_parser()
     pprint.pp(args)
-    exit(1)
     main(args)
