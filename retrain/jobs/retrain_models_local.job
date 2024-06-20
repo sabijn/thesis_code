@@ -8,7 +8,7 @@ cd /Users/sperdijk/Documents/Master/Jaar_3/Thesis/thesis_code/retrain
 
 # Run the script
 echo retraining the models...
-topks=("0.9")
+topks=("0.4")
 versions=("normal")
 for topk in "${topks[@]}"; do
     for version in "${versions[@]}"; do

@@ -20,6 +20,7 @@ from transformers import (
     TrainingArguments,
     EvalPrediction
 )
+import pprint
 
 import pickle
 import logging
@@ -146,6 +147,8 @@ def main(args):
         do_eval=args.do_eval,
         evaluation_strategy=args.evaluation_strategy,
         num_train_epochs=args.epochs,
+        load_best_model_at_end=True,
+        save_total_limit=1 
     )
 
     trainer.train()
@@ -165,4 +168,6 @@ def main(args):
 
 if __name__ == '__main__':
     args = create_arg_parser()
+    pprint.pp(args)
+    exit(1)
     main(args)

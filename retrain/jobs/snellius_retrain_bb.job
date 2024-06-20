@@ -74,7 +74,8 @@ for topk in "${topks[@]}"; do
                             --top_k=$topk \
                             --version=$version \
                             --fp16 \
-                            --do_eval
+                            --do_eval \
+                            --save_steps=100
     done
 done
 
