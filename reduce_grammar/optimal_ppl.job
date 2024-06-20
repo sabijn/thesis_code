@@ -1,0 +1,18 @@
+#!/bin/bash
+
+# Exit immediately if any command exits with a non-zero status.
+set -e
+
+# Set the path to the edge probing repository.
+topks=("0.2" "0.3" "0.4" "0.5" "0.6")
+for topk in "${topks[@]}"; do
+    echo "Calculating optimal perplexity for topk=${topk}"
+    python optimal_ppl.py --version normal \
+                        --top_k $topk \
+                        --parse_method all_parses \
+                        --max_parse_time 10 \
+                        --corpus_size 10_000 \
+                        --model babyberta \
+                        --hardware local \
+                        --output_file perplexities/babyberta/optimal_ppl_v2
+done

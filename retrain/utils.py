@@ -3,7 +3,10 @@ from transformers import AutoModelForMaskedLM, AutoModelForCausalLM
 import os
 from collections import defaultdict
 import numpy as np
-import pickle
+
+from nltk import PCFG as nltk_PCFG, Production, ProbabilisticProduction
+from collections import defaultdict
+from typing import Dict
 
 from tokenizer import create_tf_tokenizer_from_vocab
 
@@ -90,7 +93,7 @@ def store_model_probs(all_token_probs, datasets, fn: str):
     lines = []
     cur_idx = 0
 
-    for sen in datasets['test']['text'][:]:
+    for sen in datasets:
         lines.append(sen)
         sen_len = len(sen.split(' '))
 
@@ -134,13 +137,13 @@ def store_model_probs(all_token_probs, datasets, fn: str):
 
 #     return lm_probs, pcfg_probs, all_tokens
 
-def get_probs(datasets, tokenizer, sen2lm_probs):
+def get_probs(sentences, input_ids, tokenizer, sen2lm_probs):
     lm_probs = []
     all_tokens = []
     
     skip_tokens = {tokenizer.unk_token_id}
 
-    for sen, input_ids in zip(datasets['test']['text'], datasets['test']['input_ids']):
+    for sen, input_ids in zip(sentences, input_ids):
         pcfg_sen = sen.replace("<apostrophe>", "'")
         sen_lm_probs = sen2lm_probs[sen]
 
@@ -178,3 +181,36 @@ def get_causal_lm_pcfg_probs(pcfg_dict_fn, all_sen_probs, corpus, tokenizer):
         #         pcfg_probs.append(-prob)
                 
     return lm_probs
+
+
+def add_special_token(grammar):
+    leaf_prod_lhs = set(prod.lhs() for prod in grammar.productions() if isinstance(prod.rhs()[0], str))
+
+    special_token = '<X>'
+    special_prods = []
+
+    # Add single '<X>' leaf that is added to all leaf_prods and parse once
+    for lhs in leaf_prod_lhs:
+        special_prod = ProbabilisticProduction(lhs, (special_token,), prob=1.)
+        special_prods.append(special_prod)
+
+    grammar._productions.extend(special_prods)
+
+    grammar._calculate_indexes()
+    grammar._calculate_grammar_forms()
+    grammar._calculate_leftcorners()
+
+
+def create_prod2prob_dict(grammar) -> Dict[Production, float]:
+    """
+    Creates a dictionary with the production (lhs and rhs) as key and the probability as value.
+    """
+    prod2prob = defaultdict(float)
+
+    for lhs, prods in grammar._lhs_index.items():
+        for prod in prods:
+            cfg_prod = Production(lhs, prod.rhs())
+
+            prod2prob[cfg_prod] = prod.prob()
+            
+    return prod2prob

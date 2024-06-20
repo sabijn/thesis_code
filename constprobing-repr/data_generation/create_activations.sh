@@ -19,7 +19,7 @@ for version in "${versions[@]}"; do
             --version ${version} \
             --top_k ${topk} \
             --data_dir ${DATA_DIR}/${version}/test_trees_${version}_${topk}.txt \
-            --output_dir ${OUTPUT_DIR}/${MODEL}/${version}/${topk}
+            --output_dir ${OUTPUT_DIR}/${MODEL}/${version}/${topk} \
             --concat
     done
 done

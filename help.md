@@ -46,7 +46,7 @@ How to create a .toml file
 poetry init
 ```
 
-After creating your project: check if the project is installed in your directory (check for an .env folder).  
+After creating your project: check if the project is installed in your directory (check for an .venv folder).  
 
 If you manually added packages to the dependencies file
 ```shell

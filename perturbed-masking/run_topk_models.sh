@@ -4,11 +4,11 @@
 set -e
 
 versions=("normal")
-topks=("0.9")
+topks=("0.2" "0.3" "0.4" "0.5" "0.6" "0.7" "0.8" "0.9")
 for topk in "${topks[@]}"; do
     for version in "${versions[@]}"; do
         echo "Running topk: $topk, version: $version"
-        python main.py --metric dist \
+        python main.py --metric cos \
                         --remove_punct \
                         --device cpu \
                         --model deberta \

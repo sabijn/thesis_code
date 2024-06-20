@@ -59,12 +59,12 @@ git fetch && git pull
 
 # Run the script
 echo retraining the models...
-topks=("0.8" "0.9")
-versions=("lexical")
+topks=("0.4" "0.5")
+versions=("normal")
 for topk in "${topks[@]}"; do
     for version in "${versions[@]}"; do
         echo "Creating output dir"
-        outputdir=$DATADIR/checkpoints/babyberta/$version/$topk
+        outputdir=$DATADIR/checkpoints_v2/babyberta/$version/$topk
         mkdir -p $outputdir;
         
         echo "Running script for version $topk"

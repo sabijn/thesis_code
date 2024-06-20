@@ -44,14 +44,11 @@ def _create_arg_parser() -> ArgumentParser:
     # MODEL
     parser.add_argument("--model.model_type", required=True, choices=['deberta', 'gpt2', 'babyberta'])
     parser.add_argument("--model.model_file", type=Path, required=True)
+    parser.add_argument("--model.probe_type", type=str, default='linear', choices=['nonlinear', 'linear'])
 
     # DATA
     parser.add_argument("--data.data_dir", type=Path, required=True)
     parser.add_argument('--data.output_dir', type=Path, required=True)
-    # parser.add_argument("--data.train_file", type=Path, default="train.txt")
-    # parser.add_argument("--data.dev_file", type=Path, default="dev.txt")
-    # parser.add_argument("--data.test_file", type=Path, default="test.txt")
-    # parser.add_argument("--data.eval_file", type=Path, default="eval.txt")
     parser.add_argument("--data.train_size", type=int)
     parser.add_argument("--data.dev_size", type=int)
     parser.add_argument("--data.test_size", type=int)
@@ -69,11 +66,12 @@ def _create_arg_parser() -> ArgumentParser:
                         help="How the activations are combined. Use in combination with LCA experiments.") 
 
     # EXPERIMENTS
-    parser.add_argument("--experiments.type", default='chunking', choices=['chunking', 'lca', 'lca_tree', 'shared_levels', 'unary'])
+    parser.add_argument("--experiments.type", default='chunking', choices=['chunking', 'lca', 'lca_tree', 'shared_levels', 'unary', 'ii'])
     parser.add_argument("--experiments.checkpoint_path", type=Path, default='models/')
     parser.add_argument("--experiments.control_task", action=argparse.BooleanOptionalAction)
     parser.add_argument("--experiments.version", default='normal', choices=['lexical', 'normal', 'pos'])
     parser.add_argument('--experiments.top_k', type=float, default=0.2)
+    parser.add_argument('--experiments.constituents', nargs='+', default=['NP', 'VP'], choices=['NP', 'VP', 'PP', 'ADJP', 'ADVP', 'SBAR', 'PRT', 'INTJ', 'CONJP', 'LST', 'UCP', 'X'])
 
     # RESULTS
     parser.add_argument("--results.confusion_matrix", action=argparse.BooleanOptionalAction)
@@ -84,6 +82,7 @@ def _create_arg_parser() -> ArgumentParser:
     parser.add_argument("--trainer.epochs", type=int, default=10)
     parser.add_argument("--trainer.lr", type=float, default=1e-3)
     parser.add_argument("--trainer.device", type=str, default=None)
+    parser.add_argument("--trainer.hidden_size", type=int, default=128)
 
     return parser
 

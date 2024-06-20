@@ -18,11 +18,11 @@ class ExperimentManager():
         self.config_dict = config_dict
         self.name = config_dict['experiments']['type']
         self.device = config_dict['trainer']['device']
+        self.constituents = config_dict['experiments']['constituents']
         self.rel_toks = self._read_rel_toks()
         self.sentences = self._read_sentences()
         self.label_path = self._set_label_path()
         self.labels, self.label_vocab, self.indices = self._create_labels()
-        self.idx2class = self._create_idx2class()
         self._set_results_file()
         self.activations = self._load_activations()
 
@@ -41,8 +41,8 @@ class ExperimentManager():
 
         return tokenized_control_labels
 
-    def _create_idx2class(self):
-        return {v: k for k, v in self.label_vocab.items()}
+    def _create_idx2class(self, vocab):
+        return {v: k for k, v in vocab.items()}
 
     def _create_labels(self):
         logging.info(f'Creating labels for {self.name}')
@@ -52,8 +52,17 @@ class ExperimentManager():
             for line in f:
                 labels.extend(line.strip().split())
         
+        if self.name == 'ii':
+            vocab = {l: idx for idx, l in enumerate(set(self.constituents))}
+            tokenized_labels = torch.tensor([vocab[l] if l in list(vocab.keys()) else -1 for l in labels]).to(self.device)
+
+            indices = [idx for idx, label in enumerate(labels) if label in self.constituents]
+            tokenized_labels = torch.index_select(tokenized_labels, 0, torch.LongTensor(indices))
+            
+            return tokenized_labels, vocab, indices
+
         vocab = {l: idx for idx, l in enumerate(set(labels))}
-        
+        self.idx2class = self._create_idx2class(vocab)
         tokenized_labels = torch.tensor([vocab[l] for l in labels]).to(self.device)
 
         if self.config_dict['experiments']['control_task']:
@@ -63,6 +72,12 @@ class ExperimentManager():
         if self.config_dict['data']['sampling']:
             logging.info(f'Sampling data for {self.name}')
             tokenized_labels, indices = self._sample_data(tokenized_labels)
+
+        elif self.config_dict['experiments']['type'] == 'ii':
+            logging.info(f'Sampling balanced data for interventions')
+            tokenized_labels, indices = self._sample_intervention_data(tokenized_labels, vocab)
+            logging.info(f'Sampled {len(indices)} indices for interventions. Distribution: {tokenized_labels.unique(return_counts=True)}')
+            
         else:
             indices = None
 
@@ -87,7 +102,7 @@ class ExperimentManager():
         X_test = states[test_ids]
         y_test = self.labels[test_ids]
 
-        if self.name in ['lca_tree', 'shared_levels', 'unary']:
+        if self.name in ['lca_tree', 'shared_levels', 'unary', 'ii']:
             self.rel_toks_test = [self.rel_toks[idx] for idx in test_ids]
 
         if self.config_dict['data']['generate_test_data']:
@@ -98,9 +113,9 @@ class ExperimentManager():
                     'sent_idx': sent_idx,
                     'word_idx': word_idx
                 }, f)
-            exit(0)
 
         return X_train, y_train, X_dev, y_dev, X_test, y_test
+    
 
     def _load_activations(self):
         """
@@ -109,12 +124,12 @@ class ExperimentManager():
         3. Sampled activations
         """
         failed = False
-        
+
         logging.info(f'Loading activations for {self.name}')
         if self.name == 'chunking':
             activations_path = self.config_dict['activations']['output_dir'] / 'activations_concat_layers.pickle'
         
-        elif self.name == 'lca':
+        elif self.name == 'lca' or self.name == 'ii':
             activations_path = self.config_dict['activations']['output_dir'] / 'activations_combined.pickle'
             
         elif self.name in ['lca_tree', 'shared_levels', 'unary']:
@@ -133,6 +148,7 @@ class ExperimentManager():
         
         if failed:
             raise ValueError
+        
 
         if self.name in ['lca', 'lca_tree', 'shared_levels', 'unary'] and not self.config_dict['data']['sampling']:
             for layer_idx, layer_states in activations.items():
@@ -141,6 +157,11 @@ class ExperimentManager():
         elif self.name in ['lca', 'lca_tree', 'shared_levels', 'unary'] and self.config_dict['data']['sampling']:
             for layer_idx, layer_states in activations.items():
                 activations[layer_idx] = torch.index_select(torch.concat(layer_states), 0, torch.LongTensor(self.indices))
+        
+        elif self.name == 'ii':
+            # interchange interventions probe is only trained on the last layer activations
+            # such that interventions can be conducted on everything in between
+            activations = {0: torch.index_select(torch.concat(activations[max(activations.keys())]), 0, torch.LongTensor(self.indices))}
         
         assert len(self.labels) == len(activations[0]), \
         f"Length of labels ({len(self.labels)}) does not match length of activations ({len(activations[0])})"
@@ -161,11 +182,26 @@ class ExperimentManager():
         return [sent.strip('\n') for sent in sentences]
     
 
+    def _sample_data(self, labels):
+        # sample data to obtain balanced classes
+        class_idx = Counter(labels.tolist())
+
+        all_indices = []
+        for count in class_idx.values():
+            if count > self.config_dict['data']['sampling_size']:
+                indices = list(np.random.choice(count, self.config_dict['data']['sampling_size'], replace=False))
+                all_indices.extend(indices)
+        
+        sampled_labels = torch.tensor([labels[idx] for idx in all_indices]).to(self.device)
+    
+        return sampled_labels, all_indices
+    
+
     def _set_label_path(self):
         if self.name == 'chunking':
             logging.info('Running chunking experiments')
             label_path = self.config_dict['data']['data_dir'] / 'train_bies_labels.txt'
-        elif self.name == 'lca':
+        elif self.name == 'lca' or self.name == 'ii':
             logging.info('Running lca experiments')
             label_path = self.config_dict['data']['data_dir'] / 'train_rel_labels.txt'
         elif self.name == 'lca_tree':
@@ -186,6 +222,7 @@ class ExperimentManager():
             raise ValueError('This experiment is not supported yet.')
         
         return label_path
+    
 
     def _set_results_file(self):
         if self.config_dict['experiments']['control_task']:
@@ -200,18 +237,3 @@ class ExperimentManager():
             self.test_results_file = self.config_dict['data']['output_dir'] /f'{self.name}/test_results_default_{self.config_dict["data"]["sampling_size"]}.pickle'
             self.val_results_file = self.config_dict['data']['output_dir'] /f'{self.name}/val_results_default_{self.config_dict["data"]["sampling_size"]}.pickle'
             self.base_name = f'{self.name}/best_model_default_{self.name}'
-    
-    def _sample_data(self, labels):
-        # sample data to obtain balanced classes
-        class_idx = Counter(labels.tolist())
-
-        all_indices = []
-        for count in class_idx.values():
-            if count > self.config_dict['data']['sampling_size']:
-                indices = list(np.random.choice(count, self.config_dict['data']['sampling_size'], replace=False))
-                all_indices.extend(indices)
-        
-        sampled_labels = torch.tensor([labels[idx] for idx in all_indices]).to(self.device)
-    
-        return sampled_labels, all_indices
-

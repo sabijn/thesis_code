@@ -4,6 +4,15 @@ from torch import nn
 import torch.optim as optim
 import torchmetrics
 
+import logging
+import sys
+
+logging.basicConfig(stream=sys.stdout,
+    level=logging.INFO,
+    format='%(name)s - %(levelname)s - %(message)s')
+
+logger = logging.getLogger(__name__)
+
 class MyModule(nn.Module):
     def __init__(self, num_inp=768, num_units=18):
         super(MyModule, self).__init__()
@@ -13,20 +22,44 @@ class MyModule(nn.Module):
     def forward(self, X, **kwargs):
         return self.dense0(X)
 
+
+class MyExtendedModule(nn.Module):
+    def __init__(self, num_inp=768, num_hidden=128, num_units=18):
+        super(MyExtendedModule, self).__init__()
+
+        self.dense0 = nn.Linear(num_inp, num_hidden)
+        self.relu = nn.ReLU()
+        self.dense1 = nn.Linear(num_hidden, num_units)
+
+    def forward(self, X, **kwargs):
+        X = self.dense0(X)
+        X = self.relu(X)
+        X = self.dense1(X)
+
+        return X
+    
+
 class DiagModule(pl.LightningModule):
     def __init__(self, model_hparams, optimizer_hparams):
         super().__init__()
         # Exports the hyperparameters to a YAML file, and create "self.hparams" namespace
         self.save_hyperparameters()
         # Create model
-        self.model = MyModule(model_hparams['num_inp'], model_hparams['num_units'])
+        if model_hparams['probe_type'] == 'linear':
+            logger.info("Training with a linear probe")
+            self.model = MyModule(model_hparams['num_inp'], model_hparams['num_units'])
+        else:
+            logger.info("Training with a non-linear probe")
+            self.model = MyExtendedModule(model_hparams['num_inp'], model_hparams['num_hidden'], model_hparams['num_units'])  
+
         # Create loss module
+        # CrossEntropoyLoss already contains softmax
         self.loss_module = nn.CrossEntropyLoss()
 
         # Initialize dictionary to store classwise accuracy
         self.classwise_acc = {}
         # Initialize confusion matrix
-        self.confmat = torchmetrics.ConfusionMatrix(task="multiclass", num_classes=model_hparams['num_units'], normalize="true")
+        self.confmat = torchmetrics.ConfusionMatrix(task=model_hparams['task'], num_classes=model_hparams['num_units'], normalize="true")
         self.final_confusion_matrix = None 
         # Initialize variable to store predictions
         self.predictions = []
@@ -58,12 +91,15 @@ class DiagModule(pl.LightningModule):
 
         acc = (targets == preds).float().mean()
         self.log('val_acc', acc)
-        # Calculate classwise accuracy
-        class_acc = torchmetrics.functional.accuracy(preds, targets, task='multiclass', num_classes=self.hparams.model_hparams['num_units'], average=None).cpu().numpy()
 
-        # Update classwise accuracy in the log dictionary
-        for i, acc in enumerate(class_acc):
-            self.classwise_acc[f'class_{i}'] = acc
+        if self.hparams.model_hparams['task'] == 'multiclass':
+            # Calculate classwise accuracy
+            class_acc = torchmetrics.functional.accuracy(preds, targets, task=self.hparams.model_hparams['task'], num_classes=self.hparams.model_hparams['num_units'], average=None).cpu().numpy()
+
+
+            # Update classwise accuracy in the log dictionary
+            for i, acc in enumerate(class_acc):
+                self.classwise_acc[f'class_{i}'] = acc
         
         # Calculate confusion matrix
         self.confmat(preds, targets)
@@ -76,12 +112,13 @@ class DiagModule(pl.LightningModule):
         acc = (targets == preds).float().mean()
         self.log('test_acc', acc)
 
-        # Calculate classwise accuracy
-        class_acc = torchmetrics.functional.accuracy(preds, targets, task='multiclass', num_classes=self.hparams.model_hparams['num_units'], average=None).cpu().numpy()
+        if self.hparams.model_hparams['task'] == 'multiclass':
+            # Calculate classwise accuracy
+            class_acc = torchmetrics.functional.accuracy(preds, targets, task=self.hparams.model_hparams['task'], num_classes=self.hparams.model_hparams['num_units'], average=None).cpu().numpy()
 
-        # Update classwise accuracy in the log dictionary
-        for i, acc in enumerate(class_acc):
-            self.classwise_acc[f'class_{i}'] = acc
+            # Update classwise accuracy in the log dictionary
+            for i, acc in enumerate(class_acc):
+                self.classwise_acc[f'class_{i}'] = acc
         
         # Calculate confusion matrix
         self.confmat(preds, targets)

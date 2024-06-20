@@ -16,6 +16,7 @@ import time
 import pickle
 import torch
 import argparse
+import json
 
 REPLACEMENTS = [
     ('``', 'TICK'),
@@ -47,8 +48,8 @@ def load_language(args, encoder="transformer", corpus_size=200_000):
         corpus_file = f'/scratch-shared/sabijn/{args.version}/corpus_{args.top_k}_{args.version}.pt'
     
     elif args.hardware == 'local':
-        grammar_file = f'grammars/nltk/{args.version}/subset_pcfg_{args.top_k}.txt'
-        corpus_file = f'corpora/{args.version}/corpus_{args.top_k}_{args.version}.pt'
+        grammar_file = f'/Users/sperdijk/Documents/Master/Jaar_3/Thesis/thesis_code/reduce_grammar/grammars/nltk/{args.version}/subset_pcfg_{args.top_k}.txt'
+        corpus_file = f'/Users/sperdijk/Documents/Master/Jaar_3/Thesis/thesis_code/reduce_grammar/corpora/{args.version}/corpus_{args.top_k}_{args.version}.pt'
     
     else:
         raise NotImplementedError(args.hardware)
@@ -106,6 +107,9 @@ def add_special_token(grammar):
 
 
 def create_prod2prob_dict(grammar) -> Dict[Production, float]:
+    """
+    Creates a dictionary with the production (lhs and rhs) as key and the probability as value.
+    """
     prod2prob = defaultdict(float)
 
     for lhs, prods in grammar._lhs_index.items():
@@ -131,11 +135,13 @@ def pcfg_perplexity(lm_language, method, prod2prob, max_parse_time=10, corpus_si
     sen_lens = []
     num_parses = []
     sen_ids = []
+    probs_per_word = []
     
     chart_parser = Parser(lm_language.grammar)
     corpus = lm_language.test_corpus
     iterator = tqdm(corpus) if verbose else corpus
 
+    # For every sentence in the corpus
     for sen_idx, sen in enumerate(iterator):
         if sen_ids_filter is not None and sen_idx not in sen_ids_filter:
             continue
@@ -151,18 +157,25 @@ def pcfg_perplexity(lm_language, method, prod2prob, max_parse_time=10, corpus_si
 
             signal.alarm(max_parse_time)
             try:
+                # For every leaf in the sentence
                 for idx, orig_leaf in enumerate(sen):
                     sen2 = list(sen)
+                    # Replace the leaf with '<X>'
                     sen2[idx] = '<X>'
 
                     tree_probs = []
                     leaf_probs = []
 
+                    # For every possible part of the sentence
                     for i, tree in enumerate(chart_parser.parse(sen2)):
+                        # Get the product of all productions in the current tree
                         tree_prob = np.prod([(prod2prob[prod]) for prod in tree.productions()])
 
+                        # Get the production of the currently masked token (terminal)
                         leaf_idx_prod = [prod for prod in tree.productions() if isinstance(prod.rhs()[0], str)][idx]
+                        # Get the index of the non-terminal
                         leaf_idx_pos = leaf_idx_prod.lhs()
+                        # Get the probability of the currently masked token
                         orig_leaf_prob = prod2prob[Production(leaf_idx_pos, (orig_leaf,))]
 
                         tree_probs.append(tree_prob)
@@ -171,6 +184,8 @@ def pcfg_perplexity(lm_language, method, prod2prob, max_parse_time=10, corpus_si
                     num_sen_parses.append(i+1)
                     tree_probs_sum = np.sum(tree_probs)
 
+                    # Calculate the weighted probability of the masked token
+                    # (tree prob times leaf prob) / sum of tree probs (marginalize, even general formule opzoeken)
                     weighted_leaf_prob = sum((tree_prob/tree_probs_sum) * leaf_prob for tree_prob, leaf_prob in zip(tree_probs, leaf_probs))
                     weighted_leaf_probs.append(np.log(weighted_leaf_prob))
             except TimeoutException:
@@ -181,6 +196,7 @@ def pcfg_perplexity(lm_language, method, prod2prob, max_parse_time=10, corpus_si
             sen_ids.append(sen_idx)
             num_parses.append(num_sen_parses)
             all_probs.append(np.sum(weighted_leaf_probs))  
+            probs_per_word.extend(weighted_leaf_probs)
                   
         elif method == 'sen_parses':
             sen_leaf_probs = []
@@ -215,10 +231,12 @@ def pcfg_perplexity(lm_language, method, prod2prob, max_parse_time=10, corpus_si
             all_probs.append(weighted_sen_logprob)
         elif method == 'current_parse':
             leaf_prods = [prod for prod in orig_tree.productions() if isinstance(prod.rhs()[0], str)]
-            sen_prob = np.sum([np.log(prod2prob[prod]) for prod in leaf_prods])
+            word_probs = [prod2prob[prod] for prod in leaf_prods]
+            sen_prob = np.sum(word_probs)
             
             sen_ids.append(sen_idx)
             all_probs.append(sen_prob)
+            probs_per_word.extend(word_probs)
         else:
             raise ValueError(method)
 
@@ -226,9 +244,12 @@ def pcfg_perplexity(lm_language, method, prod2prob, max_parse_time=10, corpus_si
                 
     avg_ppl = np.exp(-np.sum(all_probs)/np.sum(sen_lens))
     
-    return avg_ppl, all_probs, num_parses, sen_lens, sen_ids
+    return avg_ppl, all_probs, num_parses, sen_lens, sen_ids, probs_per_word
 
 if __name__ == '__main__':
+    """
+    Edited the file two calculate parse methods, usually it is without the for loop
+    """
     parser = argparse.ArgumentParser(description='Calculate the optimal perplexity')
     parser.add_argument('--top_k', type=float, default=0.2)
     parser.add_argument('--version', type=str, default='normal')
@@ -245,12 +266,19 @@ if __name__ == '__main__':
     add_special_token(language.grammar)
     prod2prob = create_prod2prob_dict(language.grammar)
 
-    avg_ppl, all_probs, num_parses, sen_lens, sen_ids = pcfg_perplexity(
-        language, args.parse_method, prod2prob, max_parse_time=args.max_parse_time, corpus_size=args.corpus_size, 
-    )
+    for method in ['all_parses', 'current_parse']:
+        print('Calculating optimal perplexity for ', method)
+        avg_ppl, all_probs, num_parses, sen_lens, sen_ids, probs_per_word = pcfg_perplexity(
+            language, method, prod2prob, max_parse_time=args.max_parse_time, corpus_size=args.corpus_size, 
+        )
 
-    with open(f'{args.output_file}/optimal_ppl_mlm_{args.version}_{args.top_k}_size_{args.corpus_size}_timeout_{args.max_parse_time}.pkl', 'wb') as f:
-        pickle.dump((avg_ppl, all_probs, num_parses, sen_lens, sen_ids), f)
+        with open(f'{args.output_file}/optimal_ppl_mlm_{args.version}_{args.top_k}_size_{args.corpus_size}_{method}.pkl', 'wb') as f:
+            pickle.dump((avg_ppl, all_probs, num_parses, sen_lens, sen_ids, probs_per_word), f)
+        
+        with open(f'{args.output_file}/results_babyberta_normal_{args.top_k}_{method}.json', 'w') as f:
+            f.write(json.dumps({
+                'avg_ppl': avg_ppl
+            }))
 
     del language
     del tokenizer

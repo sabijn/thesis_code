@@ -81,8 +81,6 @@ def main():
 
         logging.info("Splitting data in train, dev and test sets.")
         X_train, y_train, X_dev, y_dev, X_test, y_test = CurrentExperiment.create_train_dev_test_split(layer_idx)
-            
-        ninp, nout = X_train.shape[-1], len(CurrentExperiment.label_vocab)
 
         trainset = torch.utils.data.TensorDataset(X_train, y_train)
         train_loader = torch.utils.data.DataLoader(dataset=trainset,
@@ -115,9 +113,19 @@ def main():
                                 devices=1,                                            
                                 max_epochs=config_dict['trainer']['epochs'],                                                                    
                                 callbacks=[ModelCheckpoint(save_weights_only=True, mode="max", monitor="val_acc")])
-
+        
         pl.seed_everything(42)
-        model = DiagModule(model_hparams={"num_inp":X_train.shape[-1], "num_units":len(CurrentExperiment.label_vocab)}, optimizer_hparams={"lr": config_dict['trainer']['lr']})
+        model = DiagModule(
+            model_hparams={
+                "num_inp": X_train.shape[-1], 
+                "num_units": len(CurrentExperiment.label_vocab),
+                "num_hidden": config_dict['trainer']['hidden_size'],
+                "task": "binary" if config_dict['experiments']['type'] == 'ii' else "multiclass",
+                "probe_type": config_dict['model']['probe_type']
+            }, 
+            optimizer_hparams={
+                "lr": config_dict['trainer']['lr']}
+            )
         trainer.fit(model, train_loader, dev_loader)
 
         model = DiagModule.load_from_checkpoint(trainer.checkpoint_callback.best_model_path) # Load best checkpoint after training
