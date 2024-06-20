@@ -59,7 +59,7 @@ git fetch && git pull
 
 # Run the script
 echo retraining the models...
-topks=("0.4" "0.5")
+topks=("0.2" "0.3" "0.4" "0.5")
 versions=("normal")
 for topk in "${topks[@]}"; do
     for version in "${versions[@]}"; do
@@ -75,7 +75,7 @@ for topk in "${topks[@]}"; do
                             --version=$version \
                             --fp16 \
                             --do_eval \
-                            --save_steps=100
+                            --epochs 5
     done
 done
 
