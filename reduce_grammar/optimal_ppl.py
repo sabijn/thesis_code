@@ -148,6 +148,7 @@ def pcfg_perplexity(lm_language, method, prod2prob, max_parse_time=10, corpus_si
 
         orig_tree = lm_language.tree_corpus[sen]
         sen = sen.split()
+        print(sen)
         sen_len = len(sen)
 
         if method == 'all_parses':
@@ -169,6 +170,8 @@ def pcfg_perplexity(lm_language, method, prod2prob, max_parse_time=10, corpus_si
                     # For every possible part of the sentence
                     for i, tree in enumerate(chart_parser.parse(sen2)):
                         # Get the product of all productions in the current tree
+                        print(tree.productions())
+                        exit(1)
                         tree_prob = np.prod([(prod2prob[prod]) for prod in tree.productions()])
 
                         # Get the production of the currently masked token (terminal)
@@ -272,13 +275,13 @@ if __name__ == '__main__':
             language, method, prod2prob, max_parse_time=args.max_parse_time, corpus_size=args.corpus_size, 
         )
 
-        with open(f'{args.output_file}/optimal_ppl_mlm_{args.version}_{args.top_k}_size_{args.corpus_size}_{method}.pkl', 'wb') as f:
-            pickle.dump((avg_ppl, all_probs, num_parses, sen_lens, sen_ids, probs_per_word), f)
+        # with open(f'{args.output_file}/optimal_ppl_mlm_{args.version}_{args.top_k}_size_{args.corpus_size}_{method}.pkl', 'wb') as f:
+        #     pickle.dump((avg_ppl, all_probs, num_parses, sen_lens, sen_ids, probs_per_word), f)
         
-        with open(f'{args.output_file}/results_babyberta_normal_{args.top_k}_{method}.json', 'w') as f:
-            f.write(json.dumps({
-                'avg_ppl': avg_ppl
-            }))
+        # with open(f'{args.output_file}/results_babyberta_normal_{args.top_k}_{method}.json', 'w') as f:
+        #     f.write(json.dumps({
+        #         'avg_ppl': avg_ppl
+        #     }))
 
     del language
     del tokenizer

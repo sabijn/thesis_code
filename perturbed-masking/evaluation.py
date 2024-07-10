@@ -122,11 +122,13 @@ def calc_spearman(pred_distances, gold_distances):
     return mean, mean_pvalue
     
 
-def spearman_evaluation(args, pred_trees, split):
+def spearman_evaluation(args, all_layer_info, pred_trees, split):
     # Load the gold trees
     logger.info('Creating gold trees...')
-    with open(args.data, 'r') as f:
-        gold_trees = [line.strip('\n') for line in f.readlines()]
+    # with open(args.data, 'r') as f:
+    #     gold_trees = [line.strip('\n') for line in f.readlines()]
+
+    gold_trees = list(list(zip(*all_layer_info[0]))[-1])
     if split:
         gold_trees = gold_trees[:split]
 

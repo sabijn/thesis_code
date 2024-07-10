@@ -15,7 +15,7 @@ from edge_probe import edge_probing_labelling
 
 
 logging.basicConfig(stream=sys.stdout,
-    level=logging.INFO,
+    level=logging.DEBUG,
     format='%(name)s - %(levelname)s - %(message)s')
 
 logger = logging.getLogger(__name__)
@@ -85,11 +85,13 @@ def get_predicted_trees(config, all_layer_info):
 
     logger.info('Parse trees loaded.')
 
-    if config.evaluation == 'classic' or config.evaluation == 'labelled':
-        return pred_trees
+    # if config.evaluation == 'classic' or config.evaluation == 'labelled':
+    #     return pred_trees
     
-    elif config.evaluation == 'spearman':
-        return [listtree2str(tree) for tree in trees]
+    # elif config.evaluation == 'spearman':
+    #     return [listtree2str(tree) for tree in trees]
+
+    return pred_trees
     
 
 def main(config):
@@ -106,7 +108,7 @@ def main(config):
     print(config.evaluation, flush=True)
     if config.evaluation == 'spearman':
         logger.info('Started spearman evaluation...')
-        spearman_evaluation(config, pred_trees, split=config.split)
+        spearman_evaluation(config, all_layer_info, pred_trees, split=config.split)
     elif config.evaluation == 'classic':
         logger.info('Started classic evaluation...')
         classic_evaluation(config, all_layer_info, pred_trees)

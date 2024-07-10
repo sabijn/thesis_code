@@ -5,15 +5,15 @@ set -e
 
 # Set the path to the edge probing repository.
 MODEL=babyberta
-PROBE=nonlinear
+PROBE=linear
 PROBING_DIR=/Users/sperdijk/Documents/Master/Jaar_3/Thesis/thesis_code/constprobing-repr
 DATA_DIR=/Users/sperdijk/Documents/Master/Jaar_3/Thesis/thesis_code/constprobing-repr/data
-MODEL_DIR=/Users/sperdijk/Documents/Master/Jaar_3/Thesis/thesis_code/retrain/checkpoints/${MODEL}
-OUTPUT_DIR=/Users/sperdijk/Documents/Master/Jaar_3/Thesis/thesis_code/constprobing-repr/results
+MODEL_DIR=/Users/sperdijk/Documents/Master/Jaar_3/Thesis/thesis_code/retrain/checkpoints_v2/${MODEL}
+OUTPUT_DIR=/Users/sperdijk/Documents/Master/Jaar_3/Thesis/thesis_code/constprobing-repr/results_v2
 
-topks=("0.2" "0.3" "0.4" "0.5" "0.6" "0.7" "0.8" "0.9")
+topks=("0.2" "0.3" "0.4" "0.5")
 versions=("normal")
-experiments=("lca_tree" "shared_levels" "unary")
+experiments=("lca" "chunking")
 for version in "${versions[@]}"; do
     for topk in "${topks[@]}"; do
         for experiment in "${experiments[@]}"; do

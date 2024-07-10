@@ -141,8 +141,8 @@ def remove_punctuation_nltk(trees):
     new_trees = []
     skipped_idx = []
 
-    for i, string_tree in enumerate(trees):
-        tree = nltk.Tree.fromstring(string_tree)
+    for i, tree in enumerate(trees):
+        # tree = nltk.Tree.fromstring(string_tree)
         try:
             punct = tree[(1,)]
         except:

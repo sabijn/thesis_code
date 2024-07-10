@@ -5,16 +5,16 @@ set -e
 
 # Set the path to the edge probing repository.
 MODEL=babyberta
-DATA_DIR=/Users/sperdijk/Documents/Master/Jaar_3/Thesis/thesis_code/constprobing-repr/results
+DATA_DIR=/Users/sperdijk/Documents/Master/Jaar_3/Thesis/thesis_code/constprobing-repr/results_v2
 GOLD_DIR=/Users/sperdijk/Documents/Master/Jaar_3/Thesis/thesis_code/constprobing-repr/data
 EVALB_DIR=/Users/sperdijk/Documents/Master/Jaar_3/Thesis/thesis_code/constprobing-repr
 
-topks=("0.2" "0.3" "0.4" "0.5" "0.6" "0.7" "0.8" "0.9")
+topks=("0.2" "0.3" "0.4" "0.5")
 versions=("normal")
 for version in "${versions[@]}"; do
     for topk in "${topks[@]}"; do
         echo "Creating trees for topk=${topk} and version=${version}"
-        current_output_dir=$DATA_DIR/$MODEL/$version/$topk
+        current_output_dir=$DATA_DIR/$MODEL/$version/linear/$topk
         current_data_dir=$GOLD_DIR/$MODEL/$version/$topk
         mkdir -p $current_output_dir
 

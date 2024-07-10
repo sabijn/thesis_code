@@ -50,6 +50,7 @@ def create_arg_parser():
     # PATHS
     argparser.add_argument('--data', type=Path, default=Path('/Users/sperdijk/Documents/Master/Jaar_3/Thesis/thesis_code/corpora/eval_trees_10k.txt'),
                         help='Path to data')
+    argparser.add_argument('--grammar_path', type=Path, default='/Users/sperdijk/Documents/Master/Jaar_3/Thesis/thesis_code/pcfg-lm/resources/grammars/',)
     argparser.add_argument('--home_model_path', type=Path, default=Path('/Users/sperdijk/Documents/Master/Jaar_3/Thesis/thesis_code/pcfg-lm/resources/checkpoints/'),
                         help='Path to directory were the differen models are stored.')
     argparser.add_argument('--output_dir', type=Path, default=Path('/Users/sperdijk/Documents/Master/Jaar_3/Thesis/thesis_code/perturbed-masking/test_results/i_matrices/'),
@@ -135,6 +136,7 @@ def create_arg_parser():
 
     # Configure input data
     if config.version and config.top_k:
-        config.data = config.data / Path(f'{config.version}/all_trees_{config.version}_{config.top_k}.txt')
+        config.data = config.data / Path(f'{config.version}/corpus_{config.top_k}_{config.version}.pt')
+        config.grammar_path = config.grammar_path / Path(f'{config.version}/subset_pcfg_{config.top_k}.txt')
 
     return config

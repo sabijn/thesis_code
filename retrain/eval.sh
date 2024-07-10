@@ -2,7 +2,7 @@
 
 set -e
 
-topks=("0.2")
+topks=("0.2" "0.3" "0.4" "0.5")
 versions=("normal")
 for version in "${versions[@]}"; do
     for topk in "${topks[@]}"; do

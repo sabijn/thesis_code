@@ -123,7 +123,7 @@ def prepare_sentence(sents, tokenizer):
     tokenized_text.insert(0, '[CLS]')
     tokenized_text.append('[SEP]')
     indexed_tokens = tokenizer.convert_tokens_to_ids(tokenized_text)
-    assert len(sents) == len(tokenized_text) - 2, 'Something went wrong with tokeninzing.'
+    assert len(sents) == len(tokenized_text) - 2, f'Something went wrong with tokeninzing. sents: {sents}, tokenized_text: {tokenized_text}'
 
     mapping = match_tokenized_to_untokenized(tokenized_text, sents)
 
@@ -183,7 +183,7 @@ def main_impact_matrix(config):
 
     mask_id = tokenizer.convert_tokens_to_ids(['[MASK]'])[0]
 
-    corpus = Corpus(config.data, config.split)
+    corpus = Corpus(config.data, config.grammar_path, split=config.split)
     
     out = [[] for i in range(config.layers)]
     for sents, tree2list, nltk_tree in tqdm(zip(corpus.sens, corpus.trees, corpus.nltk_trees), total = len(corpus.sens)):
