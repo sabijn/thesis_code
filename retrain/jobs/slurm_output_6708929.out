@@ -1,0 +1,59 @@
+Loading modules...
+============================================================================================== 
+Warning! Mixing Conda and module environments may lead to corruption of the
+user environment. 
+We do not recommend users mixing those two environments unless absolutely
+necessary. Note that 
+SURF does not provide any support for Conda environment.
+For more information, please refer to our software policy page:
+https://servicedesk.surf.nl/wiki/display/WIKI/Software+policy+Snellius#SoftwarepolicySnellius-UseofAnacondaandMinicondaenvironmentsonSnellius 
+
+Remember that many packages have already been installed on the system and can
+be loaded using 
+the 'module load <package__name>' command. If you are uncertain if a package is
+already available 
+on the system, please use 'module avail' or 'module spider' to search for it.
+============================================================================================== 
+activating virtual env...
+current conda environment: basic310
+activating ssh connection...
+Agent pid 1028114
+Identity added: /home/jumelet/.ssh/id_rsa_sabijn (jumelet@int4)
+parsing input arguments...
+Branch: feature/interventions
+fetching and pulling latest changes from remote dir...
+Already up to date.
+retraining the models...
+Creating output dir
+Running script for version 0.2
+Namespace(output_dir='/scratch-shared/sabijn/checkpoints_v2/babyberta/normal/0.2', results_dir='/scratch-shared/sabijn/results', data_dir='/scratch-shared/sabijn/normal', version='normal', top_k=0.2, base_model='phueb/BabyBERTa-1', save_steps=10000, eval_steps=100, logging_steps=100, per_device_train_batch_size=64, per_device_eval_batch_size=64, gradient_accumulation_steps=8, weight_decay=0.1, lr_scheduler_type='cosine', learning_rate=0.0005, warmup_steps=0, fp16=True, max_grad_norm=0.5, group_by_length=True, auto_find_batch_size=False, do_eval=True, evaluation_strategy='steps', epochs=5, train_size=None, dev_size=None, test_size=None)
+CUDA available:  True
+CUDA backend enabled:  True
+Current device:  <module 'torch' from '/home/jumelet/.conda/envs/basic310/lib/python3.10/site-packages/torch/__init__.py'>
+Traceback (most recent call last):
+  File "/gpfs/home4/jumelet/sabijn/thesis_code/retrain/main.py", line 172, in <module>
+    main(args)
+  File "/gpfs/home4/jumelet/sabijn/thesis_code/retrain/main.py", line 94, in main
+    tokenizer = create_tokenizer(f'{args.data_dir}/train_sent_{args.version}_{args.top_k}.txt', min_freq=5)
+  File "/gpfs/home4/jumelet/sabijn/thesis_code/retrain/tokenizer.py", line 12, in create_tokenizer
+    vocab = create_vocab(corpus, unk_token=unk_token, pad_token=pad_token, mask_token=mask_token, min_freq=min_freq)
+  File "/gpfs/home4/jumelet/sabijn/thesis_code/retrain/tokenizer.py", line 26, in create_vocab
+    with open(corpus) as f:
+FileNotFoundError: [Errno 2] No such file or directory: '/scratch-shared/sabijn/normal/train_sent_normal_0.2.txt'
+srun: error: gcn18: task 0: Exited with exit code 1
+srun: Terminating StepId=6708929.0
+
+JOB STATISTICS
+==============
+Job ID: 6708929
+Cluster: snellius
+User/Group: jumelet/jumelet
+State: RUNNING
+Nodes: 1
+Cores per node: 18
+CPU Utilized: 00:00:04
+CPU Efficiency: 0.85% of 00:07:48 core-walltime
+Job Wall-clock time: 00:00:26
+Memory Utilized: 1.21 MB
+Memory Efficiency: 0.00% of 31.25 GB
+WARNING: Efficiency statistics may be misleading for RUNNING jobs.
