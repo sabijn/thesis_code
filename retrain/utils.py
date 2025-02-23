@@ -90,7 +90,7 @@ def store_model_probs(all_token_probs, datasets, fn: str):
     lines = []
     cur_idx = 0
 
-    for sen in datasets['test']['text'][:]:
+    for sen in datasets['test']['text'][:100]:
         lines.append(sen)
         sen_len = len(sen.split(' '))
 
@@ -158,9 +158,7 @@ def get_probs(datasets, tokenizer, sen2lm_probs):
 
 
 def get_causal_lm_pcfg_probs(pcfg_dict_fn, all_sen_probs, corpus, tokenizer):
-    # with open(pcfg_dict_fn, "rb") as f:
-    #     pcfg_dict = pickle.load(f)
-    # load json pcfg_dict_fn
+
     with open(pcfg_dict_fn) as f:
         pcfg_dict = json.load(f)
 
@@ -173,8 +171,8 @@ def get_causal_lm_pcfg_probs(pcfg_dict_fn, all_sen_probs, corpus, tokenizer):
 
         lm_probs.extend(lm_sen_probs)
 
-        # for idx, (w, prob) in enumerate(zip(sen.split(), pcfg_sen_probs)):
-        #     if idx > 0 and w in tokenizer.vocab:
-        #         pcfg_probs.append(-prob)
-                
-    return lm_probs
+        for idx, (w, prob) in enumerate(zip(sen.split(), pcfg_sen_probs)):
+            if idx > 0 and w in tokenizer.vocab:
+                pcfg_probs.append(-prob)
+          
+    return pcfg_probs, lm_probs

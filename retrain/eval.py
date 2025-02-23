@@ -135,32 +135,42 @@ if __name__ == '__main__':
 
         
     elif args.model == 'gpt2':
+        # make dir if not exists
+        os.makedirs(f'{args.output_dir}/{args.model}/{args.version}', exist_ok=True)
+
         # perplexity methods for clms
-        print(datasets['test'][0])
-        ppl, _, all_sen_probs = causal_ppl(
+        ppl, all_token_probs, all_sen_probs = causal_ppl(
             model,
-            datasets['test']['input_ids'][:100], 
+            datasets['test'][:100], 
             device,
             skip_tokens={tokenizer.unk_token_id},
         )
         
-        grammar_file = f'{args.grammar_dir}/{args.model}/{args.version}/{args.top_k}/earleyx_pcfg_probs_{top_k}.json'
+        store_model_probs(all_token_probs, datasets, f'{args.output_dir}/{args.model}/{args.version}/token_probs_eval_{args.model}_{args.version}_{args.top_k}.txt')
+        grammar_file = f'{args.grammar_dir}/{args.model}/{args.version}/{args.top_k}/earleyx_pcfg_probs_{args.top_k}.json'
         pcfg_probs, lm_probs = get_causal_lm_pcfg_probs(
             grammar_file, 
             all_sen_probs, 
-            datasets['test']['input_ids'][:100],
+            datasets['test']['text'][:100],
             tokenizer,
         )
+        with open(f'{args.output_dir}/{args.model}/{args.version}/token_pcfg_probs_{args.model}_{args.top_k}.pkl', 'wb') as f:
+            pickle.dump(pcfg_probs, f)
+        
+        with open(f'{args.output_dir}/{args.model}/{args.version}/token_llm_probs_{args.model}_{args.top_k}.pkl', 'wb') as f:
+            pickle.dump(lm_probs, f)
 
     else:
         raise NotImplementedError(f"Model {args.model} not implemented")
 
     print(f"LM-PPL {np.exp(-np.mean(lm_probs)):.1f}")
-    
-    with open(f'{args.output_dir}/{args.model}/{args.version}/{args.top_k}/results_{args.model}_{args.version}_{args.top_k}.json', 'w') as f:
+
+    with open(f'{args.output_dir}/{args.model}/{args.version}/results_{args.model}_{args.version}_{args.top_k}.json', 'w') as f:
         json.dump({
             'lm_ppl': np.exp(-np.mean(lm_probs)),
-            'pcfg_ppl': np.exp(-np.mean(pcfg_probs))
+            'pcfg_ppl': np.exp(-np.mean(pcfg_probs)),
+            'spearman': spearmanr(pcfg_probs, lm_probs).correlation,
+            'r2': r2_score(pcfg_probs, lm_probs),
         }, f)
     
     del tokenizer

@@ -100,8 +100,10 @@ def causal_ppl(model, corpus, device, skip_tokens):
         sen_len = input_ids.shape[-1]
         sen_probs = []
 
+        
         with torch.no_grad():
             probs = model(input_ids[:, :-1]).logits.log_softmax(-1)[0]
+
             
         for idx, prob_row in enumerate(probs, start=1):
             token_id = input_ids[0, idx].item()
