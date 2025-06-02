@@ -10,3 +10,7 @@
    3. POS labels
 
 ## Experiments
+
+
+## Notes for self
+- Remove .indices stuff from code

@@ -42,8 +42,8 @@ def _create_arg_parser() -> ArgumentParser:
     parser = ArgumentParser()
 
     # MODEL
-    parser.add_argument("--model.model_type", required=True, choices=['deberta', 'gpt2', 'babyberta'])
-    parser.add_argument("--model.model_file", type=Path, required=True)
+    # parser.add_argument("--model.model_type", required=True, choices=['deberta', 'gpt2', 'babyberta'])
+    # parser.add_argument("--model.model_file", type=Path, required=True)
 
     # DATA
     parser.add_argument("--data.data_dir", type=Path, required=True)
@@ -58,6 +58,9 @@ def _create_arg_parser() -> ArgumentParser:
     parser.add_argument("--data.sampling", action=argparse.BooleanOptionalAction)
     parser.add_argument("--data.sampling_size", type=int, default=0)
     parser.add_argument("--data.rel_toks", type=Path, default="data/train_rel_toks.txt")
+    parser.add_argument("--data.pos_tags", type=Path, default="data/train_POS_labels.txt")
+    parser.add_argument("--data.gold_trees", type=Path, default="data/gold_trees_cleaned.txt")
+    parser.add_argument("--data.sentences", type=Path, default="data/train_sentences.txt")
     parser.add_argument("--data.generate_test_data", action=argparse.BooleanOptionalAction)
 
     # EXTRACT ACTIVATIONS

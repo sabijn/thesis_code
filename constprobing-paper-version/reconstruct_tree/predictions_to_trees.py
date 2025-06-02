@@ -81,7 +81,6 @@ def sequence_to_parenthesis(sentences,labels,join_char="~", split_char="@"):
 
 def main():
     parser = argparse.ArgumentParser()
-    # parser.add_argument('-text')
     parser.add_argument('--lca')
     parser.add_argument('--levels')
     parser.add_argument('--out')
@@ -123,7 +122,7 @@ def main():
     for l1, l2, l3, l4 in zip(wordsandpos, labels, levels, unaries):
         i += 1
         assert len(l1) == len(l2)+3 == len(l3)+3 == len(l4)+3, \
-        f'Wordsandpos: {len(l1)}, labels {len(l2)}, levels {len(l3)}, unaries {len(l4)} ({i})'
+        f'Wordsandpos: {l1} {len(l1)}, labels {len(l2)}, levels {len(l3)}, unaries {len(l4)} ({i})'
 
     # assert all([len(l1) == (len(l2)+3) == (len(l3)+3) == len(l4)+3 for l1,l2,l3,l4 in zip(wordsandpos,labels,levels,unaries)])
 

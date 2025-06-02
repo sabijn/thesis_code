@@ -128,7 +128,7 @@ class ExperimentManager():
             with open(activations_path, 'rb') as f:
                 activations = pickle.load(f)
         else:
-            logging.critical(f"Loading of activations failed, check path or generate with create_activations.py or combine_activations.py")
+            logging.critical(f"Loading of activations failed ({activations_path}), check path or generate with create_activations.py or combine_activations.py")
             failed = True
         
         if failed:

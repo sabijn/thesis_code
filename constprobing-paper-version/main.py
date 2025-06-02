@@ -1,7 +1,7 @@
 from pathlib import Path
 from argparser import create_config_dict
 from data import ExperimentManager
-from utils import format_predictions, swap_labels, load_model, load_model_tokenizer, set_experiment_config
+from utils import format_predictions, idx_labels2text, get_pos_test_set, get_gold_trees_test_set
 from model import DiagModule
 
 import pytorch_lightning as pl
@@ -28,25 +28,22 @@ def main():
 
     if config_dict['trainer']['device'] is None:
         if torch.cuda.is_available():
-            # For running on snellius
             device = torch.device("cuda")
             logger.info('Running on GPU.')
-        # elif torch.backends.mps.is_available():
-        #     # For running on M1
-        #     device = torch.device("mps")
-        #     logger.info('Running on M1 GPU.')
+
+        elif torch.backends.mps.is_available():
+            device = torch.device("mps")
+            logger.info('Running on M1 GPU.')
+
         else:
-            # For running on laptop
             device = torch.device("cpu")
             logger.info('Running on CPU.')
     else:
         device = torch.device(config_dict['trainer']['device'])
 
-    # Experiments with the smaller grammars
-    config_dict = set_experiment_config(config_dict)
-    OGmodel, tokenizer = load_model_tokenizer(config_dict)
-    OGmodel.to(device)
-    OGmodel.eval()
+    # config_dict = set_experiment_config(config_dict)
+    # OGmodel, _ = load_model_tokenizer(config_dict)
+    # OGmodel.to(device).eval()
 
     # Initiate experiments
     CurrentExperiment = ExperimentManager(config_dict)
@@ -63,8 +60,6 @@ def main():
 
         logging.info("Splitting data in train, dev and test sets.")
         X_train, y_train, X_dev, y_dev, X_test, y_test = CurrentExperiment.create_train_dev_test_split(layer_idx)
-            
-        ninp, nout = X_train.shape[-1], len(CurrentExperiment.label_vocab)
 
         trainset = torch.utils.data.TensorDataset(X_train, y_train)
         train_loader = torch.utils.data.DataLoader(dataset=trainset,
@@ -105,9 +100,10 @@ def main():
         model = DiagModule.load_from_checkpoint(trainer.checkpoint_callback.best_model_path) # Load best checkpoint after training
 
         # Test best model on test set
-        test_result = swap_labels(trainer.test(model, test_loader, verbose=False), CurrentExperiment.label_vocab)
+        test_result = idx_labels2text(trainer.test(model, test_loader, verbose=False), CurrentExperiment.label_vocab)
         test_final.append(test_result)
         result = {"test": test_result}
+
         CurrentExperiment.results_file.write(f'Layer {layer_idx} \n {result}\n')
 
         # save confusion matrix
@@ -119,6 +115,13 @@ def main():
             predictions = format_predictions(model.predictions, CurrentExperiment.idx2class, CurrentExperiment.rel_toks_test)
             with open(f'{config_dict["data"]["output_dir"]}/{CurrentExperiment.name}/predictions_{CurrentExperiment.name}.txt', 'wb') as f:
                 f.write(predictions.encode('utf-8'))
+            
+            # write also function to write POS tags to file
+            if layer_idx == 0:
+                # test_indices = set([int(tok.split('_')[0]) for tok in CurrentExperiment.rel_toks_test])
+                # check for de eerste die midden in de zin begint + als het wel de eerste is
+                get_pos_test_set(config_dict, CurrentExperiment)
+                get_gold_trees_test_set(config_dict, CurrentExperiment)
 
     CurrentExperiment.results_file.close()
 
@@ -132,7 +135,5 @@ def main():
 
 if __name__ == "__main__":
     """
-    Run script
-    Shared levels: python main.py --model.model_type deberta --data.data_dir corpora --experiments.type shared_levels
     """
     main()

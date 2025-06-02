@@ -8,14 +8,15 @@ set -e
 ####################################################################################################
 
 DATA_DIR="../corpora"
-TREEBANK_SIZE="1"
-HUB_MODEL_ID="jumelet/gpt2_1t_1M_256d_8l"
+TREEBANK_SIZE="50"
+HUB_MODEL_ID="jumelet/gpt2_50t_1M_256d_8l"
 OUTPUT_DIR="../data"
+mkdir -p ${OUTPUT_DIR}/${TREEBANK_SIZE}
 
 # Remove labels from the gold trees
 echo "Starting cleaning gold trees from integer specifications..."
 python clean_gold_trees.py --data_dir ${DATA_DIR}/${TREEBANK_SIZE}/test.nltk \
-    --output_dir ${DATA_DIR}/${TREEBANK_SIZE}/gold_trees_cleaned.txt
+    --output_dir ${OUTPUT_DIR}/${TREEBANK_SIZE}/gold_trees_cleaned.txt
 echo "Done cleaning gold trees from integer specifications."
 
 # extract bies labels (chunking) from the gold trees
@@ -42,7 +43,7 @@ echo "Done extracting lca + shared level labels from the gold trees."
 echo "Starting extracting POS labels from the gold trees..."
 python extract_POS.py --model_id ${HUB_MODEL_ID} \
             --data_dir ${DATA_DIR}/${TREEBANK_SIZE}/test.nltk \
-            --output_dir ${OUTPUT_DIR}/${TREEBANK_SIZE}/test_POS_labels.txt
+            --output_dir ${OUTPUT_DIR}/${TREEBANK_SIZE}/train_POS_labels.txt
 
 # ####################################################################################################
 # ## EXTRACT ACTIVATIONS
